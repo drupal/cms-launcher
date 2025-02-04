@@ -1,0 +1,74 @@
+name: Build for macOS
+
+on:
+  push:
+    branches:
+      - main
+  pull_request:
+    branches:
+      - main
+  workflow_dispatch:
+
+jobs:
+  php:
+    name: Build PHP
+    uses: ./.github/workflows/php-macos.yml
+
+  build:
+    name: Build launcher
+    strategy:
+      matrix:
+        runner:
+          - macos-13  # x64
+          - macos-14  # arm64
+    runs-on: ${{ matrix.runner }}
+    needs:
+      - php
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Download Composer
+        uses: robinraju/release-downloader@v1
+        with:
+          repository: composer/composer
+          latest: true
+          fileName: composer.phar
+          out-file-path: bin
+
+      - name: Download PHP interpreter
+        uses: actions/download-artifact@v4
+        with:
+          name: php
+          path: php-bin
+
+      - name: Prepare binaries
+        run: |
+          mv ./php-bin/php bin
+          chmod +x ./bin/php
+          rm -r -f php-arm64 php-x64
+          ls -l bin
+
+      - name: Set up Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: latest
+
+      - name: Install dependencies
+        run: npm clean-install
+
+      - name: Create application bundle
+        run: npm run make
+
+      - name: Delete PHP interpreter artifact
+        uses: geekyeggo/delete-artifact@v5
+        with:
+          name: php
+
+      - name: Upload archive
+        uses: actions/upload-artifact@v4
+        with:
+          name: drupal-cms-${{ runner.arch }}
+          path: './out/make/Launch Drupal CMS-*.dmg'
+          # The DMG is already compressed.
+          compression-level: 0
+          overwrite: true

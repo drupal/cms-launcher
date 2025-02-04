@@ -1,0 +1,32 @@
+services:
+  Drupal\live_update\Beginner:
+    public: false
+    decorates: 'PhpTuf\ComposerStager\API\Core\BeginnerInterface'
+
+  Drupal\live_update\Stager:
+    decorates: 'PhpTuf\ComposerStager\API\Core\StagerInterface'
+    arguments:
+      - '@.inner'
+    public: false
+
+  Drupal\live_update\Committer:
+    public: false
+    decorates: 'PhpTuf\ComposerStager\API\Core\CommitterInterface'
+
+  Drupal\live_update\ComposerProcessRunner:
+    public: false
+    autowire: true
+    decorates: 'PhpTuf\ComposerStager\API\Process\Service\ComposerProcessRunnerInterface'
+
+  Drupal\live_update\ProcessFactory:
+    decorates: 'PhpTuf\ComposerStager\API\Process\Factory\ProcessFactoryInterface'
+    arguments:
+      - '@.inner'
+    public: false
+
+  live_update.precondition_bypass.ActiveAndStagingDirsAreDifferentInterface:
+    class: 'Drupal\live_update\PreconditionBypass'
+    decorates: 'PhpTuf\ComposerStager\API\Precondition\Service\ActiveAndStagingDirsAreDifferentInterface'
+    arguments:
+      - '@.inner'
+    public: false

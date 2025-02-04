@@ -1,0 +1,7 @@
+name: Live Update
+description: 'Allows Package Manager to operate directly on the live site, without a sandbox. Use with caution: this can potentially ruin your site.'
+type: module
+hidden: true
+core_version_requirement: ^11.1
+dependencies:
+  - drupal:package_manager

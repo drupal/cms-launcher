@@ -1,0 +1,72 @@
+name: Build for Windows
+
+on:
+  push:
+    branches:
+      - main
+  pull_request:
+    branches:
+      - main
+  workflow_dispatch:
+
+jobs:
+  php:
+    name: Build PHP
+    uses: ./.github/workflows/php-windows.yml
+
+  build:
+    name: Build launcher
+    runs-on: windows-latest
+    needs:
+      - php
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Download Composer
+        uses: robinraju/release-downloader@v1
+        with:
+          repository: composer/composer
+          latest: true
+          fileName: composer.phar
+          out-file-path: bin
+
+      - name: Download PHP interpreter
+        uses: actions/download-artifact@v4
+        with:
+          name: php
+          path: php-bin
+          run-id: ${{ needs.php.outputs.run_id }}
+
+      - name: Prepare binaries
+        shell: bash
+        run: |
+          mv ./php-bin/php.exe bin
+          rm -r -f php-bin
+          ls -l bin
+
+      - name: Set up Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: latest
+
+      - name: Install dependencies
+        run: npm clean-install
+
+      - name: Create application bundle
+        run: |
+          npm run make
+          ls -R out
+        shell: bash
+
+      - name: Delete PHP interpreter artifacts
+        uses: geekyeggo/delete-artifact@v5
+        with:
+          name: php
+
+      - name: Upload archive
+        uses: actions/upload-artifact@v4
+        with:
+          name: drupal-cms-windows
+          # @see forge.config.js.
+          path: "./out/Launch Drupal CMS-win32-x64"
+          overwrite: true

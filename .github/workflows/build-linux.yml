@@ -1,0 +1,72 @@
+name: Build for Linux
+
+on:
+  workflow_dispatch:
+
+jobs:
+  php-aarch64:
+    name: Build PHP for aarch64
+    uses: ./.github/workflows/php-linux.yml
+    with:
+      arch: aarch64
+
+  php-x86_64:
+    name: Build PHP for x86_64
+    uses: ./.github/workflows/php-linux.yml
+    with:
+      arch: x86_64
+
+  build:
+    name: Build launcher
+    runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        arch:
+          - aarch64
+          - x86_64
+    needs:
+      - php-aarch64
+      - php-x86_64
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Download PHP interpreter
+        uses: actions/download-artifact@v4
+        with:
+          run-id: ${{ needs[format('php-{0}', matrix.arch)].outputs.run_id }}
+
+      - name: "Set up Go"
+        uses: actions/setup-go@v5
+        with:
+          go-version: '^1.23.4'
+
+      - name: "Set up PHP"
+        uses: shivammathur/setup-php@v2
+        with:
+          php-version: latest
+          tools: composer
+
+      - if: ${{ matrix.arch == 'aarch64' }}
+        run: echo "GOARCH=arm64" >> $GITHUB_ENV
+
+      - if: ${{ matrix.arch == 'x86_64'}}
+        run: echo "GOARCH=amd64" >> $GITHUB_ENV
+
+      - name: Build launcher
+        env:
+          GOOS: linux
+        run: go build -o launcher launcher.go
+
+      - name: Gather binaries
+        run: |
+          mkdir bin
+          cp ./bin-${{ matrix.arch }}/php ./bin
+          chmod +x ./bin/php
+          cp $(which composer) ./bin
+
+      - uses: actions/upload-artifact@v4
+        with:
+          name: drupal-launcher-${{ matrix.arch }}
+          path: |
+            bin/
+            launcher

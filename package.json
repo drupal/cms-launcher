@@ -1,0 +1,29 @@
+{
+  "name": "cms-launcher",
+  "version": "1.0.0",
+  "description": "A quick-start launcher for Drupal CMS.",
+  "main": "main.js",
+  "scripts": {
+    "start": "electron-forge start",
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "package": "electron-forge package",
+    "make": "electron-forge make"
+  },
+  "author": "phenaproxima",
+  "license": "MIT",
+  "devDependencies": {
+    "@electron-forge/cli": "^7.6.1",
+    "@electron-forge/maker-deb": "^7.6.1",
+    "@electron-forge/maker-dmg": "^7.6.1",
+    "@electron-forge/maker-rpm": "^7.6.1",
+    "@electron-forge/plugin-auto-unpack-natives": "^7.6.1",
+    "@electron-forge/plugin-fuses": "^7.6.1",
+    "@electron/fuses": "^1.8.0",
+    "@rabbitholesyndrome/electron-forge-maker-portable": "^0.2.0",
+    "electron": "^34.0.1"
+  },
+  "dependencies": {
+    "get-port": "^7.1.0",
+    "yaml": "^2.7.0"
+  }
+}
