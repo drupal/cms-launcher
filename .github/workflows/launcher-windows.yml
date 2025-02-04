@@ -1,4 +1,4 @@
-name: Launcher
+name: Launcher (Windows)
 
 on:
   push:
@@ -59,7 +59,7 @@ jobs:
       - name: Upload archive
         uses: actions/upload-artifact@v4
         with:
-          name: drupal-cms-windows
+          name: launcher-windows
           # @see forge.config.js.
           path: "./out/Launch Drupal CMS-win32-x64"
           overwrite: true
