@@ -5,3 +5,11 @@ When you run this, it will install Drupal CMS on your local machine and open it 
 
 ## How it works
 This project uses [static-php-cli](https://static-php.dev/) to create a statically compiled copy of the PHP 8.3 interpreter that includes everything you need to run Drupal CMS. It bundles that with a copy of the [Composer](https://getcomposer.org/) dependency manager, and uses those two tools to install and serve Drupal CMS (using the basic web server built into the PHP interpreter). The app itself is a very simple front-end to PHP and Composer, written in JavaScript for the [Electron](https://www.electronjs.org/) framework.
+
+## How to try it
+Go to the latest release (0.1.0 at the time of this writing) and download the appropriate file for your system. Extract the app and run it. You'll probably get some kind of security warning (that will go away when this app has the appropriate code signing, which is in progress).
+
+If you're on a Mac, you'll need to take the app out of quarantine. Open the terminal and run the following before opening the app for the first time:
+```shell
+sudo xattr -dr com.apple.quarantine "/full/path/to/Launch Drupal CMS.app"
+```
