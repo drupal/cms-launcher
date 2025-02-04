@@ -1,4 +1,4 @@
-name: Build for Windows
+name: Launcher
 
 on:
   push:
@@ -7,6 +7,7 @@ on:
       # PR branches that alter the build process should be prefixed with `build/`, so
       # that this workflow runs.
       - 'build/**'
+  workflow_call:
   workflow_dispatch:
 
 jobs:
@@ -33,16 +34,11 @@ jobs:
       - name: Download PHP interpreter
         uses: actions/download-artifact@v4
         with:
-          name: php
-          path: php-bin
-          run-id: ${{ needs.php.outputs.run_id }}
+          name: php-windows
 
       - name: Prepare binaries
         shell: bash
-        run: |
-          mv ./php-bin/php.exe bin
-          rm -r -f php-bin
-          ls -l bin
+        run: mv php.exe bin
 
       - name: Set up Node
         uses: actions/setup-node@v4
@@ -53,15 +49,12 @@ jobs:
         run: npm clean-install
 
       - name: Create application bundle
-        run: |
-          npm run make
-          ls -R out
-        shell: bash
+        run: npm run make
 
       - name: Delete PHP interpreter artifacts
         uses: geekyeggo/delete-artifact@v5
         with:
-          name: php
+          name: php-windows
 
       - name: Upload archive
         uses: actions/upload-artifact@v4
