@@ -1,4 +1,4 @@
-name: Launcher
+name: Launcher (macOS)
 
 on:
   push:
@@ -65,7 +65,7 @@ jobs:
       - name: Upload archive
         uses: actions/upload-artifact@v4
         with:
-          name: drupal-cms-${{ runner.arch }}
+          name: launcher-${{ runner.arch }}
           path: './out/make/Launch Drupal CMS-*.dmg'
           # The DMG is already compressed.
           compression-level: 0

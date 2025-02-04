@@ -24,26 +24,41 @@ jobs:
       - name: Download launcher for macOS (arm64)
         uses: actions/download-artifact@v4
         with:
-          name: drupal-cms-ARM64
+          name: launcher-ARM64
           path: arm64
 
       - name: Download launcher for macOS (x64)
         uses: actions/download-artifact@v4
         with:
-          name: drupal-cms-X64
+          name: launcher-X64
           path: x64
 
       - name: Download launcher for Windows
         uses: actions/download-artifact@v4
         with:
-          name: drupal-cms-windows
+          name: launcher-windows
           path: "Drupal CMS"
 
       - name: Gather assets
         run: |
-          mv "./arm64/Launch Drupal CMS-1.0.0-arm64.dmg" "Drupal CMS (macOS Apple Silicon).dmg"
+          mv "./arm64/Launch Drupal CMS-1.0.0-arm64.dmg" "Drupal CMS (macOS Apple silicon).dmg"
           mv "./x64/Launch Drupal CMS-1.0.0-x64.dmg" "Drupal CMS (macOS Intel).dmg"
           zip -q -r "Drupal CMS (Windows).zip" "Drupal CMS"
+
+      - name: Delete arm64 macOS launcher artifact
+        uses: geekyeggo/delete-artifact@v5
+        with:
+          name: launcher-ARM64
+
+      - name: Delete x64 macOS launcher artifact
+        uses: geekyeggo/delete-artifact@v5
+        with:
+          name: launcher-X64
+
+      - name: Delete Windows launcher artifact
+        uses: geekyeggo/delete-artifact@v5
+        with:
+          name: launcher-windows
 
       - name: Create release
         uses: softprops/action-gh-release@v2
