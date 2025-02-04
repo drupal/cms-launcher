@@ -1,11 +1,7 @@
-name: Build PHP for Windows
+name: PHP
 
 on:
   workflow_call:
-    outputs:
-      run_id:
-        description: The workflow run ID, for downloading artifacts.
-        value: ${{ github.run_id }}
 
 env:
   GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
@@ -56,6 +52,6 @@ jobs:
       # Upload the built interpreters.
       - uses: actions/upload-artifact@v4
         with:
-          name: php
+          name: php-windows
           path: buildroot/bin
           overwrite: true
