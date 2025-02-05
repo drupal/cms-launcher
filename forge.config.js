@@ -1,5 +1,17 @@
 const { FusesPlugin } = require('@electron-forge/plugin-fuses');
 const { FuseV1Options, FuseVersion } = require('@electron/fuses');
+const { APPLE_ID, APP_PASSWORD, APPLE_TEAM_ID } = process.env;
+
+let osxNotarize = null;
+if ( APPLE_ID && APP_PASSWORD && APPLE_TEAM_ID ) {
+  osxNotarize = {
+    appleId: APPLE_ID,
+    appleIdPassword: APP_PASSWORD,
+    teamId: APPLE_TEAM_ID,
+  };
+} else {
+  console.warn( 'Skipping macOS notarization.' );
+}
 
 module.exports = {
   packagerConfig: {
@@ -11,6 +23,8 @@ module.exports = {
     asar: false,
     icon: 'icon',
     name: 'Launch Drupal CMS',
+    osxNotarize,
+    osxSign: {},
   },
   rebuildConfig: {},
   makers: [
