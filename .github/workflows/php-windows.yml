@@ -17,8 +17,11 @@ jobs:
     steps:
       - uses: actions/checkout@v4
         with:
-          repository: crazywhalecc/static-php-cli
-          ref: 2.4.4
+          repository: phenaproxima/static-php-cli
+          ref: curl-windows-workaround
+          # Switch back to the following when https://github.com/crazywhalecc/static-php-cli/pull/598 is fixed and tagged.
+          # repository: crazywhalecc/static-php-cli
+          # ref: 2.4.4
 
       - name: Generate cache key
         shell: bash
