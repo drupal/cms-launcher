@@ -87,6 +87,12 @@ jobs:
       - name: Install dependencies
         run: npm clean-install
 
+      # Only do signing and notarization if building for a tagged release.
+      # @see forge.config.js
+      - name: Enable signing and notarization for tagged release
+        run: echo "SIGN=1" >> $GITHUB_ENV
+        if: startsWith(github.ref, 'refs/tags/')
+
       - name: Create application bundle
         env:
           # @see forge.config.js

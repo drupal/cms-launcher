@@ -1,6 +1,11 @@
 const { FusesPlugin } = require( '@electron-forge/plugin-fuses' );
 const { FuseV1Options, FuseVersion } = require( '@electron/fuses' );
-const { APPLE_ID, APP_PASSWORD, APPLE_TEAM_ID } = process.env;
+const {
+  APPLE_ID,
+  APP_PASSWORD,
+  APPLE_TEAM_ID,
+  SIGN,
+} = process.env;
 
 const packagerConfig = {
   // We specifically don't want to use an ASAR archive because we need to use
@@ -13,7 +18,7 @@ const packagerConfig = {
   name: 'Launch Drupal CMS',
 };
 
-if ( APPLE_ID && APP_PASSWORD && APPLE_TEAM_ID ) {
+if ( APPLE_ID && APP_PASSWORD && APPLE_TEAM_ID && SIGN ) {
   packagerConfig.osxNotarize = {
     appleId: APPLE_ID,
     appleIdPassword: APP_PASSWORD,
