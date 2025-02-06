@@ -66,6 +66,6 @@ jobs:
         if: startsWith(github.ref, 'refs/tags/')
         with:
           files: |
-            Drupal CMS (macOS Apple Silicon).dmg
+            Drupal CMS (macOS Apple silicon).dmg
             Drupal CMS (macOS Intel).dmg
             Drupal CMS (Windows).zip
