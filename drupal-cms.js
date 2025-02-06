@@ -43,6 +43,7 @@ module.exports = async ( dir, { php, composer }) => {
     await appendFile(
         localSettingsFile,
         `
+$settings['skip_permissions_hardening'] = TRUE;
 $settings['hash_salt'] = '${ randomBytes( 32 ).toString( 'hex' ) }';
 $settings['config_sync_directory'] = '${ path.join( dir, 'config' ) }';
 $config['package_manager.settings']['executables']['composer'] = '${composer}';`,
