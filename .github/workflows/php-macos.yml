@@ -23,7 +23,7 @@ jobs:
       - uses: actions/checkout@v4
         with:
           repository: crazywhalecc/static-php-cli
-          ref: 2.4.3
+          ref: 2.4.4
 
       - name: Generate cache key
         run: |
