@@ -7,6 +7,7 @@ on:
 env:
   GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
   PHP_EXTENSIONS: bz2,ctype,curl,dom,filter,gd,iconv,mbstring,opcache,openssl,pcntl,pdo,pdo_sqlite,phar,posix,session,simplexml,sodium,sqlite3,tokenizer,xml,xmlwriter,yaml,zip,zlib
+  PHP_LIBRARIES: freetype,libavif,libjpeg,libwebp
   PHP_VERSION: 8.3
 
 jobs:
@@ -62,7 +63,7 @@ jobs:
       # Build the Drupal-ready PHP interpreter.
       - if: steps.cache.outputs.cache-hit != 'true'
         name: Build PHP interpreter
-        run: ./bin/spc build ${{ env.PHP_EXTENSIONS }} --build-cli --with-libs=libwebp
+        run: ./bin/spc build ${{ env.PHP_EXTENSIONS }} --build-cli --with-libs="${{ env.PHP_LIBRARIES }}"
 
       # Upload the built interpreters.
       - uses: actions/upload-artifact@v4
