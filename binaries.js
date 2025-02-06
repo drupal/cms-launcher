@@ -1,4 +1,4 @@
-const { app } = require('electron');
+const { app } = require( 'electron' );
 const { execFileSync } = require( 'node:child_process' );
 const { access } = require( 'node:fs/promises' );
 const path = require( 'node:path' );

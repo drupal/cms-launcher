@@ -1,5 +1,5 @@
-const { FusesPlugin } = require('@electron-forge/plugin-fuses');
-const { FuseV1Options, FuseVersion } = require('@electron/fuses');
+const { FusesPlugin } = require( '@electron-forge/plugin-fuses' );
+const { FuseV1Options, FuseVersion } = require( '@electron/fuses' );
 const { APPLE_ID, APP_PASSWORD, APPLE_TEAM_ID } = process.env;
 
 const packagerConfig = {
