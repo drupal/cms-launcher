@@ -20,7 +20,7 @@ final class ProcessFactory implements ProcessFactoryInterface {
   public function create(array $command, ?PathInterface $cwd = NULL, array $env = []): ProcessInterface {
     $command = array_map('trim', array_values($command));
 
-    if (PHP_SAPI === 'cli' || PHP_SAPI === 'cli-server' && str_ends_with($command[0], DIRECTORY_SEPARATOR . 'composer')) {
+    if ((PHP_SAPI === 'cli' || PHP_SAPI === 'cli-server') && $command && str_ends_with($command[0], DIRECTORY_SEPARATOR . 'composer')) {
       array_unshift($command, PHP_BINARY);
       $env['COMPOSER_HOME'] = dirname(PHP_BINARY, 2) . DIRECTORY_SEPARATOR . '.composer';
     }
