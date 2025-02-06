@@ -9,6 +9,7 @@ jobs:
   launcher-macos:
     name: Build launcher for macOS
     uses: ./.github/workflows/launcher-macos.yml
+    secrets: inherit
 
   launcher-windows:
     name: Build launcher for Windows
