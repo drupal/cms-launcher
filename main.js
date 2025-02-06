@@ -14,7 +14,7 @@ const startServer = require( './php-server' );
 let url;
 
 ipcMain.handle( 'start', async ({ sender: win }) => {
-    const dir = path.join( app.getAppPath(), 'drupal' );
+    const dir = path.join( app.getPath( 'documents' ), 'drupal' );
 
     await install( dir, installHandler, win );
 
