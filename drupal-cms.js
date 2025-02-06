@@ -1,6 +1,8 @@
 const { execFile } = require( 'node:child_process' );
+const { randomBytes } = require( 'node:crypto' );
 const {
     appendFile,
+    copyFile,
     cp: mirror,
     readFile,
     writeFile,
@@ -28,15 +30,27 @@ module.exports = async ( dir, { php, composer }) => {
     );
     const webRoot = getWebRoot( dir );
 
-    // Ensure that Package Manager always uses our bundled copy of Composer.
     const siteDir = path.join( webRoot, 'sites', 'default' );
+    // Create a local settings file so we can skip database set-up in the
+    // installer, which requires us to pre-generate the hash salt and the path
+    // of the config sync directory. We also explicitly configure Package
+    // Manager to use our bundled copy of Composer.
+    const localSettingsFile = path.join( siteDir, 'settings.local.php' );
+    await copyFile(
+        path.join( __dirname, 'settings.local.php' ),
+        localSettingsFile,
+    );
+    await appendFile(
+        localSettingsFile,
+        `
+$settings['hash_salt'] = '${ randomBytes( 32 ).toString( 'hex' ) }';
+$settings['config_sync_directory'] = '${ path.join( dir, 'config' ) }';
+$config['package_manager.settings']['executables']['composer'] = '${composer}';`,
+    );
+    // Make sure we load the local settings if using the built-in web server.
     await appendFile(
         path.join( siteDir, 'default.settings.php' ),
-        "if (PHP_SAPI === 'cli' || PHP_SAPI === 'cli-server') @include_once __DIR__ . '/settings.local.php';",
-    );
-    await writeFile(
-        path.join( siteDir, 'settings.local.php' ),
-        `<?php\n$composer = '${composer}';\nif (file_exists($composer)) $config['package_manager.settings']['executables']['composer'] = $composer;`,
+        `\nif (PHP_SAPI === 'cli' || PHP_SAPI === 'cli-server') @include_once __DIR__ . '/settings.local.php';\n`,
     );
 
     // Copy the `live_update` module into the code base and alter the install profile to include it.
