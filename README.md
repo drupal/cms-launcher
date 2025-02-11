@@ -27,3 +27,14 @@ npm install
 npm run start
 ```
 To test the full app bundle, `npm run make` and then look for the final binary in the `out` directory.
+
+## Limitations & Alternatives
+This launcher is meant to get Drupal CMS up and running with no fuss, but it's not a replacement for full-featured development environment. Specifically, this launcher:
+* Only supports SQLite databases, since SQLite is compiled into the PHP interpreter and and has no additional dependencies.
+* Uses [the web server built into the PHP interpreter](https://www.php.net/manual/en/features.commandline.webserver.php), which is meant for testing and is nowhere near as powerful as Apache or nginx.
+* Might not be able to send e-mail, since it would need to rely on whatever mail transfer program is present on your system.
+
+If those are dealbreakers for you:
+* [DDEV](https://ddev.com) is Drupal's Docker-based local development platform of choice and gives you everything you need. There is even [a quick-start for Drupal CMS](https://ddev.readthedocs.io/en/stable/users/quickstart/#drupal-drupal-cms).
+* If you'd rather not use Docker, [Laravel Herd](https://herd.laravel.com/) (or [Valet](https://laravel.com/docs/11.x/valet) for macOS, if you're comfortable with the command line) are good choices.
+* [MAMP](http://mamp.info/) is a long-standing favorite of many web developers, and is worth a look.
