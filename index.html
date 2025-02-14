@@ -12,11 +12,25 @@
           content="default-src 'self'; script-src 'self'"
   />
   <title>Drupal CMS</title>
+  <link rel="stylesheet" type="text/css" href="./styles.css" />
 </head>
 <body>
-<h1>Drupal CMS</h1>
-<p id="status"></p>
-<div id="open"></div>
+<div class="cms-installer">
+  <header class="cms-installer__header">
+    <h1 class="cms-installer__heading">
+      <img src="./images/drupal-cms-logo.svg" alt="Drupal CMS" />
+    </h1>
+  </header>
+
+  <main class="cms-installer__wrapper">
+    <div class="cms-installer__main">
+      <h2 id="title">Installer</h2>
+      <p id="status"></p>
+      <div id="open"></div>
+      <div id="loader"></div>
+    </div>
+  </main>
+</div>
 </body>
 <script src="./renderer.js"></script>
 </html>

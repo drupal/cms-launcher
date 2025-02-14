@@ -1,0 +1,127 @@
+html {
+  display: table;
+  width: 100%;
+  height: 100%;
+  margin: 0;
+}
+
+body {
+  font-family: "Inter", system-ui;
+  font-size: 100%;
+  font-weight: normal;
+  font-style: normal;
+  line-height: 1.5;
+  background-color: white;
+  padding-block: 0;
+  border-inline-start: 25px solid #CCEDF9;
+  display: table-cell;
+
+  @media (min-width: 48em) {
+    border-inline-start-width: 35px;
+  }
+}
+
+.cms-installer {
+  font-family: "Inter", system-ui;
+  padding-block: 30px;
+  padding-inline: 33px;
+  min-block-size: 100%;
+
+  @media (min-width: 78em) {
+    padding-block: 60px;
+    padding-inline: 66px;
+  }
+
+  @media (min-height: 500px) {
+    display: grid;
+    grid-template-areas: "stack";
+
+    & > * {
+      grid-area: stack;
+    }
+  }
+}
+
+.cms-installer__header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  flex-wrap: wrap;
+  align-self: start;
+
+  @media (min-height: 500px) {
+    margin-block-end: 2.5rem;
+  }
+}
+
+h1 {
+  margin-block: 0;
+
+  & img {
+    max-width: 40vw;
+  }
+}
+
+.cms-installer__wrapper {
+  display: flex;
+  place-items: center;
+}
+
+.cms-installer__main {
+  inline-size: 100%;
+  max-inline-size: 780px;
+  min-block-size: 220px;
+  position: relative;
+  padding-top: 2rem;
+}
+
+.button {
+  all: revert;
+  display: inline-flex;
+  align-items: center;
+  flex-wrap: wrap;
+  border: solid 1px transparent;
+  font-family: inherit;
+  line-height: 1;
+  font-size: 1.125rem;
+  color: white;
+  background-color: rgb(5, 80, 230);
+  padding: 1rem;
+  border-radius: .5rem;
+  font-weight: 600;
+  box-shadow: none;
+  cursor: pointer;
+  padding-inline-end: 2.5rem;
+  background-image: url('./images/arrow-right.svg');
+  background-repeat: no-repeat;
+  background-position: center right 1rem;
+
+  &:hover {
+    background-color: #0444c4;
+  }
+
+  &:focus {
+    outline: 3px solid rgb(8, 113, 243);
+    outline-offset: 2px;
+  }
+}
+
+h2 {
+  font-size: 2.75rem;
+  font-weight: 700;
+  margin-block-start: 0;
+  line-height: 1.3;
+}
+
+p {
+  color: #545560;
+  margin-block-start: 0;
+}
+
+.cms-installer__loader {
+  background-image: url('./images/loading.svg');
+  background-repeat: no-repeat;
+  background-position: center;
+  block-size: 3rem;
+  inline-size: 3rem;
+}
