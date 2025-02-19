@@ -42,8 +42,9 @@ jobs:
 
       - name: Gather assets
         run: |
-          mv "./arm64/Launch Drupal CMS-1.0.0-arm64.dmg" "Drupal CMS (macOS Apple silicon).dmg"
-          mv "./x64/Launch Drupal CMS-1.0.0-x64.dmg" "Drupal CMS (macOS Intel).dmg"
+          VERSION=$(npm pkg get version | tr -d \")
+          mv "./arm64/Launch Drupal CMS-$VERSION-arm64.dmg" "Drupal CMS (macOS Apple silicon).dmg"
+          mv "./x64/Launch Drupal CMS-$VERSION-x64.dmg" "Drupal CMS (macOS Intel).dmg"
           zip -q -r "Drupal CMS (Windows).zip" "Drupal CMS"
 
       - name: Delete arm64 macOS launcher artifact
