@@ -25,7 +25,7 @@ body {
   font-family: "Inter", system-ui;
   padding-block: 30px;
   padding-inline: 33px;
-  min-block-size: 100%;
+  min-block-size: 80%;
 
   @media (min-width: 78em) {
     padding-block: 60px;

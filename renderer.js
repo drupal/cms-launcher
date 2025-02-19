@@ -4,17 +4,17 @@ const loader = document.getElementById( 'loader' );
 
 drupal.onInstallStart(() => {
     title.innerHTML = 'Installing...'
-    status.innerText = '☕️ Installing dependencies. This may take several minutes, but only needs to be done once.';
     loader.innerHTML = '<div class="cms-installer__loader"></div>'
+    status.innerText = 'Getting set up...';
 });
 
 drupal.onInstalled(() => {
-    title.innerHTML = 'Installed'
+    title.innerHTML = 'Installation complete'
     status.innerHTML = 'Starting web server...';
 });
 
 drupal.onReady(( url ) => {
-    title.innerHTML = 'Installation complete'
+    title.innerHTML = 'Ready'
     status.innerHTML = `Up and running at <code>${url}</code>`;
 
     const wrapper = document.getElementById( 'open' );
