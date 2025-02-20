@@ -1,5 +1,5 @@
 <svg xmlns="http://www.w3.org/2000/svg" display="block" preserveAspectRatio="xMidYMid" width="48" height="48" style="shape-rendering: auto; display: block;" viewBox="0 0 100 100">
-    <g fill="rgb(5, 80, 230)">
+    <g fill="rgb(0, 156, 222)">
         <rect width="16" height="16" x="42" y="9" rx="8" ry="8">
             <animate attributeName="opacity" dur="0.8s" keyTimes="0;1" repeatCount="indefinite" values="1;0" begin="-0.7s"/>
         </rect>
