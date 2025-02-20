@@ -14,7 +14,7 @@ const packagerConfig = {
   // executable from the archive, it won't extract Composer, which causes any
   // Composer invocations to fail.
   asar: false,
-  icon: 'icon.icns',
+  icon: 'icon',
   name: 'Launch Drupal CMS',
 };
 
