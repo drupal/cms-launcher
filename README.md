@@ -5,6 +5,8 @@ This will install Drupal CMS on your machine and open it in a browser. The idea 
 
 👉 **Note**: This is still a proof of concept. It's neither polished nor finished, and it's not yet clear if development will continue, and what that will entail. We're not adding features right now. Feel free to try this out and file issues, but for the time being, consider it an unofficial add-on for Drupal CMS.
 
+This product includes PHP software, freely available from <http://www.php.net/software/>.
+
 ## How it works
 We use [static-php-cli](https://static-php.dev/) to compile a copy of the PHP 8.3 interpreter that includes everything you need to run Drupal CMS. We bundle that with the [Composer](https://getcomposer.org/) dependency manager, and use those two tools to install and serve Drupal CMS. The app itself is a very simple front-end to PHP and Composer, written in JavaScript for the [Electron](https://www.electronjs.org/) framework.
 
