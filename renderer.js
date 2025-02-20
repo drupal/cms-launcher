@@ -5,22 +5,22 @@ const loader = document.getElementById( 'loader' );
 drupal.onInstallStart(() => {
     title.innerHTML = 'Installing...'
     loader.innerHTML = '<div class="cms-installer__loader"></div>'
-    status.innerText = 'Getting set up...';
+    status.innerText = 'This might take a minute.';
 });
 
 drupal.onInstalled(() => {
-    title.innerHTML = 'Installation complete'
-    status.innerHTML = 'Starting web server...';
+    title.innerHTML = 'Starting web server...'
+    status.innerHTML = '';
 });
 
 drupal.onReady(( url ) => {
-    title.innerHTML = 'Ready'
-    status.innerHTML = `Up and running at <code>${url}</code>`;
+    title.innerHTML = ''
+    loader.innerHTML = ''
+    status.innerHTML = `<p>Your site is running at<br><code>${url}</code></p>`;
 
     const wrapper = document.getElementById( 'open' );
-    wrapper.innerHTML = `<button class="button" type="button">Visit Site</button>`;
+    wrapper.innerHTML = `<button class="button" type="button">Visit site</button>`;
     wrapper.querySelector( 'button' ).addEventListener( 'click', drupal.open );
-    loader.innerHTML = ''
 });
 
 window.addEventListener( 'load', async () => {
