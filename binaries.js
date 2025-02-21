@@ -1,9 +1,8 @@
-const { app } = require( 'electron' );
 const { execFileSync } = require( 'node:child_process' );
 const { access } = require( 'node:fs/promises' );
 const path = require( 'node:path' );
 
-const binDir = path.join( app.getAppPath(), 'bin' );
+const binDir = path.join( __dirname, 'bin' );
 const php = path.join( binDir, 'php' );
 
 module.exports = {

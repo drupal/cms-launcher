@@ -3,6 +3,11 @@ const { execFile } = require( 'node:child_process' );
 const path = require( 'node:path' );
 const { getWebRoot } = require( './utils' );
 
+/**
+ * Finds an open local port between 8888 and 9999 (inclusive).
+ *
+ * @returns {Promise<number>}
+ */
 async function findPort ()
 {
     // Find an open port between 8888 and 9999. We need to dynamically import `get-port`
