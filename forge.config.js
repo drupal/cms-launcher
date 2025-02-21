@@ -38,6 +38,10 @@ module.exports = {
     },
     {
       name: '@electron-forge/maker-dmg',
+      config: {
+        background: 'background.png',
+        icon: 'icon.icns'
+      }
     },
     {
       name: '@electron-forge/maker-deb',
