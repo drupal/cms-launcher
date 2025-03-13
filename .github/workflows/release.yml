@@ -40,6 +40,13 @@ jobs:
           name: launcher-windows
           path: "Drupal CMS"
 
+      # Check out package.json only so we can get the version dynamically
+      # in the next step.
+      - uses: actions/checkout@v4
+        with:
+          sparse-checkout: |
+            package.json
+
       - name: Gather assets
         run: |
           VERSION=$(npm pkg get version | tr -d \")
