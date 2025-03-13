@@ -40,16 +40,10 @@ jobs:
           name: launcher-windows
           path: "Drupal CMS"
 
-      # Check out package.json only so we can get the version dynamically
-      # in the next step.
-      - uses: actions/checkout@v4
-        with:
-          sparse-checkout: |
-            package.json
-
       - name: Gather assets
+        env:
+          VERSION: ${{ github.ref_name }}
         run: |
-          VERSION=$(npm pkg get version | tr -d \")
           mv "./arm64/Launch Drupal CMS-$VERSION-arm64.dmg" "Drupal CMS (macOS Apple silicon).dmg"
           mv "./x64/Launch Drupal CMS-$VERSION-x64.dmg" "Drupal CMS (macOS Intel).dmg"
           zip -q -r "Drupal CMS (Windows).zip" "Drupal CMS"
