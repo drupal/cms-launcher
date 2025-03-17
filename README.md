@@ -21,6 +21,9 @@ The Drupal files and database are stored outside of the application, in the `dru
 
 If you want to reset your Drupal CMS, close the application, delete the `drupal` directory from your `Documents` folder, and launch the application again. It will reinstall Drupal CMS from scratch.
 
+## Sponsorship
+This launcher is maintained by the [Drupal Association](https://www.drupal.org/association) and community contributors, but it depends on the amazing `static-php-cli` project, which is used to build the PHP interpreter bundled with the launcher. We heartily encourage you to [sponsor that project's maintainer](https://github.com/sponsors/crazywhalecc) and/or become a Drupal Association member.
+
 ## How to develop this application
 
 ### Prerequisites
