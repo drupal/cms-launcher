@@ -49,8 +49,9 @@ This launcher is meant to get Drupal CMS up and running with no fuss, but it can
 * Might not be able to send e-mail, since it has to rely on whatever mail transfer program is (or isn't) on your system.
 * Uses PHP 8.3, the minimum version required by Drupal 11.
 
-If those are dealbreakers for you, a few alternatives:
+If those are dealbreakers for you, a few alternatives to consider:
 * [DDEV](https://ddev.com) is Drupal's Docker-based local development platform of choice and gives you everything you need. It even has [a quick-start for Drupal CMS](https://ddev.readthedocs.io/en/stable/users/quickstart/#drupal-drupal-cms).
+* [Lando](https://lando.dev/) and [Docksal](https://docksal.io/) are also widely used, Docker-based options.
 * If you'd rather avoid Docker, [Laravel Herd](https://herd.laravel.com/) is a fine choice.
 * [MAMP](http://mamp.info/) is a venerable favorite of many web developers, and is worth a look.
 * For Mac folks, [Laravel Valet](https://laravel.com/docs/11.x/valet) is great if you're comfortable at the command line.
