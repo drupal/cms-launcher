@@ -46,11 +46,11 @@ module.exports = async ( dir, { php, composer }) => {
     // which might not be installed.
     await execFileAsPromise(
         php,
-        [ composer, 'config', 'extra.drupal-scaffold.gitignore', 'true', '--json', `--working-dir=${dir}` ],
+        [ composer, 'config', 'extra.drupal-scaffold.gitignore', 'false', '--json', `--working-dir=${dir}` ],
         { env },
     );
 
-    // Install dependencies. For faster spin-up, skip the security audit.
+    // Finally, install dependencies.
     await execFileAsPromise(
         php,
         [ composer, 'install', `--working-dir=${dir}` ],
