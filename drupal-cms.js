@@ -22,7 +22,9 @@ module.exports = async ( dir, { php, composer }) => {
     // which would produce a disconcerting beach ball on macOS.
     await toPromise( execFile )(
         php,
-        [ composer, 'create-project', 'drupal/cms', dir ],
+        // Prefer dist installs so Composer won't try to run Git, which we can't
+        // rely on being installed.
+        [ composer, 'create-project', 'drupal/cms', '--prefer-install=dist', dir ],
         {
             // It should take less than 10 minutes to install Drupal CMS.
             timeout: 600000,
