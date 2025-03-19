@@ -18,14 +18,23 @@ const {
 } = require( 'yaml' );
 
 module.exports = async ( dir, { php, composer }) => {
+    // Send a customized copy of the current environment variables to Composer.
+    // In particular, we want to set COMPOSER_ROOT_VERSION so that Composer
+    // won't try to guess the root package version, which would cause it to
+    // invoke Git and other command-line utilities that might not be installed
+    // and could therefore raise unexpected warnings on macOS.
+    // @see https://getcomposer.org/doc/03-cli.md#composer-root-version
+    const env = Object.assign( {}, process.env );
+    env.COMPOSER_ROOT_VERSION = '1.0.0';
+
     // Use an awaitable version of execFile that won't block the main process,
     // which would produce a disconcerting beach ball on macOS.
     await toPromise( execFile )(
         php,
-        // Prefer dist installs so Composer won't try to run Git, which we can't
-        // rely on being installed.
-        [ composer, 'create-project', 'drupal/cms', '--prefer-dist', dir ],
+        // For faster spin-up, skip the security audit.
+        [ composer, 'create-project', 'drupal/cms', dir, '--no-audit' ],
         {
+            env,
             // It should take less than 10 minutes to install Drupal CMS.
             timeout: 600000,
         },
