@@ -9,6 +9,7 @@ env:
   PHP_EXTENSIONS: bz2,ctype,curl,dom,filter,gd,iconv,mbstring,opcache,openssl,pdo,pdo_sqlite,phar,session,simplexml,sqlite3,tokenizer,xml,xmlwriter,yaml,zip,zlib
   PHP_LIBRARIES: libjpeg,libavif,freetype,libwebp
   PHP_VERSION: 8.3
+  WINBUILD_ACKNOWLEDGE_DEPRECATED: yes
 
 jobs:
   build:
@@ -18,7 +19,7 @@ jobs:
       - uses: actions/checkout@v4
         with:
           repository: crazywhalecc/static-php-cli
-          ref: 2.5.0
+          ref: 2.4.4
 
       - name: Generate cache key
         shell: bash
