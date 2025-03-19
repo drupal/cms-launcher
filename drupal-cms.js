@@ -19,26 +19,48 @@ const {
 
 module.exports = async ( dir, { php, composer }) => {
     // Send a customized copy of the current environment variables to Composer.
-    // In particular, we want to set COMPOSER_ROOT_VERSION so that Composer
-    // won't try to guess the root package version, which would cause it to
-    // invoke Git and other command-line utilities that might not be installed
-    // and could therefore raise unexpected warnings on macOS.
-    // @see https://getcomposer.org/doc/03-cli.md#composer-root-version
     const env = Object.assign( {}, process.env );
+    // Set COMPOSER_ROOT_VERSION so that Composer won't try to guess the root
+    // package version, which would cause it to invoke Git and other
+    // command-line utilities that might not be installed and could therefore
+    // raise unexpected warnings on macOS.
+    // @see https://getcomposer.org/doc/03-cli.md#composer-root-version
     env.COMPOSER_ROOT_VERSION = '1.0.0';
+    // For performance purposes, skip security audits for now.
+    // @see https://getcomposer.org/doc/03-cli.md#composer-no-audit
+    env.COMPOSER_NO_AUDIT = '1';
 
     // Use an awaitable version of execFile that won't block the main process,
     // which would produce a disconcerting beach ball on macOS.
-    await toPromise( execFile )(
+    const execFileAsPromise = toPromise( execFile );
+
+    // Create the project, but don't install dependencies yet.
+    await execFileAsPromise(
         php,
-        // For faster spin-up, skip the security audit.
-        [ composer, 'create-project', 'drupal/cms', dir, '--no-audit' ],
+        [ composer, 'create-project', '--no-install', 'drupal/cms', dir ],
+        { env },
+    );
+
+    // Prevent core's scaffold plugin from trying to dynamically determine if
+    // the project is a Git repository, since that will make it try to run Git,
+    // which might not be installed.
+    await execFileAsPromise(
+        php,
+        [ composer, 'config', 'extra.drupal-scaffold.gitignore', 'true', '--json', `--working-dir=${dir}` ],
+        { env },
+    );
+
+    // Install dependencies. For faster spin-up, skip the security audit.
+    await execFileAsPromise(
+        php,
+        [ composer, 'install', `--working-dir=${dir}` ],
         {
             env,
             // It should take less than 10 minutes to install Drupal CMS.
             timeout: 600000,
-        },
+        }
     );
+
     const webRoot = getWebRoot( dir );
 
     const siteDir = path.join( webRoot, 'sites', 'default' );
