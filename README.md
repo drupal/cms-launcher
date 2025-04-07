@@ -4,8 +4,6 @@ Drupal CMS as a desktop application!
 
 This will install Drupal CMS on your machine and open it in a browser. The idea is a basic Drupal environment that just works: no fiddly set-up process, no Docker, no external dependencies. Just double-click and go.
 
-👉 **Note**: This is still a proof of concept. It's neither polished nor finished, and it's not yet clear if development will continue, and what that will entail. We're not adding features right now. Feel free to try this out and file issues, but for the time being, consider it an unofficial add-on for Drupal CMS.
-
 This product includes PHP software, freely available from <http://www.php.net/software/>.
 
 ## How to try it
