@@ -1,0 +1,8 @@
+appId: 'org.drupal.cms-launcher'
+
+# Not recommended by Electron Builder, but we need this for now so that
+# the PHP and Composer executables are available to the launcher.
+# @todo Can we use the `asarUnpack` option instead?
+asar: false
+
+productName: 'Launch Drupal CMS'

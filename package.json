@@ -7,7 +7,8 @@
     "start": "electron-forge start",
     "test": "echo \"Error: no test specified\" && exit 1",
     "package": "electron-forge package",
-    "make": "electron-forge make"
+    "forge": "electron-forge make",
+    "make": "electron-builder"
   },
   "author": "phenaproxima",
   "license": "MIT",
@@ -20,7 +21,8 @@
     "@electron-forge/plugin-fuses": "^7.6.1",
     "@electron/fuses": "^1.8.0",
     "@rabbitholesyndrome/electron-forge-maker-portable": "^0.2.0",
-    "electron": "^34.0.1"
+    "electron": "^34.0.1",
+    "electron-builder": "26.0.12"
   },
   "dependencies": {
     "get-port": "^7.1.0",
