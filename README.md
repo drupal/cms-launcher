@@ -9,9 +9,7 @@ This will install Drupal CMS on your machine and open it in a browser. The idea 
 This product includes PHP software, freely available from <http://www.php.net/software/>.
 
 ## How to try it
-Go to the latest release and download the appropriate file for your system. Extract the app and run it. 
-
-The Mac application is properly signed. If you're on Windows, you'll probably get some kind of security warning (that will go away when this app has the appropriate code signing, which is in progress).
+Go to the latest release and download the appropriate file for your system. Extract the app and run it.
 
 ## How it works
 We use [static-php-cli](https://static-php.dev/) to compile a copy of PHP 8.3 that includes everything you need to run Drupal CMS. We bundle that with the [Composer](https://getcomposer.org/) dependency manager, and use those two tools to install and serve Drupal CMS. The app itself is a very simple front-end to PHP and Composer, written in JavaScript using the [Electron](https://www.electronjs.org/) framework.
