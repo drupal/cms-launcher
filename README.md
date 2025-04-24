@@ -65,7 +65,7 @@ Found a bug or want to suggest a feature? [Open an issue](https://github.com/dru
 
 ### Prerequisites
 
-* Node.js (the JavaScript runtime—not the Drupal module 😉)
+* Node.js (the JavaScript runtime—not the Drupal module 😉) and Yarn 2 or later
 * PHP 8.3 or later, globally installed
 * Composer, globally installed
 
@@ -75,11 +75,11 @@ Clone this repository, then `cd` into it and run:
 mkdir bin
 ln -s -f $(which php) bin
 ln -s -f $(which composer) bin/composer.phar
-npm install
-npm run start
+yarn install
+yarn run start
 ```
 
-To test the full app bundle, run `npm run make` and look for the final binary in the `out` directory.
+To test the full app bundle, run `yarn run make` and look for the final binary in the `out` directory.
 
 ## Limitations and alternatives
 

@@ -2,7 +2,7 @@ const { FusesPlugin } = require( '@electron-forge/plugin-fuses' );
 const { FuseV1Options, FuseVersion } = require( '@electron/fuses' );
 const {
   APPLE_ID,
-  APP_PASSWORD,
+  APPLE_APP_SPECIFIC_PASSWORD,
   APPLE_TEAM_ID,
   SIGN,
 } = process.env;
@@ -18,10 +18,10 @@ const packagerConfig = {
   name: 'Launch Drupal CMS',
 };
 
-if ( APPLE_ID && APP_PASSWORD && APPLE_TEAM_ID && SIGN ) {
+if ( APPLE_ID && APPLE_APP_SPECIFIC_PASSWORD && APPLE_TEAM_ID && SIGN ) {
   packagerConfig.osxNotarize = {
     appleId: APPLE_ID,
-    appleIdPassword: APP_PASSWORD,
+    appleIdPassword: APPLE_APP_SPECIFIC_PASSWORD,
     teamId: APPLE_TEAM_ID,
   };
   packagerConfig.osxSign = {};
