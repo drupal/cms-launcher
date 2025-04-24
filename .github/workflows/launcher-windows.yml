@@ -45,11 +45,11 @@ jobs:
         with:
           node-version: latest
 
-      - name: Install dependencies
-        run: npm clean-install
+      - name: Set up and Yarn and install dependencies
+        uses: threeal/setup-yarn-action@v2
 
       - name: Create application bundle
-        run: npm run make
+        run: yarn run make
 
       - name: Delete PHP interpreter artifacts
         uses: geekyeggo/delete-artifact@v5

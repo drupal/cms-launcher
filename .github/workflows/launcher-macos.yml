@@ -84,8 +84,8 @@ jobs:
         with:
           node-version: latest
 
-      - name: Install dependencies
-        run: npm clean-install
+      - name: Set up and Yarn and install dependencies
+        uses: threeal/setup-yarn-action@v2
 
       # Only do signing and notarization if building for a tagged release.
       # @see forge.config.js
@@ -97,9 +97,9 @@ jobs:
         env:
           # @see forge.config.js
           APPLE_ID: ${{ secrets.APPLE_ID }}
-          APP_PASSWORD: ${{ secrets.APP_PASSWORD }}
+          APPLE_APP_SPECIFIC_PASSWORD: ${{ secrets.APPLE_APP_SPECIFIC_PASSWORD }}
           APPLE_TEAM_ID: ${{ secrets.APPLE_TEAM_ID }}
-        run: npm run make
+        run: yarn run make
 
       - name: Delete PHP interpreter artifact
         uses: geekyeggo/delete-artifact@v5
