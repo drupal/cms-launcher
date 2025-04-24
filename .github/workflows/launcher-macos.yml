@@ -86,8 +86,6 @@ jobs:
 
       - name: Set up and Yarn and install dependencies
         uses: threeal/setup-yarn-action@v2
-        with:
-          version: latest
 
       # Only do signing and notarization if building for a tagged release.
       # @see forge.config.js
