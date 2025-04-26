@@ -5,4 +5,17 @@ appId: 'org.drupal.cms-launcher'
 # @todo Can we use the `asarUnpack` option instead?
 asar: false
 
+# These fuses are adapted from Electron Forge's boilerplate.
+electronFuses:
+  runAsNode: false
+  enableCookieEncryption: true
+  enableEmbeddedAsarIntegrityValidation: true
+  enableNodeOptionsEnvironmentVariable: false
+  enableNodeCliInspectArguments: false
+  onlyLoadAppFromAsar: false
+
 productName: 'Launch Drupal CMS'
+
+win:
+  # On Windows, build a portable app that doesn't require installation.
+  target: portable

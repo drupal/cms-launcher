@@ -1,6 +1,3 @@
-const { FusesPlugin } = require( '@electron-forge/plugin-fuses' );
-const { FuseV1Options, FuseVersion } = require( '@electron/fuses' );
-
 const packagerConfig = {
   icon: 'icon',
 };
@@ -10,27 +7,11 @@ module.exports = {
   rebuildConfig: {},
   makers: [
     {
-      name: '@rabbitholesyndrome/electron-forge-maker-portable',
-    },
-    {
       name: '@electron-forge/maker-dmg',
       config: {
         background: 'dmg-background.png',
         icon: 'icon.icns'
       }
     },
-  ],
-  plugins: [
-    // Fuses are used to enable/disable various Electron functionality
-    // at package time, before code signing the application
-    new FusesPlugin({
-      version: FuseVersion.V1,
-      [FuseV1Options.RunAsNode]: false,
-      [FuseV1Options.EnableCookieEncryption]: true,
-      [FuseV1Options.EnableNodeOptionsEnvironmentVariable]: false,
-      [FuseV1Options.EnableNodeCliInspectArguments]: false,
-      [FuseV1Options.EnableEmbeddedAsarIntegrityValidation]: true,
-      [FuseV1Options.OnlyLoadAppFromAsar]: false,
-    }),
   ],
 };
