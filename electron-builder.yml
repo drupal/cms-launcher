@@ -5,6 +5,20 @@ appId: 'org.drupal.cms-launcher'
 # @todo Can we use the `asarUnpack` option instead?
 asar: false
 
+dmg:
+  contents:
+    - name: 'Launch Drupal CMS.app'
+      # The coordinates refer to the *center* of the icon, not the top-left corner.
+      # @see https://www.electron.build/app-builder-lib.interface.dmgcontent#x
+      x: 220
+      y: 360
+    # Figured out how define this link by looking at the Electron Builder source code:
+    # @see https://github.com/electron-userland/electron-builder/blob/master/packages/dmg-builder/src/dmg.ts
+    - path: '/Applications'
+      type: link
+      x: 430
+      y: 360
+
 # These fuses are adapted from Electron Forge's boilerplate.
 electronFuses:
   runAsNode: false
@@ -13,6 +27,10 @@ electronFuses:
   enableNodeOptionsEnvironmentVariable: false
   enableNodeCliInspectArguments: false
   onlyLoadAppFromAsar: false
+
+mac:
+  # By default, both a ZIP and a DMG are built. We only need a DMG.
+  target: dmg
 
 productName: 'Launch Drupal CMS'
 
