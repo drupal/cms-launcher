@@ -48,34 +48,42 @@ jobs:
       - name: Set up and Yarn and install dependencies
         uses: threeal/setup-yarn-action@v2
 
+      - name: Configure code signing
+        env:
+          AZURE_CERT_PROFILE_NAME: ${{ secrets.AZURE_CERT_PROFILE_NAME }}
+          AZURE_CODE_SIGNING_NAME: ${{ secrets.AZURE_CODE_SIGNING_NAME }}
+          AZURE_ENDPOINT: ${{ secrets.AZURE_ENDPOINT }}
+        run: node ./build/azure-trusted-signing.js
+
       - name: Create application bundle
-        run: yarn run make
+        run: |
+          yarn run make
+          ls -R dist
 
       - name: Delete PHP interpreter artifacts
         uses: geekyeggo/delete-artifact@v5
         with:
           name: php-windows
 
-      - name: Code signing
-        uses: azure/trusted-signing-action@v0.5.1
-        if: startsWith(github.ref, 'refs/tags/')
-        with:
-          azure-tenant-id: ${{ secrets.AZURE_TENANT_ID }}
-          azure-client-id: ${{ secrets.AZURE_CLIENT_ID }}
-          azure-client-secret: ${{ secrets.AZURE_CLIENT_SECRET }}
-          endpoint: ${{ secrets.AZURE_ENDPOINT }}
-          trusted-signing-account-name: ${{ secrets.AZURE_CODE_SIGNING_NAME }}
-          certificate-profile-name: ${{ secrets.AZURE_CERT_PROFILE_NAME }}
-          files-folder: "./out/Launch Drupal CMS-win32-x64"
-          files-folder-filter: exe,dll
-          file-digest: SHA256
-          timestamp-rfc3161: http://timestamp.acs.microsoft.com
-          timestamp-digest: SHA256
+#      - name: Code signing
+#        uses: azure/trusted-signing-action@v0.5.1
+#        if: startsWith(github.ref, 'refs/tags/')
+#        with:
+#          azure-tenant-id: ${{ secrets.AZURE_TENANT_ID }}
+#          azure-client-id: ${{ secrets.AZURE_CLIENT_ID }}
+#          azure-client-secret: ${{ secrets.AZURE_CLIENT_SECRET }}
+#          endpoint: ${{ secrets.AZURE_ENDPOINT }}
+#          trusted-signing-account-name: ${{ secrets.AZURE_CODE_SIGNING_NAME }}
+#          certificate-profile-name: ${{ secrets.AZURE_CERT_PROFILE_NAME }}
+#          files-folder: "./out/Launch Drupal CMS-win32-x64"
+#          files-folder-filter: exe,dll
+#          file-digest: SHA256
+#          timestamp-rfc3161: http://timestamp.acs.microsoft.com
+#          timestamp-digest: SHA256
 
       - name: Upload archive
         uses: actions/upload-artifact@v4
         with:
           name: launcher-windows
-          # @see forge.config.js.
           path: "./out/Launch Drupal CMS-win32-x64"
           overwrite: true
