@@ -39,7 +39,7 @@ jobs:
         uses: actions/download-artifact@v4
         with:
           name: app-windows
-          path: "Drupal CMS"
+          path: win
 
       - name: Gather assets
         env:
@@ -47,7 +47,7 @@ jobs:
         run: |
           mv "./arm64/Launch Drupal CMS-$VERSION-arm64.dmg" "Drupal CMS (macOS Apple silicon).dmg"
           mv "./x64/Launch Drupal CMS-$VERSION-x64.dmg" "Drupal CMS (macOS Intel).dmg"
-          zip -q -r "Drupal CMS (Windows).zip" "Drupal CMS"
+          mv "./win/Launch Drupal CMS-$VERSION.exe" "Drupal CMS.exe"
 
       - name: Delete arm64 macOS app artifact
         uses: geekyeggo/delete-artifact@v5
@@ -70,4 +70,4 @@ jobs:
           files: |
             Drupal CMS (macOS Apple silicon).dmg
             Drupal CMS (macOS Intel).dmg
-            Drupal CMS (Windows).zip
+            Drupal CMS.exe

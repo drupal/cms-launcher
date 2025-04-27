@@ -1,4 +1,4 @@
-name: Mac app
+name: Mac
 
 on:
   push:
