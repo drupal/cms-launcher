@@ -1,4 +1,4 @@
-name: PHP (macOS)
+name: PHP (Linux)
 
 on:
   workflow_call:
@@ -16,9 +16,9 @@ jobs:
     strategy:
       matrix:
         os:
-          - macos-13 # x64
-          - macos-14 # arm64
-    runs-on: ${{ matrix.os }}
+          - ubuntu-latest # x64
+          - ubuntu-22.04-arm # arm64
+    runs-on: ${{ runner.os }}
     steps:
       - uses: actions/checkout@v4
         with:
@@ -68,44 +68,6 @@ jobs:
       # Upload the built interpreters.
       - uses: actions/upload-artifact@v4
         with:
-          name: php-${{ runner.arch }}
+          name: php-linux-${{ runner.arch }}
           path: buildroot/bin
-          overwrite: true
-
-  fat:
-    name: Fat binary
-    runs-on: macos-latest
-    needs:
-      - build-platform
-    steps:
-      - name: Download arm64 binary
-        uses: actions/download-artifact@v4
-        with:
-          name: php-ARM64
-          path: arm64
-
-      - name: Download x64 binary
-        uses: actions/download-artifact@v4
-        with:
-          name: php-X64
-          path: x64
-
-      - name: Create fat binary
-        run: lipo -create ./x64/php ./arm64/php -output php
-
-      - name: Delete arm64 binary
-        uses: geekyeggo/delete-artifact@v5
-        with:
-          name: php-ARM64
-
-      - name: Delete x64 binary
-        uses: geekyeggo/delete-artifact@v5
-        with:
-          name: php-X64
-
-      - name: Upload fat binary
-        uses: actions/upload-artifact@v4
-        with:
-          name: php-macos
-          path: php
           overwrite: true
