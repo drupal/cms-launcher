@@ -1,6 +1,9 @@
 name: PHP (Linux)
 
 on:
+  push:
+    branches:
+      - 'build/**'
   workflow_call:
   workflow_dispatch:
 
@@ -37,10 +40,6 @@ jobs:
         with:
           path: buildroot/bin
           key: php-${{ env.CACHE_KEY }}
-
-      # Install missing packages need to build PHP.
-      - if: steps.cache.outputs.cache-hit != 'true'
-        run: brew install automake gzip
 
       - if: steps.cache.outputs.cache-hit != 'true'
         name: "Set up PHP"
