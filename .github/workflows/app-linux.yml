@@ -1,0 +1,87 @@
+name: Linux
+
+on:
+  push:
+    branches:
+      - main
+      # PR branches that alter the build process should be prefixed with `build/`, so
+      # that this workflow runs.
+      - 'build/**'
+  workflow_call:
+  workflow_dispatch:
+
+jobs:
+  php:
+    name: PHP
+    uses: ./.github/workflows/php-linux.yml
+
+  app:
+    name: App
+    strategy:
+      matrix:
+        os:
+          - ubuntu-latest # x64
+          - ubuntu-22.04-arm # arm64
+    runs-on: ${{ matrix.os }}
+    needs:
+      - php
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Download Composer
+        uses: robinraju/release-downloader@v1
+        with:
+          repository: composer/composer
+          latest: true
+          fileName: composer.phar
+          out-file-path: bin
+
+      - name: Download PHP interpreter
+        uses: actions/download-artifact@v4
+        with:
+          name: php-linux-${{ runner.os }}
+
+      - name: Prepare binaries
+        run: |
+          chmod +x php
+          mv php bin
+
+      - name: Set up Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: latest
+
+      - name: Set up Yarn
+        run: |
+          corepack enable
+          yarn set version berry
+
+      - name: Cache dependencies
+        id: cache
+        uses: actions/cache@v4
+        with:
+          path: node_modules
+          key: yarn-${{ runner.os }}-${{ hashFiles('yarn.lock') }}
+
+      - name: Install dependencies
+        if: steps.cache.outputs.cache-hit != 'true'
+        run: yarn install
+
+      - name: Create application bundle
+        run: |
+          yarn run make
+          ls dist
+
+      - name: Delete PHP interpreter artifact
+        uses: geekyeggo/delete-artifact@v5
+        with:
+          name: php-linux-${{ runner.os }}
+
+      - name: Upload archive
+        uses: actions/upload-artifact@v4
+        with:
+          name: app-linux-${{ runner.arch }}
+          path: './dist/*.dmg'
+          # The DMG is already compressed.
+          compression-level: 0
+          overwrite: true

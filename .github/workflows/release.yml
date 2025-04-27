@@ -16,23 +16,29 @@ jobs:
     uses: ./.github/workflows/app-windows.yml
     secrets: inherit
 
+  app-linux:
+    name: Build app for Linux
+    uses: ./.github/workflows/app-linux.yml
+    secrets: inherit
+
   publish:
     name: Release assets
     runs-on: ubuntu-latest
     needs:
       - app-macos
       - app-windows
+      - app-linux
     steps:
       - name: Download app for macOS (arm64)
         uses: actions/download-artifact@v4
         with:
-          name: app-ARM64
+          name: app-mac-ARM64
           path: mac-arm64
 
       - name: Download app for macOS (x64)
         uses: actions/download-artifact@v4
         with:
-          name: app-X64
+          name: app-mac-X64
           path: mac-x64
 
       - name: Download app for Windows
@@ -40,6 +46,18 @@ jobs:
         with:
           name: app-windows
           path: win
+
+      - name: Download app for Linux (arm64)
+        uses: actions/download-artifact@v4
+        with:
+          name: app-linux-ARM64
+          path: linux-arm64
+
+      - name: Download app for Linux (x64)
+        uses: actions/download-artifact@v4
+        with:
+          name: app-linux-X64
+          path: linux-x64
 
       - name: Gather assets
         env:
@@ -52,17 +70,27 @@ jobs:
       - name: Delete arm64 macOS app artifact
         uses: geekyeggo/delete-artifact@v5
         with:
-          name: app-ARM64
+          name: app-mac-ARM64
 
       - name: Delete x64 macOS app artifact
         uses: geekyeggo/delete-artifact@v5
         with:
-          name: app-X64
+          name: app-mac-X64
 
       - name: Delete Windows app artifact
         uses: geekyeggo/delete-artifact@v5
         with:
           name: app-windows
+
+      - name: Delete arm64 Linux app artifact
+        uses: geekyeggo/delete-artifact@v5
+        with:
+          name: app-linux-ARM64
+
+      - name: Delete x64 Linux app artifact
+        uses: geekyeggo/delete-artifact@v5
+        with:
+          name: app-linux-X64
 
       - name: Create release
         uses: softprops/action-gh-release@v2

@@ -19,10 +19,10 @@ jobs:
     name: App
     strategy:
       matrix:
-        runner:
+        os:
           - macos-13  # x64
           - macos-14  # arm64
-    runs-on: ${{ matrix.runner }}
+    runs-on: ${{ matrix.os }}
     needs:
       - php
     steps:
@@ -120,7 +120,7 @@ jobs:
       - name: Upload archive
         uses: actions/upload-artifact@v4
         with:
-          name: app-${{ runner.arch }}
+          name: app-mac-${{ runner.arch }}
           path: './dist/*.dmg'
           # The DMG is already compressed.
           compression-level: 0
