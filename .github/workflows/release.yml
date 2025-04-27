@@ -66,6 +66,8 @@ jobs:
           mv "./mac-arm64/Launch Drupal CMS-$VERSION-arm64.dmg" "Drupal CMS (macOS Apple silicon).dmg"
           mv "./mac-x64/Launch Drupal CMS-$VERSION-x64.dmg" "Drupal CMS (macOS Intel).dmg"
           mv "./win/Launch Drupal CMS-$VERSION.exe" "Drupal CMS.exe"
+          mv "./linux-arm64/Launch Drupal CMS-$VERSION-arm64.AppImage" "Drupal CMS (Linux arm64).AppImage"
+          mv "./linux-x64/Launch Drupal CMS-$VERSION-x64.AppImage" "Drupal CMS (Linux x64).AppImage"
 
       - name: Delete arm64 macOS app artifact
         uses: geekyeggo/delete-artifact@v5
@@ -99,3 +101,5 @@ jobs:
             Drupal CMS (macOS Apple silicon).dmg
             Drupal CMS (macOS Intel).dmg
             Drupal CMS.exe
+            Drupal CMS (Linux arm64).AppImage
+            Drupal CMS (Linux x64).AppImage

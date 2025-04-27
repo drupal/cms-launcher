@@ -68,9 +68,7 @@ jobs:
         run: yarn install
 
       - name: Create application bundle
-        run: |
-          yarn run make
-          ls dist
+        run: yarn run make
 
       - name: Delete PHP interpreter artifact
         uses: geekyeggo/delete-artifact@v5
@@ -81,7 +79,7 @@ jobs:
         uses: actions/upload-artifact@v4
         with:
           name: app-linux-${{ runner.arch }}
-          path: './dist/*.dmg'
-          # The DMG is already compressed.
+          path: './dist/*.AppImage'
+          # The AppImage is already compressed.
           compression-level: 0
           overwrite: true
