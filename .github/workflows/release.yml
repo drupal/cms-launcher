@@ -27,13 +27,13 @@ jobs:
         uses: actions/download-artifact@v4
         with:
           name: app-ARM64
-          path: arm64
+          path: mac-arm64
 
       - name: Download app for macOS (x64)
         uses: actions/download-artifact@v4
         with:
           name: app-X64
-          path: x64
+          path: mac-x64
 
       - name: Download app for Windows
         uses: actions/download-artifact@v4
@@ -45,8 +45,8 @@ jobs:
         env:
           VERSION: ${{ github.ref_name }}
         run: |
-          mv "./arm64/Launch Drupal CMS-$VERSION-arm64.dmg" "Drupal CMS (macOS Apple silicon).dmg"
-          mv "./x64/Launch Drupal CMS-$VERSION-x64.dmg" "Drupal CMS (macOS Intel).dmg"
+          mv "./mac-arm64/Launch Drupal CMS-$VERSION-arm64.dmg" "Drupal CMS (macOS Apple silicon).dmg"
+          mv "./mac-x64/Launch Drupal CMS-$VERSION-x64.dmg" "Drupal CMS (macOS Intel).dmg"
           mv "./win/Launch Drupal CMS-$VERSION.exe" "Drupal CMS.exe"
 
       - name: Delete arm64 macOS app artifact
