@@ -6,8 +6,7 @@
   "scripts": {
     "start": "electron-forge start",
     "test": "echo \"Error: no test specified\" && exit 1",
-    "package": "electron-forge package",
-    "make": "electron-builder"
+    "make": "electron-builder --publish never"
   },
   "author": "Drupal Association",
   "license": "MIT",
