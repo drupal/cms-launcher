@@ -45,11 +45,21 @@ jobs:
         with:
           node-version: latest
 
-      - name: Set up and Yarn and install dependencies
+      - name: Set up Yarn
         run: |
           corepack enable
           yarn set version berry
-          yarn install
+
+      - name: Cache dependencies
+        id: cache
+        uses: actions/cache@v4
+        with:
+          path: node_modules
+          key: yarn-${{ runner.os }}-${{ hashFiles('yarn.lock') }}
+
+      - name: Install dependencies
+        if: steps.cache.outputs.cache-hit != 'true'
+        run: yarn install
 
       - name: Create application bundle
         env:
