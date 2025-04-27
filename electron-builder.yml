@@ -28,6 +28,10 @@ electronFuses:
   enableNodeCliInspectArguments: false
   onlyLoadAppFromAsar: false
 
+linux:
+  # By default, an AppImage and a snap are built. For the moment, we'll stick with AppImage.
+  target: AppImage
+
 mac:
   # By default, both a ZIP and a DMG are built. We only need a DMG.
   target: dmg
