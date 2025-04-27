@@ -42,6 +42,8 @@ productName: 'Launch Drupal CMS'
 win:
   artifactName: '${productName}.${ext}'
   signtoolOptions:
+    # We use Azure Trusted Signing as a separate step on CI.
+    # @see .github/workflows/app-windows.yml
     sign: './build/disable-signtool.js'
   # On Windows, build a portable app that doesn't require installation.
   target: portable

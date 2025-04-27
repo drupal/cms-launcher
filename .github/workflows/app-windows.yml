@@ -66,26 +66,10 @@ jobs:
         with:
           name: php-windows
 
-      - name: Sign PHP executable
-        uses: azure/trusted-signing-action@v0.5.1
-#        if: startsWith(github.ref, 'refs/tags/')
-        with:
-          azure-tenant-id: ${{ secrets.AZURE_TENANT_ID }}
-          azure-client-id: ${{ secrets.AZURE_CLIENT_ID }}
-          azure-client-secret: ${{ secrets.AZURE_CLIENT_SECRET }}
-          endpoint: https://wus2.codesigning.azure.net/
-          trusted-signing-account-name: da-trusted-signing-001
-          certificate-profile-name: drupal-association-cert-profile
-          files-folder: "./bin"
-          files-folder-filter: exe,dll
-          file-digest: SHA256
-          timestamp-rfc3161: http://timestamp.acs.microsoft.com
-          timestamp-digest: SHA256
-
       - name: Create application bundle
         run: yarn run make
 
-      - name: Sign application bundle
+      - name: Code signing
         uses: azure/trusted-signing-action@v0.5.1
 #        if: startsWith(github.ref, 'refs/tags/')
         with:
@@ -95,7 +79,7 @@ jobs:
           endpoint: https://wus2.codesigning.azure.net/
           trusted-signing-account-name: da-trusted-signing-001
           certificate-profile-name: drupal-association-cert-profile
-          files-folder: "./dist"
+          files-folder: "./dist/win-unpacked"
           files-folder-filter: exe,dll
           file-digest: SHA256
           timestamp-rfc3161: http://timestamp.acs.microsoft.com
@@ -105,5 +89,5 @@ jobs:
         uses: actions/upload-artifact@v4
         with:
           name: app-windows
-          path: './dist/*.exe'
+          path: './dist/win-unpacked'
           overwrite: true
