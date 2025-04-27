@@ -85,7 +85,10 @@ jobs:
           node-version: latest
 
       - name: Set up and Yarn and install dependencies
-        uses: threeal/setup-yarn-action@v2
+        run: |
+          corepack enable
+          yarn set version berry
+          yarn install
 
       # Only notarize tagged releases; Electron Builder skips notarization if
       # these environment variables are undefined.

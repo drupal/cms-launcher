@@ -46,7 +46,10 @@ jobs:
           node-version: latest
 
       - name: Set up and Yarn and install dependencies
-        uses: threeal/setup-yarn-action@v2
+        run: |
+          corepack enable
+          yarn set version berry
+          yarn install
 
       - name: Configure code signing
         env:
@@ -85,5 +88,5 @@ jobs:
         uses: actions/upload-artifact@v4
         with:
           name: launcher-windows
-          path: "./out/Launch Drupal CMS-win32-x64"
+          path: 'dist/*.yaml'
           overwrite: true
