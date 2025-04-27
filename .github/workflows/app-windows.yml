@@ -61,13 +61,13 @@ jobs:
         if: steps.cache.outputs.cache-hit != 'true'
         run: yarn install
 
+      - name: Create application bundle
+        run: yarn run make
+
       - name: Delete PHP interpreter artifacts
         uses: geekyeggo/delete-artifact@v5
         with:
           name: php-windows
-
-      - name: Create application bundle
-        run: yarn run make
 
       - name: Code signing
         uses: azure/trusted-signing-action@v0.5.1
