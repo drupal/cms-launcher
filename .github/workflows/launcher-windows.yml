@@ -52,6 +52,10 @@ jobs:
           yarn install
 
       - name: Create application bundle
+        env:
+          AZURE_CLIENT_ID: ${{ secrets.AZURE_CLIENT_ID }}
+          AZURE_CLIENT_SECRET: ${{ secrets.AZURE_CLIENT_SECRET }}
+          AZURE_TENANT_ID: ${{ secrets.AZURE_TENANT_ID }}
         run: yarn run make
 
       - name: Delete PHP interpreter artifacts
