@@ -40,8 +40,9 @@ mac:
 productName: 'Launch Drupal CMS'
 
 win:
-  # Signing is done separately, for tagged releases on CI only.
-  # @see .github/workflows/launcher-windows.yml
-  signAndEditExecutable: false
+  # Signing is done in its own build step, for tagged releases on CI only.
+  # @see .github/workflows/app-windows.yml
+  signtoolOptions:
+    sign: './build/disable-signtool.js'
   # On Windows, build a portable app that doesn't require installation.
   target: portable
