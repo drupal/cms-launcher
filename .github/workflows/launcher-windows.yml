@@ -51,13 +51,8 @@ jobs:
           yarn set version berry
           yarn install
 
-      - name: Configure code signing
-        run: node ./build/azure-trusted-signing.js ${{ secrets.AZURE_ENDPOINT }} ${{ secrets.AZURE_CODE_SIGNING_NAME }} ${{ secrets.AZURE_CERT_PROFILE_NAME }}
-
       - name: Create application bundle
-        run: |
-          yarn run make
-          ls -R dist
+        run: yarn run make
 
       - name: Delete PHP interpreter artifacts
         uses: geekyeggo/delete-artifact@v5
@@ -84,5 +79,5 @@ jobs:
         uses: actions/upload-artifact@v4
         with:
           name: launcher-windows
-          path: 'vars.txt'
+          path: './dist/*.exe'
           overwrite: true
