@@ -1,4 +1,4 @@
-name: Launcher (Windows)
+name: Windows
 
 on:
   push:
@@ -12,11 +12,11 @@ on:
 
 jobs:
   php:
-    name: Build PHP
+    name: PHP
     uses: ./.github/workflows/php-windows.yml
 
-  build:
-    name: Build launcher
+  app:
+    name: App
     runs-on: windows-latest
     needs:
       - php
@@ -45,10 +45,27 @@ jobs:
         with:
           node-version: latest
 
-      - name: Set up and Yarn and install dependencies
-        uses: threeal/setup-yarn-action@v2
+      - name: Set up Yarn
+        run: |
+          corepack enable
+          yarn set version berry
+
+      - name: Cache dependencies
+        id: cache
+        uses: actions/cache@v4
+        with:
+          path: node_modules
+          key: yarn-${{ runner.os }}-${{ hashFiles('yarn.lock') }}
+
+      - name: Install dependencies
+        if: steps.cache.outputs.cache-hit != 'true'
+        run: yarn install
 
       - name: Create application bundle
+        env:
+          AZURE_CLIENT_ID: ${{ secrets.AZURE_CLIENT_ID }}
+          AZURE_CLIENT_SECRET: ${{ secrets.AZURE_CLIENT_SECRET }}
+          AZURE_TENANT_ID: ${{ secrets.AZURE_TENANT_ID }}
         run: yarn run make
 
       - name: Delete PHP interpreter artifacts
@@ -63,10 +80,10 @@ jobs:
           azure-tenant-id: ${{ secrets.AZURE_TENANT_ID }}
           azure-client-id: ${{ secrets.AZURE_CLIENT_ID }}
           azure-client-secret: ${{ secrets.AZURE_CLIENT_SECRET }}
-          endpoint: ${{ secrets.AZURE_ENDPOINT }}
-          trusted-signing-account-name: ${{ secrets.AZURE_CODE_SIGNING_NAME }}
-          certificate-profile-name: ${{ secrets.AZURE_CERT_PROFILE_NAME }}
-          files-folder: "./out/Launch Drupal CMS-win32-x64"
+          endpoint: https://wus2.codesigning.azure.net/
+          trusted-signing-account-name: da-trusted-signing-001
+          certificate-profile-name: drupal-association-cert-profile
+          files-folder: "./dist"
           files-folder-filter: exe,dll
           file-digest: SHA256
           timestamp-rfc3161: http://timestamp.acs.microsoft.com
@@ -75,7 +92,8 @@ jobs:
       - name: Upload archive
         uses: actions/upload-artifact@v4
         with:
-          name: launcher-windows
-          # @see forge.config.js.
-          path: "./out/Launch Drupal CMS-win32-x64"
+          name: app-windows
+          path: './dist/*.exe'
+          # The executable is already compressed.
+          compression-level: 0
           overwrite: true
