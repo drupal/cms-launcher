@@ -59,6 +59,8 @@ jobs:
         name: Download PHP source code
         run: ./bin/spc download --with-php=${{ env.PHP_VERSION }} --for-extensions=${{ env.PHP_EXTENSIONS }} --prefer-pre-built
 
+      - run: ./bin/spc doctor
+
       # Build the Drupal-ready PHP interpreter.
       - if: steps.cache.outputs.cache-hit != 'true'
         name: Build PHP interpreter
