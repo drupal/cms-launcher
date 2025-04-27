@@ -1,4 +1,4 @@
-name: Launcher (macOS)
+name: Mac app
 
 on:
   push:
@@ -15,8 +15,8 @@ jobs:
     name: PHP
     uses: ./.github/workflows/php-macos.yml
 
-  build:
-    name: Build launcher
+  app:
+    name: App
     strategy:
       matrix:
         runner:
@@ -120,7 +120,7 @@ jobs:
       - name: Upload archive
         uses: actions/upload-artifact@v4
         with:
-          name: launcher-${{ runner.arch }}
+          name: app-${{ runner.arch }}
           path: './dist/*.dmg'
           # The DMG is already compressed.
           compression-level: 0
