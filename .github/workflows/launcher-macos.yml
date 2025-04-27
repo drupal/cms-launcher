@@ -87,18 +87,16 @@ jobs:
       - name: Set up and Yarn and install dependencies
         uses: threeal/setup-yarn-action@v2
 
-      # Only do signing and notarization if building for a tagged release.
-      # @see forge.config.js
-      - name: Enable signing and notarization for tagged release
-        run: echo "SIGN=1" >> $GITHUB_ENV
+      # Only notarize tagged releases; Electron Builder skips notarization if
+      # these environment variables are undefined.
+      - name: Enable notarization for tagged release
+        run: |
+          echo "APPLE_ID=${{ secrets.APPLE_ID }}" >> $GITHUB_ENV
+          echo "APPLE_APP_SPECIFIC_PASSWORD=${{ secrets.APPLE_APP_SPECIFIC_PASSWORD }}" >> $GITHUB_ENV
+          echo "APPLE_TEAM_ID=${{ secrets.APPLE_TEAM_ID }}" >> $GITHUB_ENV
         if: startsWith(github.ref, 'refs/tags/')
 
       - name: Create application bundle
-        env:
-          # @see forge.config.js
-          APPLE_ID: ${{ secrets.APPLE_ID }}
-          APPLE_APP_SPECIFIC_PASSWORD: ${{ secrets.APPLE_APP_SPECIFIC_PASSWORD }}
-          APPLE_TEAM_ID: ${{ secrets.APPLE_TEAM_ID }}
         run: yarn run make
 
       - name: Delete PHP interpreter artifact
@@ -110,7 +108,7 @@ jobs:
         uses: actions/upload-artifact@v4
         with:
           name: launcher-${{ runner.arch }}
-          path: './out/make/Launch Drupal CMS-*.dmg'
+          path: './dist/*.dmg'
           # The DMG is already compressed.
           compression-level: 0
           overwrite: true
