@@ -79,7 +79,7 @@ jobs:
           endpoint: https://wus2.codesigning.azure.net/
           trusted-signing-account-name: da-trusted-signing-001
           certificate-profile-name: drupal-association-cert-profile
-          files-folder: "./dist"
+          files-folder: "./dist/win-unpacked"
           files-folder-filter: exe,dll
           file-digest: SHA256
           timestamp-rfc3161: http://timestamp.acs.microsoft.com
@@ -89,7 +89,5 @@ jobs:
         uses: actions/upload-artifact@v4
         with:
           name: app-windows
-          path: './dist/*.exe'
-          # The executable is already compressed.
-          compression-level: 0
+          path: './dist/win-unpacked'
           overwrite: true
