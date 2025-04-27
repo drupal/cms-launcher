@@ -18,6 +18,7 @@ dmg:
       type: link
       x: 430
       y: 360
+  title: 'Drupal CMS'
 
 # These fuses are adapted from Electron Forge's boilerplate.
 electronFuses:
