@@ -39,5 +39,6 @@ win:
     endpoint: https://wus2.codesigning.azure.net/
     certificateProfileName: drupal-association-cert-profile
     codeSigningAccountName: da-trusted-signing-001
+    publisherName: DrupalCon, Inc.
   # On Windows, build a portable app that doesn't require installation.
   target: portable
