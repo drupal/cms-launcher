@@ -71,7 +71,7 @@ jobs:
 
       - name: Code signing
         uses: azure/trusted-signing-action@v0.5.1
-#        if: startsWith(github.ref, 'refs/tags/')
+        if: startsWith(github.ref, 'refs/tags/')
         with:
           azure-tenant-id: ${{ secrets.AZURE_TENANT_ID }}
           azure-client-id: ${{ secrets.AZURE_CLIENT_ID }}
