@@ -35,10 +35,8 @@ mac:
 productName: 'Launch Drupal CMS'
 
 win:
-  azureSignOptions:
-    endpoint: https://wus2.codesigning.azure.net/
-    certificateProfileName: drupal-association-cert-profile
-    codeSigningAccountName: da-trusted-signing-001
-    publisherName: DrupalCon, Inc.
+  # Signing is done separately, for tagged releases on CI only.
+  # @see .github/workflows/launcher-windows.yml
+  signAndEditExecutable: false
   # On Windows, build a portable app that doesn't require installation.
   target: portable
