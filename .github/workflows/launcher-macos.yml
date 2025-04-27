@@ -12,7 +12,7 @@ on:
 
 jobs:
   php:
-    name: Build PHP
+    name: PHP
     uses: ./.github/workflows/php-macos.yml
 
   build:

@@ -12,7 +12,7 @@ on:
 
 jobs:
   php:
-    name: Build PHP
+    name: PHP
     uses: ./.github/workflows/php-windows.yml
 
   build:
@@ -52,11 +52,7 @@ jobs:
           yarn install
 
       - name: Configure code signing
-        env:
-          AZURE_CERT_PROFILE_NAME: ${{ secrets.AZURE_CERT_PROFILE_NAME }}
-          AZURE_CODE_SIGNING_NAME: ${{ secrets.AZURE_CODE_SIGNING_NAME }}
-          AZURE_ENDPOINT: ${{ secrets.AZURE_ENDPOINT }}
-        run: node ./build/azure-trusted-signing.js
+        run: node ./build/azure-trusted-signing.js ${{ secrets.AZURE_ENDPOINT }} ${{ secrets.AZURE_CODE_SIGNING_NAME }} ${{ secrets.AZURE_CERT_PROFILE_NAME }}
 
       - name: Create application bundle
         run: |
@@ -88,5 +84,5 @@ jobs:
         uses: actions/upload-artifact@v4
         with:
           name: launcher-windows
-          path: 'dist/*.yaml'
+          path: 'vars.txt'
           overwrite: true
