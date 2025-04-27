@@ -81,6 +81,8 @@ jobs:
           certificate-profile-name: drupal-association-cert-profile
           files-folder: "./dist/win-unpacked"
           files-folder-filter: exe,dll
+          # We also want to sign the PHP interpreter.
+          files-folder-recurse: true
           file-digest: SHA256
           timestamp-rfc3161: http://timestamp.acs.microsoft.com
           timestamp-digest: SHA256
