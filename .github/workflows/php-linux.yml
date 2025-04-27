@@ -1,9 +1,6 @@
 name: PHP (Linux)
 
 on:
-  push:
-    branches:
-      - 'build/**'
   workflow_call:
   workflow_dispatch:
 
