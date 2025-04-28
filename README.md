@@ -81,7 +81,7 @@ yarn install
 yarn run start
 ```
 
-To test the full app bundle, run `yarn run make` and look for the final binary in the `out` directory.
+To test the full app bundle, run `yarn run make` and look for the final binary in the `dist` directory.
 
 ## Limitations and alternatives
 
