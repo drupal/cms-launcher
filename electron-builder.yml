@@ -1,5 +1,7 @@
 appId: 'org.drupal.cms-launcher'
 
+artifactName: '${productName}.${ext}'
+
 # Not recommended by Electron Builder, but we need this for now so that
 # the PHP and Composer executables are available to the launcher.
 # @todo Can we use the `asarUnpack` option instead?
@@ -40,7 +42,6 @@ mac:
 productName: 'Launch Drupal CMS'
 
 win:
-  artifactName: '${productName}.${ext}'
   signtoolOptions:
     # We use Azure Trusted Signing as a separate step on CI.
     # @see .github/workflows/app-windows.yml

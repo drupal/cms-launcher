@@ -60,14 +60,12 @@ jobs:
           path: linux-x64
 
       - name: Gather assets
-        env:
-          VERSION: ${{ github.ref_name }}
         run: |
-          mv "./mac-arm64/Launch Drupal CMS-$VERSION-arm64.dmg" "Drupal CMS (macOS Apple silicon).dmg"
-          mv "./mac-x64/Launch Drupal CMS-$VERSION-x64.dmg" "Drupal CMS (macOS Intel).dmg"
+          mv "./mac-arm64/Launch Drupal CMS.dmg" "Drupal CMS for macOS (Apple silicon).dmg"
+          mv "./mac-x64/Launch Drupal CMS.dmg" "Drupal CMS for macOS (Intel).dmg"
           zip -q -r "Drupal CMS (Windows).zip" "Drupal CMS"
-          mv "./linux-arm64/Launch Drupal CMS-$VERSION-arm64.AppImage" "Drupal CMS (Linux arm64).AppImage"
-          mv "./linux-x64/Launch Drupal CMS-$VERSION-x64.AppImage" "Drupal CMS (Linux x64).AppImage"
+          mv "./linux-arm64/Launch Drupal CMS.AppImage" "Drupal CMS for Linux (arm64).AppImage"
+          mv "./linux-x64/Launch Drupal CMS.AppImage" "Drupal CMS for Linux (x64).AppImage"
 
       - name: Delete arm64 macOS app artifact
         uses: geekyeggo/delete-artifact@v5
@@ -98,8 +96,8 @@ jobs:
         uses: softprops/action-gh-release@v2
         with:
           files: |
-            Drupal CMS (macOS Apple silicon).dmg
-            Drupal CMS (macOS Intel).dmg
+            Drupal CMS for macOS (Apple silicon).dmg
+            Drupal CMS for macOS (Intel).dmg
             Drupal CMS (Windows).zip
-            Drupal CMS (Linux arm64).AppImage
-            Drupal CMS (Linux x64).AppImage
+            Drupal CMS for Linux (arm64).AppImage
+            Drupal CMS for Linux (x64).AppImage
