@@ -25,6 +25,8 @@ This product includes PHP software, freely available from <http://www.php.net/so
 
 [Download the latest release](https://github.com/drupal/cms-launcher/releases) for your operating system.
 
+This app is under development and should not be considered stable. If you encounter buggy behavior, [please report it](https://github.com/drupal/cms-launcher/issues)!
+
 ## What this app is for
 
 This launcher is designed to help you **test out and build a site with Drupal CMS**. It's ideal for site builders, themers, and evaluators who want to explore Drupal CMS quickly. 
