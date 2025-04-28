@@ -12,7 +12,7 @@ module.exports = async ( dir, handler, win ) => {
         win?.send( 'install-start' );
 
         await handler( dir, {
-            php,
+            php: await php(),
             composer: await composer(),
         } );
     }

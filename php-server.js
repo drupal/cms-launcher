@@ -29,7 +29,7 @@ module.exports = async ( dir, win ) => {
 
     // Start the built-in PHP web server.
     const process = execFile(
-        php,
+        await php(),
         [
             // Explicitly pass the cURL CA bundle so that HTTPS requests from Drupal can
             // succeed on Windows.
