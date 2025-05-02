@@ -92,19 +92,6 @@ jobs:
         with:
           name: php-macos
 
-      - name: Prepare binaries
-        run: |
-          mkdir -p bin
-          chmod +x php
-          mv php bin
-
-      - name: Unpack Composer
-        working-directory: bin
-        run: |
-          cp $(which composer) composer.phar
-          phar extract -f composer.phar ./composer
-          rm composer.phar
-
       # Only notarize tagged releases; Electron Builder skips notarization if
       # these environment variables are undefined.
       - name: Enable notarization for tagged release
@@ -115,7 +102,15 @@ jobs:
         if: startsWith(github.ref, 'refs/tags/')
 
       - name: Create application bundle
-        run: yarn run make
+        run: |
+          mkdir -p bin
+          chmod +x php
+          mv php bin
+          cd bin
+          cp $(which composer) composer.phar
+          phar extract -f composer.phar ./composer
+          rm composer.phar
+          yarn run make
 
       - name: Delete PHP interpreter artifact
         uses: geekyeggo/delete-artifact@v5
