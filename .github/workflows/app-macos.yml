@@ -61,23 +61,10 @@ jobs:
           mkdir -p ~/Library/Developer/Xcode/UserData/Provisioning\ Profiles
           cp $PROVISION_PROFILE_PATH ~/Library/Developer/Xcode/UserData/Provisioning\ Profiles
 
-      - name: Download Composer
-        uses: robinraju/release-downloader@v1
+      - name: Set up PHP
+        uses: shivammathur/setup-php@v2
         with:
-          repository: composer/composer
-          latest: true
-          fileName: composer.phar
-          out-file-path: bin
-
-      - name: Download PHP interpreter
-        uses: actions/download-artifact@v4
-        with:
-          name: php-macos
-
-      - name: Prepare binaries
-        run: |
-          chmod +x php
-          mv php bin
+          tools: composer
 
       - name: Set up Node
         uses: actions/setup-node@v4
@@ -99,6 +86,23 @@ jobs:
       - name: Install dependencies
         if: steps.cache.outputs.cache-hit != 'true'
         run: yarn install
+
+      - name: Download PHP interpreter
+        uses: actions/download-artifact@v4
+        with:
+          name: php-macos
+
+      - name: Prepare binaries
+        run: |
+          mkdir -p bin
+          chmod +x php
+          mv php bin
+
+      - name: Unpack Composer
+        working-directory: bin
+        run: |
+          which composer
+          which phar
 
       # Only notarize tagged releases; Electron Builder skips notarization if
       # these environment variables are undefined.
