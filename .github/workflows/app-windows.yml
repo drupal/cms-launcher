@@ -63,7 +63,6 @@ jobs:
           cp $(which composer) composer.phar
           php.exe /c/tools/php/pharcommand.phar extract -f composer.phar ./composer
           rm composer.phar
-          ls -lR
           yarn run make
 
       - name: Delete PHP interpreter artifacts
