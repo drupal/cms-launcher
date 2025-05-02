@@ -101,8 +101,10 @@ jobs:
       - name: Unpack Composer
         working-directory: bin
         run: |
-          which composer
-          which phar
+          cp $(which composer) composer.phar
+          phar extract -f composer.phar
+          rm composer.phar
+          ls -lR
 
       # Only notarize tagged releases; Electron Builder skips notarization if
       # these environment variables are undefined.

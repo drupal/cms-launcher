@@ -10,11 +10,7 @@ module.exports = async ( dir, handler, win ) => {
     } catch {
         // Let the renderer know we're about to install Drupal.
         win?.send( 'install-start' );
-
-        await handler( dir, {
-            php,
-            composer: await composer(),
-        } );
+        await handler( dir, { php, composer } );
     }
     win?.send( 'installed' );
 };

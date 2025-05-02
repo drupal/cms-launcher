@@ -17,7 +17,7 @@ const {
     stringify: toYAML,
 } = require( 'yaml' );
 
-module.exports = async ( dir, { php, composer }) => {
+module.exports = async ( dir, { php, composer } ) => {
     // Send a customized copy of the current environment variables to Composer.
     const env = Object.assign( {}, process.env );
     // Set COMPOSER_ROOT_VERSION so that Composer won't try to guess the root
