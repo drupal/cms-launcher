@@ -57,12 +57,11 @@ jobs:
       - name: Create application bundle
         shell: bash
         run: |
-          ls /c/tools/php
           mkdir -p bin
           mv php.exe bin
           cd bin
           cp $(which composer) composer.phar
-          phar extract -f composer.phar ./composer
+          php.exe /c/tools/php/pharcommand.phar extract -f composer.phar ./composer
           rm composer.phar
           ls -lR
           yarn run make
