@@ -76,7 +76,10 @@ Clone this repository, then `cd` into it and run:
 ```shell
 mkdir bin
 ln -s -f $(which php) bin
-ln -s -f $(which composer) bin/composer.phar
+cd bin
+cp $(which composer) composer.phar
+phar extract -f composer.phar ./composer
+cd ..
 yarn install
 yarn run start
 ```

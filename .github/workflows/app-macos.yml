@@ -102,9 +102,8 @@ jobs:
         working-directory: bin
         run: |
           cp $(which composer) composer.phar
-          phar extract -f composer.phar
+          phar extract -f composer.phar ./composer
           rm composer.phar
-          ls -lR
 
       # Only notarize tagged releases; Electron Builder skips notarization if
       # these environment variables are undefined.
