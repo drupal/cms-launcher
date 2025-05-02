@@ -28,23 +28,10 @@ jobs:
     steps:
       - uses: actions/checkout@v4
 
-      - name: Download Composer
-        uses: robinraju/release-downloader@v1
+      - name: Set up PHP
+        uses: shivammathur/setup-php@v2
         with:
-          repository: composer/composer
-          latest: true
-          fileName: composer.phar
-          out-file-path: bin
-
-      - name: Download PHP interpreter
-        uses: actions/download-artifact@v4
-        with:
-          name: php-linux-${{ runner.arch }}
-
-      - name: Prepare binaries
-        run: |
-          chmod +x php
-          mv php bin
+          tools: composer
 
       - name: Set up Node
         uses: actions/setup-node@v4
@@ -67,8 +54,21 @@ jobs:
         if: steps.cache.outputs.cache-hit != 'true'
         run: yarn install
 
+      - name: Download PHP interpreter
+        uses: actions/download-artifact@v4
+        with:
+          name: php-linux-${{ runner.arch }}
+
       - name: Create application bundle
-        run: yarn run make
+        run: |
+          mkdir -p bin
+          chmod +x php
+          mv php bin
+          cd bin
+          cp $(which composer) composer.phar
+          phar extract -f composer.phar ./composer
+          rm composer.phar
+          yarn run make
 
       - name: Delete PHP interpreter artifact
         uses: geekyeggo/delete-artifact@v5
