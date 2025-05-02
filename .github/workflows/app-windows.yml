@@ -57,7 +57,7 @@ jobs:
       - name: Create application bundle
         shell: bash
         run: |
-          which php
+          ls /c/tools/php
           mkdir -p bin
           mv php.exe bin
           cd bin
