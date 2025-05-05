@@ -78,7 +78,10 @@ module.exports = async ( dir, { php, composer } ) => {
         `
 $settings['hash_salt'] = '${ randomBytes( 32 ).toString( 'hex' ) }';
 $settings['config_sync_directory'] = '${ path.join( dir, 'config' ) }';
-$config['package_manager.settings']['executables']['composer'] = '${composer}';`,
+$config['package_manager.settings']['executables']['composer'] = '${composer}';
+if (getenv('APPDIR')) {
+  $config['package_manager.settings']['executables']['composer'] = getenv('APPDIR') . '/resources/app/bin/composer/bin/composer';
+}`,
     );
     // Make sure we load the local settings if using the built-in web server.
     await appendFile(
