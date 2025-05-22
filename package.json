@@ -15,8 +15,7 @@
     "electron-builder": "26.0.12"
   },
   "dependencies": {
-    "get-port": "^7.1.0",
-    "yaml": "^2.7.0"
+    "get-port": "^7.1.0"
   },
   "packageManager": "yarn@4.9.1"
 }

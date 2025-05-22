@@ -1,21 +1,11 @@
 const { execFile } = require( 'node:child_process' );
 const { randomBytes } = require( 'node:crypto' );
-const {
-    appendFile,
-    copyFile,
-    cp: mirror,
-    readFile,
-    writeFile,
-} = require( 'node:fs/promises' );
+const { appendFile, copyFile, } = require( 'node:fs/promises' );
 const path = require( 'node:path' );
 const {
     promisify: toPromise,
 } = require( 'node:util' );
 const { getWebRoot } = require( './utils' );
-const {
-    parse: fromYAML,
-    stringify: toYAML,
-} = require( 'yaml' );
 
 module.exports = async ( dir, { php, composer } ) => {
     // Send a customized copy of the current environment variables to Composer.
@@ -87,19 +77,4 @@ $config['package_manager.settings']['executables']['composer'] = '${composer}';`
         path.join( siteDir, 'default.settings.php' ),
         `\nif (PHP_SAPI === 'cli' || PHP_SAPI === 'cli-server') @include_once __DIR__ . '/settings.local.php';\n`,
     );
-
-    // Copy the `live_update` module into the code base and alter the install profile to include it.
-    await mirror(
-        path.join( __dirname, 'live_update' ),
-        path.join( webRoot, 'modules', 'live_update' ),
-        {
-            recursive: true,
-        },
-    );
-    const infoFile = path.join( webRoot, 'profiles', 'drupal_cms_installer', 'drupal_cms_installer.info.yml' );
-    let info = await readFile( infoFile );
-    info = fromYAML( info.toString() );
-    info.install ??= [];
-    info.install.push( 'live_update' );
-    await writeFile( infoFile, toYAML( info ) );
 };
