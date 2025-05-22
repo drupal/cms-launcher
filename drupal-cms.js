@@ -67,7 +67,8 @@ module.exports = async ( dir, { php, composer } ) => {
     // Create a local settings file so we can skip database set-up in the
     // installer, which requires us to pre-generate the hash salt and the path
     // of the config sync directory. We also explicitly configure Package
-    // Manager to use our bundled copy of Composer.
+    // Manager to use our bundled copy of Composer, and allow it to operate in
+    // the direct-write mode supported as of Drupal 11.2.
     const localSettingsFile = path.join( siteDir, 'settings.local.php' );
     await copyFile(
         path.join( __dirname, 'settings.local.php' ),
@@ -78,6 +79,7 @@ module.exports = async ( dir, { php, composer } ) => {
         `
 $settings['hash_salt'] = '${ randomBytes( 32 ).toString( 'hex' ) }';
 $settings['config_sync_directory'] = '${ path.join( dir, 'config' ) }';
+$settings['package_manager_allow_direct_write'] = TRUE;
 $config['package_manager.settings']['executables']['composer'] = '${composer}';`,
     );
     // Make sure we load the local settings if using the built-in web server.
