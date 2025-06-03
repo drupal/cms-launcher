@@ -127,3 +127,7 @@ p {
   margin: auto;
   padding-bottom: 2rem;
 }
+
+#output {
+  opacity: .4;
+}

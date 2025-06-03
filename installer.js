@@ -30,24 +30,29 @@ async function createProject ( win )
 
     // Use an awaitable version of execFile that won't block the main process,
     // which would produce a disconcerting beach ball on macOS.
-    const execFileAsPromise = toPromise( execFile );
+    const _execFile = toPromise( execFile );
+
+    const execAndStreamOutput = async ( command, _arguments, options ) => {
+        const task = _execFile( command, _arguments, options );
+
+        readline.createInterface( task.child.stderr )
+            .on( 'line', ( line ) => {
+                win?.send( 'output', line );
+            });
+
+        return task;
+    }
 
     // Create the project, but don't install dependencies yet.
-    let task = execFileAsPromise(
+    await execAndStreamOutput(
         php,
         [ composer, 'create-project', '--no-install', 'drupal/cms', projectRoot ],
         { env },
     );
-    readline.createInterface( task.child.stderr )
-        .on( 'line', ( line ) => {
-            win?.send( 'output', line );
-        });
-    await task;
-
     // Prevent core's scaffold plugin from trying to dynamically determine if
     // the project is a Git repository, since that will make it try to run Git,
     // which might not be installed.
-    await execFileAsPromise(
+    await execAndStreamOutput(
         php,
         [ composer, 'config', 'extra.drupal-scaffold.gitignore', 'false', '--json' ],
         {
@@ -55,8 +60,9 @@ async function createProject ( win )
             env,
         },
     );
-    // Finally, install dependencies.
-    task = execFileAsPromise(
+    // Finally, install dependencies. We suppress the progress bar because it
+    // looks lame when streamed to the renderer.
+    await execAndStreamOutput(
         php,
         [ composer, 'install', '--no-progress' ],
         {
@@ -66,11 +72,6 @@ async function createProject ( win )
             timeout: 600000,
         }
     );
-    readline.createInterface( task.child.stderr )
-        .on( 'line', ( line ) => {
-            win?.send( 'output', line );
-        });
-    await task;
 
     const webRoot = getWebRoot( projectRoot );
 
