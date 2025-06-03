@@ -1,6 +1,7 @@
 const status = document.getElementById( 'status' );
 const title = document.getElementById( 'title' );
 const loader = document.getElementById( 'loader' );
+const cli = document.getElementById( 'cli-output' );
 
 drupal.onInstallStart(() => {
     title.innerHTML = 'Installing...'
@@ -14,14 +15,14 @@ drupal.onInstalled(() => {
 });
 
 drupal.onOutput(( line ) => {
-    // Nothing right now, but this callback could be used to display output from
-    // the Composer command (or any other system output we care to display).
+    cli.innerText = line;
 });
 
 drupal.onReady(( url ) => {
     title.innerHTML = ''
     loader.innerHTML = ''
     status.innerHTML = `<p>Your site is running at<br /><code>${url}</code></p>`;
+    cli.remove();
 
     const wrapper = document.getElementById( 'open' );
     wrapper.innerHTML = `<button class="button" type="button">Visit site</button>`;
