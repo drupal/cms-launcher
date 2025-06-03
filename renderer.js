@@ -16,7 +16,7 @@ drupal.onInstalled(() => {
 drupal.onReady(( url ) => {
     title.innerHTML = ''
     loader.innerHTML = ''
-    status.innerHTML = `<p>Your site is running at<br><code>${url}</code></p>`;
+    status.innerHTML = `<p>Your site is running at<br /><code>${url}</code></p>`;
 
     const wrapper = document.getElementById( 'open' );
     wrapper.innerHTML = `<button class="button" type="button">Visit site</button>`;

@@ -1,6 +1,7 @@
 const { projectRoot, bin } = require( './config' );
 const { execFile } = require( 'node:child_process' );
 const path = require( 'node:path' );
+const readline = require( 'node:readline' );
 const { getWebRoot } = require( './utils' );
 
 /**
@@ -46,14 +47,15 @@ module.exports = async ( win ) => {
     const {
         stderr: serverOutput,
     } = process;
+    const reader = readline.createInterface( serverOutput );
     // This callback must be in its own variable so it can refer to itself internally.
-    const checkForServerStart = ( chunk ) => {
-        if ( chunk.toString().includes( `(${url}) started` ) ) {
+    const checkForServerStart = ( line ) => {
+        if ( line.includes( `(${url}) started` ) ) {
             win?.send( 'ready', url );
             serverOutput.off( 'data', checkForServerStart );
         }
     };
-    serverOutput.on( 'data', checkForServerStart );
+    reader.on( 'line', checkForServerStart );
 
     return { url, process };
 };
