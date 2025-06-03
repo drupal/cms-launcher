@@ -11,6 +11,7 @@
   "author": "Drupal Association",
   "license": "MIT",
   "devDependencies": {
+    "@playwright/test": "^1.52.0",
     "electron": "^34.0.1",
     "electron-builder": "26.0.12"
   },
