@@ -1,4 +1,4 @@
-const { php } = require( './binaries' );
+const { bin } = require( './config' );
 const { execFile } = require( 'node:child_process' );
 const path = require( 'node:path' );
 const { getWebRoot } = require( './utils' );
@@ -29,7 +29,7 @@ module.exports = async ( dir, win ) => {
 
     // Start the built-in PHP web server.
     const process = execFile(
-        php,
+        bin.php,
         [
             // Explicitly pass the cURL CA bundle so that HTTPS requests from Drupal can
             // succeed on Windows.
