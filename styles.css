@@ -127,3 +127,7 @@ p {
   margin: auto;
   padding-bottom: 2rem;
 }
+
+#cli-output {
+  opacity: .4;
+}

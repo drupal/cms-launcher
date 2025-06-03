@@ -5,7 +5,6 @@ const {
     shell,
 } = require( 'electron' );
 
-const installHandler = require( './drupal-cms' );
 const install = require( './installer' );
 const path = require( 'node:path' );
 const { platform } = require( 'node:process' );
@@ -14,14 +13,11 @@ const startServer = require( './php-server' );
 let url;
 
 ipcMain.handle( 'start', async ({ sender: win }) => {
-    const dir = path.join( app.getPath( 'documents' ), 'drupal' );
+    await install( win );
 
-    await install( dir, installHandler, win );
-
-    const { url: _url, process } = await startServer( dir, win );
+    const { url: _url, serverProcess } = await startServer( win );
     url = _url;
-    // Kill the server process on quit.
-    app.on( 'will-quit', () => process.kill() );
+    app.on( 'will-quit', () => serverProcess.kill() );
 } );
 
 ipcMain.handle( 'open', () => {

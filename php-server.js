@@ -1,6 +1,7 @@
-const { php } = require( './binaries' );
+const { projectRoot, bin } = require( './config' );
 const { execFile } = require( 'node:child_process' );
 const path = require( 'node:path' );
+const readline = require( 'node:readline' );
 const { getWebRoot } = require( './utils' );
 
 /**
@@ -22,14 +23,14 @@ async function findPort ()
     });
 }
 
-module.exports = async ( dir, win ) => {
+module.exports = async ( win ) => {
     const port = await findPort();
     const url = `http://localhost:${port}`;
     const caFile = path.join( __dirname, 'cacert.pem' );
 
     // Start the built-in PHP web server.
-    const process = execFile(
-        php,
+    const serverProcess = execFile(
+        bin.php,
         [
             // Explicitly pass the cURL CA bundle so that HTTPS requests from Drupal can
             // succeed on Windows.
@@ -39,21 +40,19 @@ module.exports = async ( dir, win ) => {
             '.ht.router.php',
         ],
         {
-            cwd: getWebRoot( dir ),
+            cwd: getWebRoot( projectRoot ),
         },
     );
-    // When the server starts, let the renderer know we're up and running.
-    const {
-        stderr: serverOutput,
-    } = process;
     // This callback must be in its own variable so it can refer to itself internally.
-    const checkForServerStart = ( chunk ) => {
-        if ( chunk.toString().includes( `(${url}) started` ) ) {
+    const checkForServerStart = ( line ) => {
+        // When the server starts, let the renderer know we're up and running.
+        if ( line.includes( `(${url}) started` ) ) {
             win?.send( 'ready', url );
-            serverOutput.off( 'data', checkForServerStart );
+            serverProcess.stderr.off( 'data', checkForServerStart );
         }
     };
-    serverOutput.on( 'data', checkForServerStart );
+    readline.createInterface( serverProcess.stderr )
+        .on( 'line', checkForServerStart );
 
-    return { url, process };
+    return { url, serverProcess };
 };
