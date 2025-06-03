@@ -5,8 +5,6 @@ const {
     shell,
 } = require( 'electron' );
 
-const { projectRoot } = require( './config' );
-const installHandler = require( './drupal-cms' );
 const install = require( './installer' );
 const path = require( 'node:path' );
 const { platform } = require( 'node:process' );
@@ -15,9 +13,9 @@ const startServer = require( './php-server' );
 let url;
 
 ipcMain.handle( 'start', async ({ sender: win }) => {
-    await install( projectRoot, installHandler, win );
+    await install( win );
 
-    const { url: _url, process } = await startServer( projectRoot, win );
+    const { url: _url, process } = await startServer( win );
     url = _url;
     // Kill the server process on quit.
     app.on( 'will-quit', () => process.kill() );

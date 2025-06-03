@@ -1,4 +1,4 @@
-const { bin } = require( './config' );
+const { projectRoot, bin } = require( './config' );
 const { execFile } = require( 'node:child_process' );
 const path = require( 'node:path' );
 const { getWebRoot } = require( './utils' );
@@ -22,7 +22,7 @@ async function findPort ()
     });
 }
 
-module.exports = async ( dir, win ) => {
+module.exports = async ( win ) => {
     const port = await findPort();
     const url = `http://localhost:${port}`;
     const caFile = path.join( __dirname, 'cacert.pem' );
@@ -39,7 +39,7 @@ module.exports = async ( dir, win ) => {
             '.ht.router.php',
         ],
         {
-            cwd: getWebRoot( dir ),
+            cwd: getWebRoot( projectRoot ),
         },
     );
     // When the server starts, let the renderer know we're up and running.
