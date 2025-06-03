@@ -9,6 +9,10 @@ const path = require( 'node:path' );
 const readline = require( 'node:readline' );
 const { randomBytes } = require( 'node:crypto' );
 
+// Create an awaitable version of execFile that won't block the main process,
+// which would produce a disconcerting beach ball on macOS.
+const execFileAsPromise = toPromise( execFile );
+
 async function createProject ( win )
 {
     // Let the renderer know we're about to install Drupal.
@@ -24,16 +28,12 @@ async function createProject ( win )
     // raise unexpected warnings on macOS.
     // @see https://getcomposer.org/doc/03-cli.md#composer-root-version
     env.COMPOSER_ROOT_VERSION = '1.0.0';
-    // For performance purposes, skip security audits for now.
+    // For performance reasons, skip security audits for now.
     // @see https://getcomposer.org/doc/03-cli.md#composer-no-audit
     env.COMPOSER_NO_AUDIT = '1';
 
-    // Use an awaitable version of execFile that won't block the main process,
-    // which would produce a disconcerting beach ball on macOS.
-    const _execFile = toPromise( execFile );
-
     const execAndStreamOutput = async ( command, _arguments, options ) => {
-        const task = _execFile( command, _arguments, options );
+        const task = execFileAsPromise( command, _arguments, options );
 
         readline.createInterface( task.child.stderr )
             .on( 'line', ( line ) => {
@@ -79,8 +79,7 @@ async function createProject ( win )
     // Create a local settings file so we can skip database set-up in the
     // installer, which requires us to pre-generate the hash salt and the path
     // of the config sync directory. We also explicitly configure Package
-    // Manager to use our bundled copy of Composer, and allow it to operate in
-    // the direct-write mode supported as of Drupal 11.2.
+    // Manager to use our bundled copy of Composer.
     const localSettingsFile = path.join( siteDir, 'settings.local.php' );
     await copyFile(
         path.join( __dirname, 'settings.local.php' ),
@@ -91,7 +90,6 @@ async function createProject ( win )
         `
 $settings['hash_salt'] = '${ randomBytes( 32 ).toString( 'hex' ) }';
 $settings['config_sync_directory'] = '${ path.join( projectRoot, 'config' ) }';
-$settings['package_manager_allow_direct_write'] = TRUE;
 $config['package_manager.settings']['executables']['composer'] = '${composer}';`,
     );
     // Make sure we load the local settings if using the built-in web server.
