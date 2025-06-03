@@ -1,6 +1,7 @@
 const status = document.getElementById( 'status' );
 const title = document.getElementById( 'title' );
 const loader = document.getElementById( 'loader' );
+const output = document.getElementById( 'output' );
 
 drupal.onInstallStart(() => {
     title.innerHTML = 'Installing...'
@@ -13,10 +14,15 @@ drupal.onInstalled(() => {
     status.innerHTML = '';
 });
 
+drupal.onOutput(( line ) => {
+    output.innerText = line;
+});
+
 drupal.onReady(( url ) => {
     title.innerHTML = ''
     loader.innerHTML = ''
     status.innerHTML = `<p>Your site is running at<br /><code>${url}</code></p>`;
+    output.remove();
 
     const wrapper = document.getElementById( 'open' );
     wrapper.innerHTML = `<button class="button" type="button">Visit site</button>`;

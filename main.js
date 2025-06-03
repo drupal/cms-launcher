@@ -15,10 +15,9 @@ let url;
 ipcMain.handle( 'start', async ({ sender: win }) => {
     await install( win );
 
-    const { url: _url, process } = await startServer( win );
+    const { url: _url, serverProcess } = await startServer( win );
     url = _url;
-    // Kill the server process on quit.
-    app.on( 'will-quit', () => process.kill() );
+    app.on( 'will-quit', () => serverProcess.kill() );
 } );
 
 ipcMain.handle( 'open', () => {

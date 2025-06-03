@@ -29,7 +29,7 @@ module.exports = async ( win ) => {
     const caFile = path.join( __dirname, 'cacert.pem' );
 
     // Start the built-in PHP web server.
-    const process = execFile(
+    const serverProcess = execFile(
         bin.php,
         [
             // Explicitly pass the cURL CA bundle so that HTTPS requests from Drupal can
@@ -43,19 +43,16 @@ module.exports = async ( win ) => {
             cwd: getWebRoot( projectRoot ),
         },
     );
-    // When the server starts, let the renderer know we're up and running.
-    const {
-        stderr: serverOutput,
-    } = process;
-    const reader = readline.createInterface( serverOutput );
     // This callback must be in its own variable so it can refer to itself internally.
     const checkForServerStart = ( line ) => {
+        // When the server starts, let the renderer know we're up and running.
         if ( line.includes( `(${url}) started` ) ) {
             win?.send( 'ready', url );
-            serverOutput.off( 'data', checkForServerStart );
+            serverProcess.stderr.off( 'data', checkForServerStart );
         }
     };
-    reader.on( 'line', checkForServerStart );
+    readline.createInterface( serverProcess.stderr )
+        .on( 'line', checkForServerStart );
 
-    return { url, process };
+    return { url, serverProcess };
 };

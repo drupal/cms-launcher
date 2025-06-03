@@ -13,6 +13,9 @@ contextBridge.exposeInMainWorld( 'drupal', {
     onInstalled: ( callback ) => {
         ipcRenderer.on( 'installed', () => callback() );
     },
+    onOutput: ( callback ) => {
+        ipcRenderer.on( 'output', ( _event, line ) => callback( line ) );
+    },
     onReady: ( callback ) => {
         ipcRenderer.on( 'ready', ( _event, url ) => callback( url ) );
     },

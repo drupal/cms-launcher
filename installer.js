@@ -6,10 +6,14 @@ const {
 const { execFile } = require( 'node:child_process' );
 const { getWebRoot } = require( './utils' );
 const path = require( 'node:path' );
+const readline = require( 'node:readline' );
 const { randomBytes } = require( 'node:crypto' );
 
-async function createProject ()
+async function createProject ( win )
 {
+    // Let the renderer know we're about to install Drupal.
+    win?.send( 'install-start' );
+
     const { php, composer } = bin;
 
     // Send a customized copy of the current environment variables to Composer.
@@ -29,11 +33,17 @@ async function createProject ()
     const execFileAsPromise = toPromise( execFile );
 
     // Create the project, but don't install dependencies yet.
-    await execFileAsPromise(
+    let task = execFileAsPromise(
         php,
         [ composer, 'create-project', '--no-install', 'drupal/cms', projectRoot ],
         { env },
     );
+    readline.createInterface( task.child.stderr )
+        .on( 'line', ( line ) => {
+            win?.send( 'output', line );
+        });
+    await task;
+
     // Prevent core's scaffold plugin from trying to dynamically determine if
     // the project is a Git repository, since that will make it try to run Git,
     // which might not be installed.
@@ -46,9 +56,9 @@ async function createProject ()
         },
     );
     // Finally, install dependencies.
-    await execFileAsPromise(
+    task = execFileAsPromise(
         php,
-        [ composer, 'install' ],
+        [ composer, 'install', '--no-progress' ],
         {
             cwd: projectRoot,
             env,
@@ -56,6 +66,11 @@ async function createProject ()
             timeout: 600000,
         }
     );
+    readline.createInterface( task.child.stderr )
+        .on( 'line', ( line ) => {
+            win?.send( 'output', line );
+        });
+    await task;
 
     const webRoot = getWebRoot( projectRoot );
 
@@ -89,10 +104,7 @@ module.exports = async ( win ) => {
     try {
         await access ( projectRoot );
     } catch {
-        // Let the renderer know we're about to install Drupal.
-        win?.send( 'install-start' );
-
-        await createProject();
+        await createProject( win );
     }
     win?.send( 'installed' );
 };
