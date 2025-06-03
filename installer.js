@@ -60,6 +60,16 @@ async function createProject ( win )
             env,
         },
     );
+    // Require Composer as a dev dependency so that Package Manager can use it
+    // without relying on this app.
+    await execAndStreamOutput(
+        php,
+        [ composer, 'require', '--dev', '--no-update', 'composer/composer' ],
+        {
+            cwd: projectRoot,
+            env,
+        },
+    );
     // Finally, install dependencies. We suppress the progress bar because it
     // looks lame when streamed to the renderer.
     await execAndStreamOutput(
@@ -89,8 +99,7 @@ async function createProject ( win )
         localSettingsFile,
         `
 $settings['hash_salt'] = '${ randomBytes( 32 ).toString( 'hex' ) }';
-$settings['config_sync_directory'] = '${ path.join( projectRoot, 'config' ) }';
-$config['package_manager.settings']['executables']['composer'] = '${composer}';`,
+$settings['config_sync_directory'] = '${ path.join( projectRoot, 'config' ) }';`
     );
     // Make sure we load the local settings if using the built-in web server.
     await appendFile(
