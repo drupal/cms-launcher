@@ -15,6 +15,9 @@ $settings['skip_permissions_hardening'] = TRUE;
 // Allow use of the direct-write mode added to Package Manager in Drupal 11.2.
 $settings['package_manager_allow_direct_write'] = TRUE;
 
+// Don't warn about using Package Manager, despite its being experimental.
+$settings['testing_package_manager'] = TRUE;
+
 // Use a copy of Composer that is locally installed in the project.
 try {
   $config['package_manager.settings']['executables']['composer'] = InstalledVersions::getInstallPath('composer/composer') . '/bin/composer';
