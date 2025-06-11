@@ -18,17 +18,18 @@ drupal.onOutput(( line ) => {
     cli.innerText = line;
 });
 
-drupal.onReady(( url ) => {
-    title.innerHTML = ''
-    loader.innerHTML = ''
-    status.innerHTML = `<p>Your site is running at<br /><code>${url}</code></p>`;
+window.addEventListener( 'load', async () => {
+    const url = await drupal.start();
+
+    title.remove();
+    loader.remove();
     cli.remove();
+    status.innerHTML = `<p>Your site is running at<br /><code>${url}</code></p>`;
 
     const wrapper = document.getElementById( 'open' );
     wrapper.innerHTML = `<button class="button" type="button">Visit site</button>`;
-    wrapper.querySelector( 'button' ).addEventListener( 'click', drupal.open );
-});
-
-window.addEventListener( 'load', async () => {
-    await drupal.start();
+    wrapper.querySelector( 'button' )
+        .addEventListener( 'click', () => {
+            drupal.open( url );
+        });
 } );

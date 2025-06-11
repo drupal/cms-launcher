@@ -2,10 +2,10 @@ import { contextBridge, ipcRenderer } from 'electron';
 
 contextBridge.exposeInMainWorld( 'drupal', {
     start: () => {
-        ipcRenderer.invoke( 'start' );
+        return ipcRenderer.invoke( 'start' );
     },
-    open: () => {
-        ipcRenderer.invoke( 'open' );
+    open: ( url ) => {
+        ipcRenderer.invoke( 'open', url );
     },
     onInstallStart: ( callback ) => {
         ipcRenderer.on( 'install-start', () => callback() );
@@ -15,8 +15,5 @@ contextBridge.exposeInMainWorld( 'drupal', {
     },
     onOutput: ( callback ) => {
         ipcRenderer.on( 'output', ( _event, line ) => callback( line ) );
-    },
-    onReady: ( callback ) => {
-        ipcRenderer.on( 'ready', ( _event, url ) => callback( url ) );
     },
 } );

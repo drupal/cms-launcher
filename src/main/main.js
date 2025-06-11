@@ -1,28 +1,25 @@
 import { app, BrowserWindow, ipcMain, shell } from 'electron';
 import install from './installer';
 import path from 'node:path';
-import { platform } from 'node:process';
 import startServer from './php-server';
-
-let url;
 
 ipcMain.handle( 'start', async ({ sender: win }) => {
     await install( win );
 
-    const { url: _url, serverProcess } = await startServer( win );
-    url = _url;
+    const { url, serverProcess } = await startServer();
     app.on( 'will-quit', () => serverProcess.kill() );
+
+    return url;
 } );
 
-ipcMain.handle( 'open', () => {
+ipcMain.handle( 'open', ( undefined, url ) => {
     shell.openExternal( url );
 } );
 
-app.on( 'window-all-closed', () => {
-    if ( platform !== 'darwin' ) {
-        app.quit();
-    }
-} );
+// Quit the app when all windows are closed. Normally you'd keep keep the app
+// running on macOS, even with no windows open, since that's the common pattern.
+// But for a pure launcher like this one, it makes more sense to just quit.
+app.on( 'window-all-closed', app.quit );
 
 function createWindow ()
 {
@@ -34,10 +31,6 @@ function createWindow ()
         },
     });
     win.loadFile( path.join( __dirname, '..', 'renderer', 'index.html' ) );
-
-    if ( url ) {
-        win.webContents.send( 'ready', url );
-    }
 }
 
 app.whenReady().then(() => {
