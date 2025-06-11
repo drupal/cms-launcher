@@ -3,6 +3,14 @@ import { app, BrowserWindow, ipcMain, shell } from 'electron';
 import install from './installer';
 import path from 'node:path';
 import startServer from './php-server';
+import * as Sentry from "@sentry/electron/main";
+
+Sentry.init({
+    dsn: "https://12eb563e258a6344878c10f16bbde85e@o4509476487233536.ingest.de.sentry.io/4509476503683152",
+    // We don't need to send any PII at all, so explicitly disable it. It's disabled
+    // by default, but we don't want it changing unexpectedly.
+    sendDefaultPii: false,
+});
 
 ipcMain.on( Commands.Start, async ({ sender: win }): Promise<void> => {
     try {
@@ -14,6 +22,9 @@ ipcMain.on( Commands.Start, async ({ sender: win }): Promise<void> => {
         win.send( Events.Started, url );
     }
     catch ( e ) {
+        // Send the exception to Sentry so we can analyze it later, without requiring
+        // users to file a GitHub issue.
+        Sentry.captureException( e );
         win.send( Events.Error, e );
     }
 } );

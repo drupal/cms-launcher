@@ -39,7 +39,7 @@ drupal.onStart(( url: string ): void => {
 
 drupal.onError(( message: string ): void => {
     title.innerText = 'Uh-oh';
-    status.innerText = 'An error occurred while starting Drupal CMS.';
+    status.innerText = 'An error occurred while starting Drupal CMS. It has been automatically reported to the developers.';
     cli.classList.add( 'error' );
     cli.innerText = message;
     loader.remove();
