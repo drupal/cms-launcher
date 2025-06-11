@@ -12,7 +12,7 @@ ipcMain.handle( 'start', async ({ sender: win }) => {
     return url;
 } );
 
-ipcMain.handle( 'open', ( undefined, url ) => {
+ipcMain.handle( 'open', ( undefined, url: string ) => {
     shell.openExternal( url );
 } );
 

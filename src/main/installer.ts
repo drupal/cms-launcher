@@ -30,7 +30,7 @@ async function createProject ( win )
     // @see https://getcomposer.org/doc/03-cli.md#composer-no-audit
     env.COMPOSER_NO_AUDIT = '1';
 
-    const execAndStreamOutput = async ( command, _arguments, options ) => {
+    const execAndStreamOutput = async ( command: string, _arguments: string[], options ) => {
         const task = execFileAsPromise( command, _arguments, options );
 
         readline.createInterface( task.child.stderr )

@@ -23,7 +23,7 @@ async function findPort ()
     });
 }
 
-export default async () => {
+export default async (): Promise<{url: string, serverProcess: any}> => {
     const port = await findPort();
     const url = `http://localhost:${port}`;
     const caFile = path.join( __dirname, '..', '..', 'cacert.pem' );
@@ -47,7 +47,7 @@ export default async () => {
     return new Promise((resolve) => {
         // This callback must be in its own variable so it can refer to itself
         // internally.
-        const checkForServerStart = ( line ) => {
+        const checkForServerStart = ( line: string ) => {
             // When the server starts, stop listening for further output and
             // resolve the promise.
             if ( line.includes( `(${url}) started` ) ) {
