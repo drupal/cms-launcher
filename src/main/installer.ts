@@ -15,7 +15,7 @@ const execFileAsPromise = toPromise( execFile );
 async function createProject ( win?: WebContents )
 {
     // Let the renderer know we're about to install Drupal.
-    win?.send( 'install-start' );
+    win?.send( 'install-started' );
 
     const { php, composer } = bin;
 
@@ -113,5 +113,5 @@ export default async ( win?: WebContents ) => {
     } catch {
         await createProject( win );
     }
-    win?.send( 'installed' );
+    win?.send( 'install-finished' );
 };
