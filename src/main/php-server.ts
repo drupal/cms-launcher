@@ -1,5 +1,5 @@
 import { projectRoot, bin } from './config';
-import { execFile } from 'node:child_process';
+import { ChildProcess, execFile } from 'node:child_process';
 import path from 'node:path';
 import readline from 'node:readline';
 import { getWebRoot } from './utils';
@@ -21,7 +21,7 @@ async function findPort (): Promise<number>
     });
 }
 
-export default async (): Promise<{ url: string, serverProcess: any }> => {
+export default async (): Promise<{ url: string, serverProcess: ChildProcess }> => {
     const port = await findPort();
     const url = `http://localhost:${port}`;
     const caFile = path.join( __dirname, '..', '..', 'cacert.pem' );
@@ -45,7 +45,7 @@ export default async (): Promise<{ url: string, serverProcess: any }> => {
     return new Promise((resolve): void => {
         // This callback must be in its own variable so it can refer to itself
         // internally.
-        const checkForServerStart = ( line: string ) => {
+        const checkForServerStart = ( line: string ): void => {
             // When the server starts, stop listening for further output and
             // resolve the promise.
             if ( line.includes( `(${url}) started` ) ) {
