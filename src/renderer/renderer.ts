@@ -45,6 +45,4 @@ drupal.onError(( message: string ): void => {
     loader.remove();
 });
 
-window.addEventListener( 'load', (): void => {
-    drupal.start();
-} );
+window.addEventListener( 'load', drupal.start );

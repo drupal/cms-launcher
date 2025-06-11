@@ -4,7 +4,7 @@ import install from './installer';
 import path from 'node:path';
 import startServer from './php-server';
 
-ipcMain.handle( Commands.Start, async ({ sender: win }): Promise<void> => {
+ipcMain.on( Commands.Start, async ({ sender: win }): Promise<void> => {
     try {
         await install( win );
 
@@ -18,7 +18,7 @@ ipcMain.handle( Commands.Start, async ({ sender: win }): Promise<void> => {
     }
 } );
 
-ipcMain.handle( Commands.Open, ( undefined, url: string ): void => {
+ipcMain.on( Commands.Open, ( undefined, url: string ): void => {
     shell.openExternal( url );
 } );
 

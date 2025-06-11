@@ -4,19 +4,19 @@ import { contextBridge, ipcRenderer } from 'electron';
 contextBridge.exposeInMainWorld( 'drupal', {
 
     start: (): void => {
-        ipcRenderer.invoke( Commands.Start );
+        ipcRenderer.send( Commands.Start );
     },
 
     open: ( url: string ): void => {
-        ipcRenderer.invoke( Commands.Open, url );
+        ipcRenderer.send( Commands.Open, url );
     },
 
     onInstallStarted: ( callback: () => void ): void => {
-        ipcRenderer.on( Events.InstallStarted, () => callback() );
+        ipcRenderer.on( Events.InstallStarted, callback );
     },
 
     onInstallFinished: ( callback: () => void ): void => {
-        ipcRenderer.on( Events.InstallFinished, () => callback() );
+        ipcRenderer.on( Events.InstallFinished, callback );
     },
 
     onOutput: ( callback: ( line: string ) => void ): void => {
