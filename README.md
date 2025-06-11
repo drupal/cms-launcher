@@ -35,7 +35,7 @@ It is **not intended for contributing to or developing Drupal CMS itself**. If y
 
 ## How it works
 
-We use [static-php-cli](https://static-php.dev/) to compile a copy of PHP 8.3 that includes everything needed to run Drupal CMS. We bundle that with the [Composer](https://getcomposer.org/) dependency manager, and use those two tools to install and serve Drupal CMS. The app itself is a very simple front-end to PHP and Composer, written in JavaScript using the [Electron](https://www.electronjs.org/) framework.
+We use [static-php-cli](https://static-php.dev/) to compile a copy of PHP 8.3 that includes everything needed to run Drupal CMS. We bundle that with the [Composer](https://getcomposer.org/) dependency manager, and use those two tools to install and serve Drupal CMS. The app itself is a very simple front-end to PHP and Composer, written in TypeScript using the [Electron](https://www.electronjs.org/) framework.
 
 ## Where are the Drupal files and database?
 

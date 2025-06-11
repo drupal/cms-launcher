@@ -1,15 +1,13 @@
 import { projectRoot, bin } from './config';
-import { execFile } from 'node:child_process';
+import { ChildProcess, execFile } from 'node:child_process';
 import path from 'node:path';
 import readline from 'node:readline';
 import { getWebRoot } from './utils';
 
 /**
  * Finds an open local port between 8888 and 9999 (inclusive).
- *
- * @returns {Promise<number>}
  */
-async function findPort ()
+async function findPort (): Promise<number>
 {
     // Find an open port between 8888 and 9999. We need to dynamically import `get-port`
     // because it's an ES6 module.
@@ -23,7 +21,7 @@ async function findPort ()
     });
 }
 
-export default async () => {
+export default async (): Promise<{ url: string, serverProcess: ChildProcess }> => {
     const port = await findPort();
     const url = `http://localhost:${port}`;
     const caFile = path.join( __dirname, '..', '..', 'cacert.pem' );
@@ -44,18 +42,20 @@ export default async () => {
         },
     );
 
-    return new Promise((resolve) => {
+    return new Promise((resolve): void => {
         // This callback must be in its own variable so it can refer to itself
         // internally.
-        const checkForServerStart = ( line ) => {
+        const checkForServerStart = ( line: string ): void => {
             // When the server starts, stop listening for further output and
             // resolve the promise.
             if ( line.includes( `(${url}) started` ) ) {
-                serverProcess.stderr.off( 'data', checkForServerStart );
+                serverProcess.stderr!.off( 'data', checkForServerStart );
                 resolve({ url, serverProcess });
             }
         };
-        readline.createInterface( serverProcess.stderr )
+        // @todo Rather than use the not-null assertion operator, degrade gracefully
+        // if we don't have a valid stderr stream.
+        readline.createInterface( serverProcess.stderr! )
             .on( 'line', checkForServerStart );
     });
 };

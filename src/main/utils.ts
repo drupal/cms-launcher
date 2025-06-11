@@ -1,8 +1,8 @@
 import path from 'node:path';
 
-export function getWebRoot ( dir )
+export function getWebRoot ( dir: string ): string
 {
-    const composerJSON = path.join( dir, 'composer.json' );
+    const composerJSON: string = path.join( dir, 'composer.json' );
     // Read `composer.json` directly to find out where the web root is. If it doesn't have
     // a web root defined, fall back to `dir`.
     return path.join(
