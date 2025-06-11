@@ -90,7 +90,7 @@ async function createProject ( win )
     // Manager to use our bundled copy of Composer.
     const localSettingsFile = path.join( siteDir, 'settings.local.php' );
     await copyFile(
-        path.join( __dirname, 'settings.local.php' ),
+        path.join( __dirname, '..', '..', 'settings.local.php' ),
         localSettingsFile,
     );
     await appendFile(
