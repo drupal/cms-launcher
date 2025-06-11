@@ -1,13 +1,11 @@
-const { projectRoot, bin } = require( './config' );
-const { access, copyFile, appendFile } = require( 'node:fs/promises' );
-const {
-    promisify: toPromise,
-} = require( 'node:util' );
-const { execFile } = require( 'node:child_process' );
-const { getWebRoot } = require( './utils' );
-const path = require( 'node:path' );
-const readline = require( 'node:readline' );
-const { randomBytes } = require( 'node:crypto' );
+import { projectRoot, bin } from './config';
+import { access, copyFile, appendFile } from 'node:fs/promises';
+import { execFile } from 'node:child_process';
+import { randomBytes } from 'node:crypto';
+import path from 'node:path';
+import readline from 'node:readline';
+import { promisify as toPromise } from 'node:util';
+import { getWebRoot } from './utils';
 
 // Create an awaitable version of execFile that won't block the main process,
 // which would produce a disconcerting beach ball on macOS.
@@ -92,7 +90,7 @@ async function createProject ( win )
     // Manager to use our bundled copy of Composer.
     const localSettingsFile = path.join( siteDir, 'settings.local.php' );
     await copyFile(
-        path.join( __dirname, 'settings.local.php' ),
+        path.join( __dirname, '..', '..', 'settings.local.php' ),
         localSettingsFile,
     );
     await appendFile(
@@ -108,7 +106,7 @@ $settings['config_sync_directory'] = '${ path.join( projectRoot, 'config' ) }';`
     );
 }
 
-module.exports = async ( win ) => {
+export default async ( win ) => {
     try {
         await access ( projectRoot );
     } catch {
