@@ -1,4 +1,4 @@
-import Drupal from '../preload/Drupal';
+import { Drupal } from '@/Drupal';
 
 // This is exposed by the preload script.
 declare var drupal: Drupal;

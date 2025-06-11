@@ -1,4 +1,5 @@
 import { projectRoot, bin } from './config';
+import { Events } from "../Drupal";
 import { WebContents } from 'electron';
 import { access, copyFile, appendFile } from 'node:fs/promises';
 import { execFile } from 'node:child_process';
@@ -15,7 +16,7 @@ const execFileAsPromise = toPromise( execFile );
 async function createProject ( win?: WebContents ): Promise<void>
 {
     // Let the renderer know we're about to install Drupal.
-    win?.send( 'install-started' );
+    win?.send( Events.InstallStarted );
 
     const { php, composer } = bin;
 
@@ -38,7 +39,7 @@ async function createProject ( win?: WebContents ): Promise<void>
         // if we don't have a valid stderr stream.
         readline.createInterface( task.child.stderr! )
             .on( 'line', ( line ) => {
-                win?.send( 'output', line );
+                win?.send( Events.Output, line );
             });
 
         return task;
@@ -115,5 +116,5 @@ export default async ( win?: WebContents ): Promise<void> => {
     } catch {
         await createProject( win );
     }
-    win?.send( 'install-finished' );
+    win?.send( Events.InstallFinished );
 };
