@@ -4,8 +4,8 @@ contextBridge.exposeInMainWorld( 'drupal', {
     start: () => {
         return ipcRenderer.invoke( 'start' );
     },
-    open: () => {
-        ipcRenderer.invoke( 'open' );
+    open: ( url ) => {
+        ipcRenderer.invoke( 'open', url );
     },
     onInstallStart: ( callback ) => {
         ipcRenderer.on( 'install-start', () => callback() );

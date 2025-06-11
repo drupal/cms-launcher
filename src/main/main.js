@@ -4,19 +4,16 @@ import path from 'node:path';
 import { platform } from 'node:process';
 import startServer from './php-server';
 
-let url;
-
 ipcMain.handle( 'start', async ({ sender: win }) => {
     await install( win );
 
-    const { url: _url, serverProcess } = await startServer();
-    url = _url;
+    const { url, serverProcess } = await startServer();
     app.on( 'will-quit', () => serverProcess.kill() );
 
     return url;
 } );
 
-ipcMain.handle( 'open', () => {
+ipcMain.handle( 'open', ( event, url ) => {
     shell.openExternal( url );
 } );
 

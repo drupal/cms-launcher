@@ -28,5 +28,8 @@ window.addEventListener( 'load', async () => {
 
     const wrapper = document.getElementById( 'open' );
     wrapper.innerHTML = `<button class="button" type="button">Visit site</button>`;
-    wrapper.querySelector( 'button' ).addEventListener( 'click', drupal.open );
+    wrapper.querySelector( 'button' )
+        .addEventListener( 'click', () => {
+            drupal.open( url );
+        });
 } );
