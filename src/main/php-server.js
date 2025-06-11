@@ -23,7 +23,7 @@ async function findPort ()
     });
 }
 
-export default async ( win ) => {
+export default async () => {
     const port = await findPort();
     const url = `http://localhost:${port}`;
     const caFile = path.join( __dirname, '..', '..', 'cacert.pem' );
@@ -51,7 +51,6 @@ export default async ( win ) => {
             // When the server starts, stop listening for further output and
             // resolve the promise.
             if ( line.includes( `(${url}) started` ) ) {
-                win?.send( 'ready', url );
                 serverProcess.stderr.off( 'data', checkForServerStart );
                 resolve({ url, serverProcess });
             }

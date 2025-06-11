@@ -9,7 +9,7 @@ let url;
 ipcMain.handle( 'start', async ({ sender: win }) => {
     await install( win );
 
-    const { url: _url, serverProcess } = await startServer( win );
+    const { url: _url, serverProcess } = await startServer();
     url = _url;
     app.on( 'will-quit', () => serverProcess.kill() );
 
@@ -36,10 +36,6 @@ function createWindow ()
         },
     });
     win.loadFile( path.join( __dirname, '..', 'renderer', 'index.html' ) );
-
-    if ( url ) {
-        win.webContents.send( 'ready', url );
-    }
 }
 
 app.whenReady().then(() => {
