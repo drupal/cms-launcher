@@ -43,16 +43,20 @@ export default async ( win ) => {
             cwd: getWebRoot( projectRoot ),
         },
     );
-    // This callback must be in its own variable so it can refer to itself internally.
-    const checkForServerStart = ( line ) => {
-        // When the server starts, let the renderer know we're up and running.
-        if ( line.includes( `(${url}) started` ) ) {
-            win?.send( 'ready', url );
-            serverProcess.stderr.off( 'data', checkForServerStart );
-        }
-    };
-    readline.createInterface( serverProcess.stderr )
-        .on( 'line', checkForServerStart );
 
-    return { url, serverProcess };
+    return new Promise((resolve) => {
+        // This callback must be in its own variable so it can refer to itself
+        // internally.
+        const checkForServerStart = ( line ) => {
+            // When the server starts, stop listening for further output and
+            // resolve the promise.
+            if ( line.includes( `(${url}) started` ) ) {
+                win?.send( 'ready', url );
+                serverProcess.stderr.off( 'data', checkForServerStart );
+                resolve({ url, serverProcess });
+            }
+        };
+        readline.createInterface( serverProcess.stderr )
+            .on( 'line', checkForServerStart );
+    });
 };

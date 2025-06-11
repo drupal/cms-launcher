@@ -12,6 +12,8 @@ ipcMain.handle( 'start', async ({ sender: win }) => {
     const { url: _url, serverProcess } = await startServer( win );
     url = _url;
     app.on( 'will-quit', () => serverProcess.kill() );
+
+    return url;
 } );
 
 ipcMain.handle( 'open', () => {
