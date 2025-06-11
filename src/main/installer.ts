@@ -1,4 +1,5 @@
 import { projectRoot, bin } from './config';
+import { WebContents } from 'electron';
 import { access, copyFile, appendFile } from 'node:fs/promises';
 import { execFile } from 'node:child_process';
 import { randomBytes } from 'node:crypto';
@@ -11,7 +12,7 @@ import { getWebRoot } from './utils';
 // which would produce a disconcerting beach ball on macOS.
 const execFileAsPromise = toPromise( execFile );
 
-async function createProject ( win )
+async function createProject ( win?: WebContents )
 {
     // Let the renderer know we're about to install Drupal.
     win?.send( 'install-start' );
@@ -30,10 +31,10 @@ async function createProject ( win )
     // @see https://getcomposer.org/doc/03-cli.md#composer-no-audit
     env.COMPOSER_NO_AUDIT = '1';
 
-    const execAndStreamOutput = async ( command: string, _arguments: string[], options ) => {
+    const execAndStreamOutput = async ( command: string, _arguments: string[], options: object ) => {
         const task = execFileAsPromise( command, _arguments, options );
 
-        readline.createInterface( task.child.stderr )
+        readline.createInterface( task.child.stderr! )
             .on( 'line', ( line ) => {
                 win?.send( 'output', line );
             });
@@ -106,7 +107,7 @@ $settings['config_sync_directory'] = '${ path.join( projectRoot, 'config' ) }';`
     );
 }
 
-export default async ( win ) => {
+export default async ( win?: WebContents ) => {
     try {
         await access ( projectRoot );
     } catch {

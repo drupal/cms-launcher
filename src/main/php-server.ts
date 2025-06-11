@@ -51,11 +51,13 @@ export default async (): Promise<{url: string, serverProcess: any}> => {
             // When the server starts, stop listening for further output and
             // resolve the promise.
             if ( line.includes( `(${url}) started` ) ) {
-                serverProcess.stderr.off( 'data', checkForServerStart );
+                serverProcess.stderr!.off( 'data', checkForServerStart );
                 resolve({ url, serverProcess });
             }
         };
-        readline.createInterface( serverProcess.stderr )
+        // @todo Rather than use the not-null assertion operator, degrade gracefully
+        // if we don't have a valid stderr stream.
+        readline.createInterface( serverProcess.stderr! )
             .on( 'line', checkForServerStart );
     });
 };
