@@ -1,8 +1,8 @@
-const { projectRoot, bin } = require( './config' );
-const { execFile } = require( 'node:child_process' );
-const path = require( 'node:path' );
-const readline = require( 'node:readline' );
-const { getWebRoot } = require( './utils' );
+import { projectRoot, bin } from './config';
+import { execFile } from 'node:child_process';
+import path from 'node:path';
+import readline from 'node:readline';
+import { getWebRoot } from './utils';
 
 /**
  * Finds an open local port between 8888 and 9999 (inclusive).
@@ -23,10 +23,10 @@ async function findPort ()
     });
 }
 
-module.exports = async ( win ) => {
+export default async ( win ) => {
     const port = await findPort();
     const url = `http://localhost:${port}`;
-    const caFile = path.join( __dirname, 'cacert.pem' );
+    const caFile = path.join( __dirname, '..', '..', 'cacert.pem' );
 
     // Start the built-in PHP web server.
     const serverProcess = execFile(

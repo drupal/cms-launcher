@@ -1,14 +1,8 @@
-const {
-    app,
-    BrowserWindow,
-    ipcMain,
-    shell,
-} = require( 'electron' );
-
-const install = require( './installer' );
-const path = require( 'node:path' );
-const { platform } = require( 'node:process' );
-const startServer = require( './php-server' );
+import { app, BrowserWindow, ipcMain, shell } from 'electron';
+import install from './installer';
+import path from 'node:path';
+import { platform } from 'node:process';
+import startServer from './php-server';
 
 let url;
 
@@ -36,10 +30,10 @@ function createWindow ()
         width: 800,
         height: 500,
         webPreferences: {
-            preload: path.join( __dirname, 'preload.js' ),
+            preload: path.join( __dirname, '..', 'preload', 'preload.js' ),
         },
     });
-    win.loadFile( 'index.html' );
+    win.loadFile( path.join( __dirname, '..', 'renderer', 'index.html' ) );
 
     if ( url ) {
         win.webContents.send( 'ready', url );
