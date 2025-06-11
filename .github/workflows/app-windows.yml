@@ -38,15 +38,16 @@ jobs:
           corepack enable
           yarn set version berry
 
-      - name: Cache dependencies
-        id: cache
-        uses: actions/cache@v4
-        with:
-          path: node_modules
-          key: yarn-${{ runner.os }}-${{ hashFiles('yarn.lock') }}
+# Dependency caching is temporarily disabled due to https://github.com/npm/cli/issues/4828.
+#      - name: Cache dependencies
+#        id: cache
+#        uses: actions/cache@v4
+#        with:
+#          path: node_modules
+#          key: yarn-${{ runner.os }}-${{ hashFiles('yarn.lock') }}
 
       - name: Install dependencies
-        if: steps.cache.outputs.cache-hit != 'true'
+#        if: steps.cache.outputs.cache-hit != 'true'
         run: yarn install
 
       - name: Download PHP interpreter
