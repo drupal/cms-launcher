@@ -3,13 +3,18 @@ import install from './installer';
 import path from 'node:path';
 import startServer from './php-server';
 
-ipcMain.handle( 'start', async ({ sender: win }): Promise<string> => {
-    await install( win );
+ipcMain.handle( 'start', async ({ sender: win }): Promise<void> => {
+    try {
+        await install( win );
 
-    const { url, serverProcess } = await startServer();
-    app.on( 'will-quit', () => serverProcess.kill() );
+        const { url, serverProcess } = await startServer();
+        app.on( 'will-quit', () => serverProcess.kill() );
 
-    return url;
+        win.send( 'started', url );
+    }
+    catch ( e ) {
+        win.send( 'error', e );
+    }
 } );
 
 ipcMain.handle( 'open', ( undefined, url: string ): void => {

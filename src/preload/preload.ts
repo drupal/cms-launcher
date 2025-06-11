@@ -3,8 +3,8 @@ import { contextBridge, ipcRenderer } from 'electron';
 
 contextBridge.exposeInMainWorld( 'drupal', {
 
-    start: (): Promise<string> => {
-        return ipcRenderer.invoke( 'start' );
+    start: (): void => {
+        ipcRenderer.invoke( 'start' );
     },
 
     open: ( url: string ): void => {
@@ -20,7 +20,15 @@ contextBridge.exposeInMainWorld( 'drupal', {
     },
 
     onOutput: ( callback: ( line: string ) => void ): void => {
-        ipcRenderer.on( 'output', ( undefined, line ) => callback( line ) );
+        ipcRenderer.on( 'output', ( undefined, line ): void => callback( line ) );
+    },
+
+    onStart: ( callback: ( url: string ) => void ): void => {
+        ipcRenderer.on( 'started', ( undefined, url ): void => callback( url ) );
+    },
+
+    onError: ( callback: ( message: string ) => void ): void => {
+        ipcRenderer.on( 'error', ( undefined, message ): void => callback( message ) );
     },
 
 } as Drupal );

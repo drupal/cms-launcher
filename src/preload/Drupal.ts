@@ -1,6 +1,6 @@
 export default interface Drupal
 {
-    start: () => Promise<string>;
+    start: () => void;
 
     open: ( url: string ) => void;
 
@@ -9,4 +9,8 @@ export default interface Drupal
     onInstallFinished: ( callback: () => void ) => void;
 
     onOutput: ( callback: ( line: string ) => void ) => void;
+
+    onStart: ( callback: ( url: string ) => void ) => void;
+
+    onError: ( callback: ( message: string ) => void ) => void;
 }
