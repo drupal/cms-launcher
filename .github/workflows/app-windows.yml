@@ -58,7 +58,6 @@ jobs:
       - name: Create application bundle
         shell: bash
         run: |
-          echo "export default '${{ secrets.SENTRY_DSN }}' as string;" > ./src/main/sentry.ts
           mkdir -p bin
           mv php.exe bin
           cd bin

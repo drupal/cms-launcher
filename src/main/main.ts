@@ -5,15 +5,12 @@ import path from 'node:path';
 import startServer from './php-server';
 import * as Sentry from "@sentry/electron/main";
 
-import dsn from './sentry';
-if ( dsn ) {
-    Sentry.init({
-        dsn: "https://12eb563e258a6344878c10f16bbde85e@o4509476487233536.ingest.de.sentry.io/4509476503683152",
-        // We don't need to send any PII at all, so explicitly disable it. It's disabled
-        // by default, but we don't want it changing unexpectedly.
-        sendDefaultPii: false,
-    });
-}
+Sentry.init({
+    dsn: "https://12eb563e258a6344878c10f16bbde85e@o4509476487233536.ingest.de.sentry.io/4509476503683152",
+    // We don't need to send any PII at all, so explicitly disable it. It's disabled
+    // by default, but we don't want it changing unexpectedly.
+    sendDefaultPii: false,
+});
 
 ipcMain.on( Commands.Start, async ({ sender: win }): Promise<void> => {
     try {
