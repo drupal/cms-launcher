@@ -12,7 +12,7 @@ import { getWebRoot } from './utils';
 // which would produce a disconcerting beach ball on macOS.
 const execFileAsPromise = toPromise( execFile );
 
-async function createProject ( win?: WebContents )
+async function createProject ( win?: WebContents ): Promise<void>
 {
     // Let the renderer know we're about to install Drupal.
     win?.send( 'install-started' );
@@ -34,6 +34,8 @@ async function createProject ( win?: WebContents )
     const execAndStreamOutput = async ( command: string, _arguments: string[], options: object ) => {
         const task = execFileAsPromise( command, _arguments, options );
 
+        // @todo Rather than use the not-null assertion operator, degrade gracefully
+        // if we don't have a valid stderr stream.
         readline.createInterface( task.child.stderr! )
             .on( 'line', ( line ) => {
                 win?.send( 'output', line );
@@ -107,7 +109,7 @@ $settings['config_sync_directory'] = '${ path.join( projectRoot, 'config' ) }';`
     );
 }
 
-export default async ( win?: WebContents ) => {
+export default async ( win?: WebContents ): Promise<void> => {
     try {
         await access ( projectRoot );
     } catch {

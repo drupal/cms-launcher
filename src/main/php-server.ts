@@ -6,10 +6,8 @@ import { getWebRoot } from './utils';
 
 /**
  * Finds an open local port between 8888 and 9999 (inclusive).
- *
- * @returns {Promise<number>}
  */
-async function findPort ()
+async function findPort (): Promise<number>
 {
     // Find an open port between 8888 and 9999. We need to dynamically import `get-port`
     // because it's an ES6 module.
@@ -23,7 +21,7 @@ async function findPort ()
     });
 }
 
-export default async (): Promise<{url: string, serverProcess: any}> => {
+export default async (): Promise<{ url: string, serverProcess: any }> => {
     const port = await findPort();
     const url = `http://localhost:${port}`;
     const caFile = path.join( __dirname, '..', '..', 'cacert.pem' );
@@ -44,7 +42,7 @@ export default async (): Promise<{url: string, serverProcess: any}> => {
         },
     );
 
-    return new Promise((resolve) => {
+    return new Promise((resolve): void => {
         // This callback must be in its own variable so it can refer to itself
         // internally.
         const checkForServerStart = ( line: string ) => {

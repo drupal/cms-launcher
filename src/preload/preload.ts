@@ -1,7 +1,7 @@
 import Drupal from './Drupal';
 import { contextBridge, ipcRenderer } from 'electron';
 
-const api: Drupal = {
+contextBridge.exposeInMainWorld( 'drupal', {
 
     start: (): Promise<string> => {
         return ipcRenderer.invoke( 'start' );
@@ -23,5 +23,4 @@ const api: Drupal = {
         ipcRenderer.on( 'output', ( undefined, line ) => callback( line ) );
     },
 
-};
-contextBridge.exposeInMainWorld( 'drupal', api );
+} as Drupal );

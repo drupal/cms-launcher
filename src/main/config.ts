@@ -18,4 +18,4 @@ export const bin = {
 
     php: path.join( binDir, 'php' ),
 
-};
+} as { composer: string, php: string };
