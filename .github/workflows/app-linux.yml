@@ -43,6 +43,7 @@ jobs:
           corepack enable
           yarn set version berry
 
+# Dependency caching is temporarily disabled due to https://github.com/npm/cli/issues/4828.
 #      - name: Cache dependencies
 #        id: cache
 #        uses: actions/cache@v4
