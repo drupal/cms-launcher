@@ -130,4 +130,9 @@ p {
 
 #cli-output {
   opacity: .4;
+
+  &.error {
+    opacity: 1;
+    color: #b00;
+  }
 }

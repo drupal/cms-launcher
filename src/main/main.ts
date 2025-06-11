@@ -1,18 +1,24 @@
+import { Commands, Events } from "../Drupal";
 import { app, BrowserWindow, ipcMain, shell } from 'electron';
 import install from './installer';
 import path from 'node:path';
 import startServer from './php-server';
 
-ipcMain.handle( 'start', async ({ sender: win }): Promise<string> => {
-    await install( win );
+ipcMain.on( Commands.Start, async ({ sender: win }): Promise<void> => {
+    try {
+        await install( win );
 
-    const { url, serverProcess } = await startServer();
-    app.on( 'will-quit', () => serverProcess.kill() );
+        const { url, serverProcess } = await startServer();
+        app.on( 'will-quit', () => serverProcess.kill() );
 
-    return url;
+        win.send( Events.Started, url );
+    }
+    catch ( e ) {
+        win.send( Events.Error, e );
+    }
 } );
 
-ipcMain.handle( 'open', ( undefined, url: string ): void => {
+ipcMain.on( Commands.Open, ( undefined, url: string ): void => {
     shell.openExternal( url );
 } );
 
