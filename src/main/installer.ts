@@ -20,8 +20,8 @@ async function createProject ( win?: WebContents ): Promise<void>
 
     const runComposer = async ( command: string[] ) => {
         command.unshift(
-            // Use the included CA bundle to avoid issues with outdated certificates
-            // provided by the operating system.
+            // Explicitly pass the cURL CA bundle so that HTTPS requests from Composer can
+            // succeed on Windows.
             '-d',
             'curl.cainfo=' + path.join( bin, 'cacert.pem' ),
             // We use an unpacked version of Composer because the phar file has a shebang

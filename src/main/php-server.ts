@@ -32,7 +32,6 @@ export default async (): Promise<{ url: string, serverProcess: ChildProcess }> =
         [
             // Explicitly pass the cURL CA bundle so that HTTPS requests from Drupal can
             // succeed on Windows.
-            // @see https://curl.haxx.se/ca/cacert.pem
             '-d', `curl.cainfo="${caFile}"`,
             '-S', url.substring( 7 ),
             '.ht.router.php',
