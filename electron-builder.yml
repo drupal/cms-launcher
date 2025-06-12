@@ -26,14 +26,14 @@ electronFuses:
   enableNodeCliInspectArguments: false
   onlyLoadAppFromAsar: false
 
-# Ensure that the PHP and Composer executables are available in the app's resources
-# directory, but not the in the ASAR archive.
+# In conjunction with `files` below, ensure that the PHP and Composer executables
+# are in the app's resources directory, not the ASAR archive.
 extraResources:
   - 'bin/**'
 
 files:
   - '!**/bin/**'
-  # We're using a bundler, so exclude source code from the packaged app.
+  # Since we're using a bundler, exclude source code from the packaged app.
   - '!**/src/**'
 
 linux:
