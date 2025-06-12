@@ -2,11 +2,6 @@ appId: 'org.drupal.cms-launcher'
 
 artifactName: '${productName}.${ext}'
 
-# Not recommended by Electron Builder, but we need this for now so that
-# the PHP and Composer executables are available to the launcher.
-# @todo Can we use the `asarUnpack` option instead?
-asar: false
-
 dmg:
   contents:
     - name: 'Launch Drupal CMS.app'
@@ -30,6 +25,16 @@ electronFuses:
   enableNodeOptionsEnvironmentVariable: false
   enableNodeCliInspectArguments: false
   onlyLoadAppFromAsar: false
+
+# Ensure that the PHP and Composer executables are available in the app's resources
+# directory, but not the in the ASAR archive.
+extraResources:
+  - 'resources/**'
+
+files:
+  - '!**/resources/**'
+  # We're using a bundler, so exclude source code from the packaged app.
+  - '!**/src/**'
 
 linux:
   # By default, an AppImage and a snap are built. For the moment, we'll stick with AppImage.

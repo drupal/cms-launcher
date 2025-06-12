@@ -136,3 +136,5 @@ dist
 .pnp.*
 
 /out
+/resources/composer
+/resources/php
