@@ -1,7 +1,7 @@
-import { projectRoot, bin } from './config';
+import { bin, installLog, projectRoot } from './config';
 import { Events } from "../Drupal";
 import { type WebContents } from 'electron';
-import { access, copyFile, appendFile } from 'node:fs/promises';
+import { access, appendFile, copyFile, type FileHandle, open, rm } from 'node:fs/promises';
 import { execFile } from 'node:child_process';
 import { randomBytes } from 'node:crypto';
 import path from 'node:path';
@@ -18,7 +18,19 @@ async function createProject ( win?: WebContents ): Promise<void>
     // Let the renderer know we're about to install Drupal.
     win?.send( Events.InstallStarted );
 
+    // Try to open a file where we can log Composer's output for forensic purposes
+    // if an error occurs.
+    let log: FileHandle | null;
+    try {
+        log = await open( installLog, 'w' );
+    }
+    catch ( e ) {
+        log = null;
+    }
+
     const runComposer = async ( command: string[] ) => {
+        log?.write( '\n> ' + command.join( ' ' ) + '\n' );
+
         command.unshift(
             // Explicitly pass the cURL CA bundle so that HTTPS requests from Composer can
             // succeed on Windows.
@@ -53,10 +65,11 @@ async function createProject ( win?: WebContents ): Promise<void>
         // if we don't have a valid stderr stream.
         readline.createInterface( task.child.stderr! )
             .on( 'line', ( line ) => {
+                log?.write( line + '\n' );
                 win?.send( Events.Output, line );
             });
 
-        return task;
+        return task.catch( log?.close );
     }
 
     // Create the project, but don't install dependencies yet.
@@ -74,6 +87,15 @@ async function createProject ( win?: WebContents ): Promise<void>
     // Finally, install dependencies. We suppress the progress bar because it
     // looks lame when streamed to the renderer.
     await runComposer([ 'install', '--no-progress', `--working-dir=${projectRoot}` ]);
+
+    // All done, we can stop logging.
+    await log?.close();
+    try {
+        await rm ( installLog );
+    }
+    catch ( e ) {
+        // Couldn't delete the log file -- no big deal.
+    }
 
     const webRoot = getWebRoot( projectRoot );
 

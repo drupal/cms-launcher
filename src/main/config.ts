@@ -11,3 +11,5 @@ export const projectRoot: string = path.join( app.getPath('documents'), 'drupal'
 export const bin: string = app.isPackaged
     ? path.join( process.resourcesPath, 'bin')
     : path.join( __dirname, '..', '..', 'bin' );
+
+export const installLog: string = path.join( app.getPath( 'temp' ), 'install.log' );
