@@ -19,10 +19,16 @@ async function createProject ( win?: WebContents ): Promise<void>
     win?.send( Events.InstallStarted );
 
     const runComposer = async ( command: string[] ) => {
-        // We use an unpacked version of Composer because the phar file has a shebang
-        // line that breaks us, due to GUI-launched Electron apps not inheriting the
-        // parent environment in macOS and Linux.
-        command.unshift( path.join( 'composer', 'bin', 'composer' ) );
+        command.unshift(
+            // Use the included CA bundle to avoid issues with outdated certificates
+            // provided by the operating system.
+            '-d',
+            'curl.cainfo=' + path.join( bin, 'cacert.pem' ),
+            // We use an unpacked version of Composer because the phar file has a shebang
+            // line that breaks us, due to GUI-launched Electron apps not inheriting the
+            // parent environment in macOS and Linux.
+            path.join( 'composer', 'bin', 'composer' ),
+        );
 
         const task = execFileAsPromise( path.join( bin, 'php' ), command, {
             // Run from the `bin` directory so we can use a relative path to Composer.
