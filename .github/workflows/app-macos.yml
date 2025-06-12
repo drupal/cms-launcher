@@ -111,6 +111,7 @@ jobs:
           cp $(which composer) composer.phar
           phar extract -f composer.phar ./composer
           rm composer.phar
+          curl https://curl.haxx.se/ca/cacert.pem --fail --location --output cacert.pem
           yarn run build
           yarn run make
 
