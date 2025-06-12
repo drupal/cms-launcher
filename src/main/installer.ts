@@ -18,26 +18,27 @@ async function createProject ( win?: WebContents ): Promise<void>
     // Let the renderer know we're about to install Drupal.
     win?.send( Events.InstallStarted );
 
-    // Send a customized copy of the current environment variables to Composer.
-    const env = Object.assign( {}, process.env );
-    // Set COMPOSER_ROOT_VERSION so that Composer won't try to guess the root
-    // package version, which would cause it to invoke Git and other
-    // command-line utilities that might not be installed and could therefore
-    // raise unexpected warnings on macOS.
-    // @see https://getcomposer.org/doc/03-cli.md#composer-root-version
-    env.COMPOSER_ROOT_VERSION = '1.0.0';
-    // For performance reasons, skip security audits for now.
-    // @see https://getcomposer.org/doc/03-cli.md#composer-no-audit
-    env.COMPOSER_NO_AUDIT = '1';
-
     const runComposer = async ( command: string[] ) => {
         // We use an unpacked version of Composer because the phar file has a shebang
         // line that breaks us, due to GUI-launched Electron apps not inheriting the
         // parent environment in macOS and Linux.
-        command.unshift( path.join( bin, 'composer', 'bin', 'composer' ) );
+        command.unshift( path.join( 'composer', 'bin', 'composer' ) );
 
         const task = execFileAsPromise( path.join( bin, 'php' ), command, {
-            env,
+            // Run from the `bin` directory so we can use a relative path to Composer.
+            cwd: bin,
+            // Send a customized copy of the current environment variables to Composer.
+            env: Object.assign( {}, process.env, {
+                // Set COMPOSER_ROOT_VERSION so that Composer won't try to guess the root
+                // package version, which would cause it to invoke Git and other
+                // command-line utilities that might not be installed and could therefore
+                // raise unexpected warnings on macOS.
+                // @see https://getcomposer.org/doc/03-cli.md#composer-root-version
+                COMPOSER_ROOT_VERSION: '1.0.0',
+                // For performance reasons, skip security audits for now.
+                // @see https://getcomposer.org/doc/03-cli.md#composer-no-audit
+                COMPOSER_NO_AUDIT: '1',
+            } ),
             // No part of installing Drupal CMS should take longer than 10 minutes.
             timeout: 600000,
         } );
