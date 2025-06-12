@@ -18,12 +18,6 @@ async function createProject ( win?: WebContents ): Promise<void>
     // Let the renderer know we're about to install Drupal.
     win?.send( Events.InstallStarted );
 
-    const php = path.join( bin, 'php' );
-    // We use an unpacked version of Composer because the phar file has a shebang
-    // line that breaks us, due to GUI-launched Electron apps not inheriting the
-    // parent environment in macOS and Linux.
-    const composer = path.join( bin, 'composer', 'bin', 'composer' );
-
     // Send a customized copy of the current environment variables to Composer.
     const env = Object.assign( {}, process.env );
     // Set COMPOSER_ROOT_VERSION so that Composer won't try to guess the root
@@ -36,8 +30,17 @@ async function createProject ( win?: WebContents ): Promise<void>
     // @see https://getcomposer.org/doc/03-cli.md#composer-no-audit
     env.COMPOSER_NO_AUDIT = '1';
 
-    const execAndStreamOutput = async ( command: string, _arguments: string[], options: object ) => {
-        const task = execFileAsPromise( command, _arguments, options );
+    const runComposer = async ( command: string[] ) => {
+        // We use an unpacked version of Composer because the phar file has a shebang
+        // line that breaks us, due to GUI-launched Electron apps not inheriting the
+        // parent environment in macOS and Linux.
+        command.unshift( path.join( bin, 'composer', 'bin', 'composer' ) );
+
+        const task = execFileAsPromise( path.join( bin, 'php' ), command, {
+            env,
+            // No part of installing Drupal CMS should take longer than 10 minutes.
+            timeout: 600000,
+        } );
 
         // @todo Rather than use the not-null assertion operator, degrade gracefully
         // if we don't have a valid stderr stream.
@@ -50,44 +53,20 @@ async function createProject ( win?: WebContents ): Promise<void>
     }
 
     // Create the project, but don't install dependencies yet.
-    await execAndStreamOutput(
-        php,
-        [ composer, 'create-project', '--no-install', 'drupal/cms', projectRoot ],
-        { env },
-    );
+    await runComposer([ 'create-project', '--no-install', 'drupal/cms', projectRoot ]);
+
     // Prevent core's scaffold plugin from trying to dynamically determine if
     // the project is a Git repository, since that will make it try to run Git,
     // which might not be installed.
-    await execAndStreamOutput(
-        php,
-        [ composer, 'config', 'extra.drupal-scaffold.gitignore', 'false', '--json' ],
-        {
-            cwd: projectRoot,
-            env,
-        },
-    );
+    await runComposer([ 'config', 'extra.drupal-scaffold.gitignore', 'false', '--json', `--working-dir=${projectRoot}` ]);
+
     // Require Composer as a dev dependency so that Package Manager can use it
     // without relying on this app.
-    await execAndStreamOutput(
-        php,
-        [ composer, 'require', '--dev', '--no-update', 'composer/composer' ],
-        {
-            cwd: projectRoot,
-            env,
-        },
-    );
+    await runComposer([ 'require', '--dev', '--no-update', 'composer/composer', `--working-dir=${projectRoot}` ]);
+
     // Finally, install dependencies. We suppress the progress bar because it
     // looks lame when streamed to the renderer.
-    await execAndStreamOutput(
-        php,
-        [ composer, 'install', '--no-progress' ],
-        {
-            cwd: projectRoot,
-            env,
-            // It should take less than 10 minutes to install Drupal CMS.
-            timeout: 600000,
-        }
-    );
+    await runComposer([ 'install', '--no-progress', `--working-dir=${projectRoot}` ]);
 
     const webRoot = getWebRoot( projectRoot );
 
