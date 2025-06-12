@@ -29,10 +29,10 @@ electronFuses:
 # Ensure that the PHP and Composer executables are available in the app's resources
 # directory, but not the in the ASAR archive.
 extraResources:
-  - 'resources/**'
+  - 'bin/**'
 
 files:
-  - '!**/resources/**'
+  - '!**/bin/**'
   # We're using a bundler, so exclude source code from the packaged app.
   - '!**/src/**'
 

@@ -1,6 +1,6 @@
 import { projectRoot, bin } from './config';
 import { Events } from "../Drupal";
-import { WebContents } from 'electron';
+import { type WebContents } from 'electron';
 import { access, copyFile, appendFile } from 'node:fs/promises';
 import { execFile } from 'node:child_process';
 import { randomBytes } from 'node:crypto';
@@ -18,7 +18,11 @@ async function createProject ( win?: WebContents ): Promise<void>
     // Let the renderer know we're about to install Drupal.
     win?.send( Events.InstallStarted );
 
-    const { php, composer } = bin;
+    const php = path.join( bin, 'php' );
+    // We use an unpacked version of Composer because the phar file has a shebang
+    // line that breaks us, due to GUI-launched Electron apps not inheriting the
+    // parent environment in macOS and Linux.
+    const composer = path.join( bin, 'composer', 'bin', 'composer' );
 
     // Send a customized copy of the current environment variables to Composer.
     const env = Object.assign( {}, process.env );
