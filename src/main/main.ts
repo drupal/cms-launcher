@@ -16,7 +16,7 @@ Sentry.init({
                 contentType: 'text/plain',
             }];
         }
-        catch ( e ) {
+        catch {
             // Couldn't read the install log, so just omit it.
         }
         return event;

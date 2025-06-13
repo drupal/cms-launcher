@@ -24,7 +24,7 @@ async function createProject ( win?: WebContents ): Promise<void>
     try {
         log = await open( installLog, 'w' );
     }
-    catch ( e ) {
+    catch {
         log = null;
     }
 
@@ -40,6 +40,13 @@ async function createProject ( win?: WebContents ): Promise<void>
             // line that breaks us, due to GUI-launched Electron apps not inheriting the
             // parent environment in macOS and Linux.
             path.join( 'composer', 'bin', 'composer' ),
+        );
+        command.push(
+            // Disable ANSI output (i.e., colors) so the log is readable.
+            '--no-ansi',
+            // We don't want Composer to ask us any questions, since we have no way for
+            // the user to answer them.
+            '--no-interaction',
         );
 
         const task = execFileAsPromise( path.join( bin, 'php' ), command, {
@@ -91,9 +98,9 @@ async function createProject ( win?: WebContents ): Promise<void>
     // All done, we can stop logging.
     await log?.close();
     try {
-        await rm ( installLog );
+        await rm( installLog );
     }
-    catch ( e ) {
+    catch {
         // Couldn't delete the log file -- no big deal.
     }
 
