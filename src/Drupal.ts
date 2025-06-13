@@ -22,15 +22,15 @@ export interface Drupal
 {
     start: () => void;
 
-    open: ( url: string ) => void;
+    open: (url: string) => void;
 
-    onInstallStarted: ( callback: () => void ) => void;
+    onInstallStarted: (callback: () => void) => void;
 
-    onInstallFinished: ( callback: () => void ) => void;
+    onInstallFinished: (callback: () => void) => void;
 
-    onOutput: ( callback: ( line: string ) => void ) => void;
+    onOutput: (callback: (line: string) => void) => void;
 
-    onStart: ( callback: ( url: string ) => void ) => void;
+    onStart: (callback: (url: string) => void) => void;
 
-    onError: ( callback: ( message: string ) => void ) => void;
+    onError: (callback: (message: string) => void) => void;
 }
