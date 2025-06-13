@@ -23,11 +23,6 @@ jobs:
     steps:
       - uses: actions/checkout@v4
 
-      - name: Set up PHP
-        uses: shivammathur/setup-php@v2
-        with:
-          tools: composer
-
       - name: Set up Node
         uses: actions/setup-node@v4
         with:
@@ -55,9 +50,17 @@ jobs:
         with:
           name: php-windows
 
+      - name: Determine latest Composer version
+        id: composer-latest
+        uses: pozetroninc/github-action-get-latest-release@master
+        with:
+          repository: composer/composer
+          token: ${{ secrets.GITHUB_TOKEN }}
+
       - name: Create application bundle
         shell: bash
         run: |
+          echo ${{ steps.composer-latest.release }}
           mkdir -p bin
           mv php.exe bin
           cd bin
