@@ -65,13 +65,15 @@ jobs:
           token: ${{ secrets.GITHUB_TOKEN }}
           path: './bin/composer'
 
+      - name: Clean up Composer code base
+        run: rm -r -f .git doc phpstan tests
+        working-directory: './bin/composer'
+
       - name: Create application bundle
         shell: bash
         run: |
-          ls -lR bin
           mv php.exe bin
-          cd bin
-          curl https://curl.haxx.se/ca/cacert.pem --fail --location --output cacert.pem
+          curl https://curl.haxx.se/ca/cacert.pem --fail --location --output ./bin/cacert.pem
           yarn run build
           yarn run make
 
