@@ -78,7 +78,7 @@ jobs:
         run: |
           chmod +x php
           mv php bin
-          curl https://curl.haxx.se/ca/cacert.pem --fail --location --output ./bin/cacert.pem
+          curl https://curl.haxx.se/ca/cacert.pem --fail --location --output cacert.pem
           yarn run build
           yarn run make
 

@@ -9,7 +9,10 @@ export const projectRoot: string = path.join(app.getPath('documents'), 'drupal')
 
 // Where additional resources are stored. This varies depending on whether the app has
 // been packaged for release.
-export const resourceDir = app.isPackaged ? process.resourcesPath : app.getAppPath();
+export const resourceDir: string = app.isPackaged ? process.resourcesPath : app.getAppPath();
+
+// The Mozilla CA bundle from cURL.
+export const caBundle: string = path.join(resourceDir, 'cacert.pem');
 
 // Absolute path of the directory with the PHP and Composer binaries.
 export const bin: string = path.join(resourceDir, 'bin');

@@ -1,4 +1,4 @@
-import { bin, installLog, projectRoot, resourceDir } from './config';
+import { bin, caBundle, installLog, projectRoot, resourceDir } from './config';
 import { Events } from "../Drupal";
 import { type WebContents } from 'electron';
 import { execFile } from 'node:child_process';
@@ -45,7 +45,7 @@ async function createProject (win?: WebContents): Promise<void>
             // Explicitly pass the cURL CA bundle so that HTTPS requests from Composer can
             // succeed on Windows.
             '-d',
-            `curl.cainfo="${path.join(bin, 'cacert.pem')}"`,
+            `curl.cainfo="${caBundle}"`,
             // We use an unpacked version of Composer because the phar file has a shebang
             // line that breaks us, due to GUI-launched Electron apps not inheriting the
             // parent environment in macOS and Linux.

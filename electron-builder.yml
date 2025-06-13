@@ -30,6 +30,7 @@ extraResources:
   # In conjunction with `files` below, ensure that the PHP and Composer executables
   # are in the app's resources directory, not the ASAR archive.
   - 'bin/**'
+  - cacert.pem
   - settings.local.php
 
 files:

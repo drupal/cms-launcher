@@ -1,4 +1,4 @@
-import { projectRoot, bin } from './config';
+import { bin, caBundle, projectRoot } from './config';
 import { default as getPort, portNumbers } from 'get-port';
 import { type ChildProcess, execFile } from 'node:child_process';
 import path from 'node:path';
@@ -10,7 +10,6 @@ export default async (): Promise<{ url: string, serverProcess: ChildProcess }> =
         port: portNumbers(8888, 9999),
     });
     const url = `http://localhost:${port}`;
-    const caFile = path.join(bin, 'cacert.pem');
 
     // Start the built-in PHP web server.
     const serverProcess = execFile(
@@ -18,7 +17,7 @@ export default async (): Promise<{ url: string, serverProcess: ChildProcess }> =
         [
             // Explicitly pass the cURL CA bundle so that HTTPS requests from Drupal can
             // succeed on Windows.
-            '-d', `curl.cainfo="${caFile}"`,
+            '-d', `curl.cainfo="${caBundle}"`,
             '-S', url.substring(7),
             '.ht.router.php',
         ],
