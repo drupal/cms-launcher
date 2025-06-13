@@ -1,7 +1,13 @@
+# Builds the PHP interpreter as a fat binary for both x64 (Intel) and
+# arm64 (Apple silicon) architectures.
 name: PHP (macOS)
 
 on:
   workflow_call:
+    outputs:
+      artifact-id:
+        description: The ID of the artifact containing the built PHP interpreter as a fat binary.
+        value: ${{ jobs.build.outputs.artifact-id }}
   workflow_dispatch:
 
 env:
@@ -11,8 +17,8 @@ env:
   PHP_VERSION: 8.3
 
 jobs:
-  build-platform:
-    name: Build
+  build-arch:
+    name: Build for ${{ runner.arch }}
     strategy:
       matrix:
         os:
@@ -72,11 +78,13 @@ jobs:
           path: buildroot/bin
           overwrite: true
 
-  fat:
-    name: Fat binary
+  build:
+    name: Create fat binary
     runs-on: macos-latest
+    outputs:
+      artifact-id: ${{ steps.artifact.outputs.artifact-id }}
     needs:
-      - build-platform
+      - build-arch
     steps:
       - name: Download arm64 binary
         uses: actions/download-artifact@v4
@@ -104,6 +112,7 @@ jobs:
           name: php-X64
 
       - name: Upload fat binary
+        id: artifact
         uses: actions/upload-artifact@v4
         with:
           name: php-macos

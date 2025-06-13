@@ -2,6 +2,10 @@ name: PHP (Windows)
 
 on:
   workflow_call:
+    outputs:
+      artifact-id:
+        description: The ID of the artifact containing the built PHP interpreter.
+        value: ${{ jobs.build.outputs.artifact-id }}
   workflow_dispatch:
 
 env:
@@ -14,6 +18,8 @@ jobs:
   build:
     name: Build
     runs-on: windows-latest
+    outputs:
+      artifact-id: ${{ steps.artifact.outputs.artifact-id }}
     steps:
       - uses: actions/checkout@v4
         with:
@@ -53,6 +59,7 @@ jobs:
 
       # Upload the built interpreters.
       - uses: actions/upload-artifact@v4
+        id: artifact
         with:
           name: php-windows
           path: buildroot/bin

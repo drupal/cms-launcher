@@ -53,7 +53,7 @@ jobs:
       - name: Download PHP interpreter
         uses: actions/download-artifact@v4
         with:
-          name: php-windows
+          artifact-ids: ${{ needs.php.outputs.artifact-id }}
 
       - name: Create application bundle
         shell: bash

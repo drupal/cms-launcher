@@ -11,9 +11,16 @@ on:
   workflow_dispatch:
 
 jobs:
-  php:
-    name: PHP
+  php-X64:
+    name: PHP (x64)
     uses: ./.github/workflows/php-linux.yml
+    with:
+      runner: ubuntu-latest
+  php-ARM64:
+    name: PHP (arm64)
+    uses: ./.github/workflows/php-linux.yml
+    with:
+      runner: ubuntu-22.04-arm
 
   app:
     name: App
@@ -58,7 +65,7 @@ jobs:
       - name: Download PHP interpreter
         uses: actions/download-artifact@v4
         with:
-          name: php-linux-${{ runner.arch }}
+          artifact-ids: ${{ needs[format('php-{0}', runner.arch)].outputs.artifact-id }}
 
       - name: Create application bundle
         run: |
@@ -72,11 +79,6 @@ jobs:
           curl https://curl.haxx.se/ca/cacert.pem --fail --location --output cacert.pem
           yarn run build
           yarn run make
-
-      - name: Delete PHP interpreter artifact
-        uses: geekyeggo/delete-artifact@v5
-        with:
-          name: php-linux-${{ runner.os }}
 
       - name: Upload archive
         uses: actions/upload-artifact@v4
