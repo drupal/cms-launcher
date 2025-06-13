@@ -92,7 +92,9 @@ jobs:
         uses: actions/download-artifact@v4
         with:
           artifact-ids: ${{ needs.php.outputs.artifact-id }}
-          path: bin
+
+      - name: Create bin directory
+        run: mv php-macos bin
 
       - name: Extract Composer
         run: |

@@ -67,7 +67,9 @@ jobs:
         uses: actions/download-artifact@v4
         with:
           artifact-ids: ${{ needs[format('php-{0}', runner.arch)].outputs.artifact-id }}
-          path: bin
+
+      - name: Create bin directory
+        run: mv php-linux-${{ matrix.runner }} bin
 
       - name: Extract Composer
         run: |
