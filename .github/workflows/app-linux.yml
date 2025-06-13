@@ -68,6 +68,9 @@ jobs:
         with:
           artifact-ids: ${{ needs[format('php-{0}', runner.arch)].outputs.artifact-id }}
 
+      - name: Show me the money
+        run: ls
+
       - name: Create application bundle
         run: |
           mkdir -p bin
