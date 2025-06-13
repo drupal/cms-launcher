@@ -66,6 +66,7 @@ jobs:
           php.exe /c/tools/php/pharcommand.phar extract -f composer.phar ./composer
           rm composer.phar
         working-directory: bin
+        shell: bash
 
       - name: Create application bundle
         run: |

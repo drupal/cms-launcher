@@ -78,9 +78,6 @@ jobs:
           rm composer.phar
         working-directory: bin
 
-      - name: Show me the money
-        run: ls bin
-
       - name: Create application bundle
         run: |
           chmod +x ./bin/php
