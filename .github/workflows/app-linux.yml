@@ -31,7 +31,8 @@ jobs:
           - ubuntu-22.04-arm # arm64
     runs-on: ${{ matrix.os }}
     needs:
-      - php
+      - php-X64
+      - php-ARM64
     steps:
       - uses: actions/checkout@v4
 

@@ -91,7 +91,7 @@ jobs:
       - name: Download PHP interpreter
         uses: actions/download-artifact@v4
         with:
-          artifact-ids: {{ needs.php.outputs.artifact-id }}
+          artifact-ids: ${{ needs.php.outputs.artifact-id }}
 
       # Only notarize tagged releases; Electron Builder skips notarization if
       # these environment variables are undefined.

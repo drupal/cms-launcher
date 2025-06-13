@@ -9,6 +9,7 @@ on:
       # ubuntu-22.04-arm = arm64
       runner:
         required: true
+        type: string
     outputs:
       artifact-id:
         description: The ID of the artifact containing the built PHP interpreter.
@@ -23,7 +24,7 @@ env:
 
 jobs:
   build:
-    name: Build for ${{ runner.arch }}
+    name: Build on ${{ inputs.runner }}
     runs-on: ${{ inputs.runner }}
     outputs:
       artifact-id: ${{ steps.artifact.outputs.artifact-id }}
