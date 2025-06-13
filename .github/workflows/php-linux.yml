@@ -78,5 +78,5 @@ jobs:
         id: artifact
         with:
           name: php-linux-${{ inputs.runner }}
-          path: buildroot/bin
+          path: buildroot/bin/php
           overwrite: true

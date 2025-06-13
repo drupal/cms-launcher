@@ -62,5 +62,5 @@ jobs:
         id: artifact
         with:
           name: php-windows
-          path: buildroot/bin
+          path: buildroot/bin/php.exe
           overwrite: true

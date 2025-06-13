@@ -67,19 +67,21 @@ jobs:
         uses: actions/download-artifact@v4
         with:
           artifact-ids: ${{ needs[format('php-{0}', runner.arch)].outputs.artifact-id }}
+          path: bin
 
-      - name: Show me the money
-        run: ls php-linux-${{ matrix.runner }}
-
-      - name: Create application bundle
+      - name: Extract Composer
         run: |
-          mkdir -p bin
-          chmod +x php
-          mv php bin
-          cd bin
           cp $(which composer) composer.phar
           phar extract -f composer.phar ./composer
           rm composer.phar
+        working-directory: bin
+
+      - name: Show me the money
+        run: ls bin
+
+      - name: Create application bundle
+        run: |
+          chmod +x ./bin/php
           curl https://curl.haxx.se/ca/cacert.pem --fail --location --output cacert.pem
           yarn run build
           yarn run make
