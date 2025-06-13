@@ -80,6 +80,11 @@ jobs:
           yarn run build
           yarn run make
 
+      - name: Delete PHP interpreter artifact
+        uses: geekyeggo/delete-artifact@v5
+        with:
+          name: php-linux-${{ runner.arch }}
+
       - name: Upload archive
         uses: actions/upload-artifact@v4
         with:
