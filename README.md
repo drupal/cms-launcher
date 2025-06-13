@@ -68,6 +68,8 @@ After these steps, the application and all its data will be fully removed from y
 
 **A**: Most likely `x64`. `arm64` is for Rapberry Pi, embedded systems, and laptops such as Chromebooks, which use ARM processors. Use the `arch` or `dpkg --print-architecture` command to check, resulting in feedback such as `x86_64` and `amd64`, which work with `x64`. See [ARM or AMD](https://www.reddit.com/r/linux4noobs/comments/m6aywk/arm_or_amd/).
 
+**Note**: On Linux you need to make the file executable, by right-clicking and selecting "Executable as Program".
+
 ## Sponsorship
 
 This launcher is maintained by the [Drupal Association](https://www.drupal.org/association) and community contributors, but it depends on the amazing `static-php-cli` project, which is used to build the PHP interpreter bundled with the launcher. We heartily encourage you to [sponsor that project's maintainer](https://github.com/sponsors/crazywhalecc) and/or become a Drupal Association member.
