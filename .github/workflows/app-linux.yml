@@ -11,20 +11,28 @@ on:
   workflow_dispatch:
 
 jobs:
-  php:
-    name: PHP
+  php-X64:
+    name: PHP (x64)
     uses: ./.github/workflows/php-linux.yml
+    with:
+      runner: ubuntu-latest
+  php-ARM64:
+    name: PHP (arm64)
+    uses: ./.github/workflows/php-linux.yml
+    with:
+      runner: ubuntu-22.04-arm
 
   app:
-    name: App
+    name: Build app on ${{ matrix.runner }}
     strategy:
       matrix:
-        os:
-          - ubuntu-latest # x64
-          - ubuntu-22.04-arm # arm64
-    runs-on: ${{ matrix.os }}
+        runner:
+          - ubuntu-latest
+          - ubuntu-22.04-arm
+    runs-on: ${{ matrix.runner }}
     needs:
-      - php
+      - php-X64
+      - php-ARM64
     steps:
       - uses: actions/checkout@v4
 
@@ -58,17 +66,21 @@ jobs:
       - name: Download PHP interpreter
         uses: actions/download-artifact@v4
         with:
-          name: php-linux-${{ runner.arch }}
+          artifact-ids: ${{ needs[format('php-{0}', runner.arch)].outputs.artifact-id }}
 
-      - name: Create application bundle
+      - name: Create bin directory
+        run: mv php-linux-${{ matrix.runner }} bin
+
+      - name: Extract Composer
         run: |
-          mkdir -p bin
-          chmod +x php
-          mv php bin
-          cd bin
           cp $(which composer) composer.phar
           phar extract -f composer.phar ./composer
           rm composer.phar
+        working-directory: bin
+
+      - name: Create application bundle
+        run: |
+          chmod +x ./bin/php
           curl https://curl.haxx.se/ca/cacert.pem --fail --location --output cacert.pem
           yarn run build
           yarn run make
@@ -76,7 +88,7 @@ jobs:
       - name: Delete PHP interpreter artifact
         uses: geekyeggo/delete-artifact@v5
         with:
-          name: php-linux-${{ runner.os }}
+          name: php-linux-${{ matrix.runner }}
 
       - name: Upload archive
         uses: actions/upload-artifact@v4

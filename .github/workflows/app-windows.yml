@@ -50,20 +50,26 @@ jobs:
 #        if: steps.cache.outputs.cache-hit != 'true'
         run: yarn install
 
+      # For reference -- this will extract the uploaded artifact (which is a ZIP file)
+      # into a directory named after the artifact.
       - name: Download PHP interpreter
         uses: actions/download-artifact@v4
         with:
-          name: php-windows
+          artifact-ids: ${{ needs.php.outputs.artifact-id }}
 
-      - name: Create application bundle
-        shell: bash
+      - name: Create bin directory
+        run: mv php-windows bin
+
+      - name: Extract Composer
         run: |
-          mkdir -p bin
-          mv php.exe bin
-          cd bin
           cp $(which composer) composer.phar
           php.exe /c/tools/php/pharcommand.phar extract -f composer.phar ./composer
           rm composer.phar
+        working-directory: bin
+        shell: bash
+
+      - name: Create application bundle
+        run: |
           curl https://curl.haxx.se/ca/cacert.pem --fail --location --output cacert.pem
           yarn run build
           yarn run make

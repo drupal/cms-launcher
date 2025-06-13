@@ -2,6 +2,18 @@ name: PHP (Linux)
 
 on:
   workflow_call:
+    inputs:
+      # Which runner to use to build the PHP interpreter. This will determine
+      # the architecture for which it's built.
+      # ubuntu-latest = x64
+      # ubuntu-22.04-arm = arm64
+      runner:
+        required: true
+        type: string
+    outputs:
+      artifact-id:
+        description: The ID of the artifact containing the built PHP interpreter.
+        value: ${{ jobs.build.outputs.artifact-id }}
   workflow_dispatch:
 
 env:
@@ -11,14 +23,11 @@ env:
   PHP_VERSION: 8.3
 
 jobs:
-  build-platform:
-    name: Build
-    strategy:
-      matrix:
-        os:
-          - ubuntu-latest # x64
-          - ubuntu-22.04-arm # arm64
-    runs-on: ${{ matrix.os }}
+  build:
+    name: Build on ${{ inputs.runner }}
+    runs-on: ${{ inputs.runner }}
+    outputs:
+      artifact-id: ${{ steps.artifact.outputs.artifact-id }}
     steps:
       - uses: actions/checkout@v4
         with:
@@ -66,7 +75,8 @@ jobs:
 
       # Upload the built interpreters.
       - uses: actions/upload-artifact@v4
+        id: artifact
         with:
-          name: php-linux-${{ runner.arch }}
-          path: buildroot/bin
+          name: php-linux-${{ inputs.runner }}
+          path: buildroot/bin/php
           overwrite: true
