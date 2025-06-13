@@ -7,7 +7,12 @@ import process from 'node:process';
 // The Drupal project root.
 export const projectRoot: string = path.join(app.getPath('documents'), 'drupal');
 
-// Absolute path of the directory with the PHP and Composer binaries.
-export const bin: string = path.join(app.isPackaged ? process.resourcesPath : app.getAppPath(), 'bin');
+// Where additional resources are stored. This varies depending on whether the app has
+// been packaged for release.
+export const resourceDir = app.isPackaged ? process.resourcesPath : app.getAppPath();
 
+// Absolute path of the directory with the PHP and Composer binaries.
+export const bin: string = path.join(resourceDir, 'bin');
+
+// A file where we can log Composer's full output for debugging purposes.
 export const installLog: string = path.join(app.getPath('temp'), 'install.log');

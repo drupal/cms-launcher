@@ -1,4 +1,4 @@
-import { bin, installLog, projectRoot } from './config';
+import { bin, installLog, projectRoot, resourceDir } from './config';
 import { Events } from "../Drupal";
 import { type WebContents } from 'electron';
 import { execFile } from 'node:child_process';
@@ -120,7 +120,7 @@ async function createProject (win?: WebContents): Promise<void>
     // Manager to use our bundled copy of Composer.
     const localSettingsFile = path.join(siteDir, 'settings.local.php');
     await copyFile(
-        path.join(__dirname, '..', '..', 'settings.local.php'),
+        path.join(resourceDir, 'settings.local.php'),
         localSettingsFile,
     );
     await appendFile(
