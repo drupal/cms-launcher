@@ -57,16 +57,20 @@ jobs:
           repository: composer/composer
           token: ${{ secrets.GITHUB_TOKEN }}
 
+      - name: Check out latest Composer release
+        uses: actions/checkout@v4
+        with:
+          repository: composer/composer
+          ref: ${{ steps.composer-latest.outputs.release }}
+          token: ${{ secrets.GITHUB_TOKEN }}
+          path: './bin/composer'
+
       - name: Create application bundle
         shell: bash
         run: |
-          echo ${{ steps.composer-latest.release }}
-          mkdir -p bin
+          ls -lR bin
           mv php.exe bin
           cd bin
-          cp $(which composer) composer.phar
-          php.exe /c/tools/php/pharcommand.phar extract -f composer.phar ./composer
-          rm composer.phar
           curl https://curl.haxx.se/ca/cacert.pem --fail --location --output cacert.pem
           yarn run build
           yarn run make
