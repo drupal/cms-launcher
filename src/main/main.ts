@@ -1,11 +1,26 @@
+import { installLog } from './config';
 import { Commands, Events } from "../Drupal";
 import { app, BrowserWindow, ipcMain, shell } from 'electron';
 import install from './installer';
+import { readFile } from 'node:fs/promises';
 import path from 'node:path';
 import startServer from './php-server';
 import * as Sentry from "@sentry/electron/main";
 
 Sentry.init({
+    beforeSend: async ( event, hint ) => {
+        try {
+            hint.attachments = [{
+                filename: 'install.log',
+                data: await readFile( installLog, { encoding: 'utf-8' } ),
+                contentType: 'text/plain',
+            }];
+        }
+        catch ( e ) {
+            // Couldn't read the install log, so just omit it.
+        }
+        return event;
+    },
     dsn: "https://12eb563e258a6344878c10f16bbde85e@o4509476487233536.ingest.de.sentry.io/4509476503683152",
     // We don't need to send any PII at all, so explicitly disable it. It's disabled
     // by default, but we don't want it changing unexpectedly.
