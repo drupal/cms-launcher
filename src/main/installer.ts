@@ -45,7 +45,7 @@ async function createProject (win?: WebContents): Promise<void>
             // Explicitly pass the cURL CA bundle so that HTTPS requests from Composer can
             // succeed on Windows.
             '-d',
-            'curl.cainfo=' + path.join(bin, 'cacert.pem'),
+            `curl.cainfo="${path.join(bin, 'cacert.pem')}"`,
             // We use an unpacked version of Composer because the phar file has a shebang
             // line that breaks us, due to GUI-launched Electron apps not inheriting the
             // parent environment in macOS and Linux.
