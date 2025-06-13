@@ -1,9 +1,10 @@
 import { bin, installLog, projectRoot } from './config';
 import { Events } from "../Drupal";
 import { type WebContents } from 'electron';
-import { access, appendFile, copyFile, type FileHandle, open, rm } from 'node:fs/promises';
 import { execFile } from 'node:child_process';
 import { randomBytes } from 'node:crypto';
+import { type EventEmitter } from 'node:events';
+import { access, appendFile, copyFile, type FileHandle, open, rm } from 'node:fs/promises';
 import path from 'node:path';
 import readline from 'node:readline';
 import { promisify as toPromise } from 'node:util';
@@ -20,9 +21,18 @@ async function createProject ( win?: WebContents ): Promise<void>
 
     // Try to open a file where we can log Composer's output for forensic purposes
     // if an error occurs.
-    let log: FileHandle | null;
+    let log: any = null;
     try {
-        log = await open( installLog, 'w' );
+        // @todo Remove EventEmitter from the intersection type when Node's type
+        // definitions are updated to reflect the documentation.
+        // @see https://nodejs.org/docs/latest/api/fs.html#class-filehandle
+        log = await open( installLog, 'w' ) as ( FileHandle & EventEmitter );
+
+        // Invalidate the handle when the file is closed, so we don't try to write to
+        // it accidentally.
+        log.on( 'close', (): void => {
+            log = null;
+        } );
     }
     catch {
         log = null;
