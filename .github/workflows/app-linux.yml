@@ -23,13 +23,13 @@ jobs:
       runner: ubuntu-22.04-arm
 
   app:
-    name: App
+    name: Build app on ${{ matrix.runner }}
     strategy:
       matrix:
-        os:
-          - ubuntu-latest # x64
-          - ubuntu-22.04-arm # arm64
-    runs-on: ${{ matrix.os }}
+        runner:
+          - ubuntu-latest
+          - ubuntu-22.04-arm
+    runs-on: ${{ matrix.runner }}
     needs:
       - php-X64
       - php-ARM64
@@ -69,7 +69,7 @@ jobs:
           artifact-ids: ${{ needs[format('php-{0}', runner.arch)].outputs.artifact-id }}
 
       - name: Show me the money
-        run: ls
+        run: ls php-linux-${{ matrix.runner }}
 
       - name: Create application bundle
         run: |
@@ -87,7 +87,7 @@ jobs:
       - name: Delete PHP interpreter artifact
         uses: geekyeggo/delete-artifact@v5
         with:
-          name: php-linux-${{ runner.arch }}
+          name: php-linux-${{ matrix.runner }}
 
       - name: Upload archive
         uses: actions/upload-artifact@v4
