@@ -66,6 +66,7 @@ jobs:
           path: './bin/composer'
 
       - name: Clean up Composer code base
+        shell: bash
         run: rm -r -f .git doc phpstan tests
         working-directory: './bin/composer'
 
