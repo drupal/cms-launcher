@@ -28,11 +28,6 @@ jobs:
     steps:
       - uses: actions/checkout@v4
 
-      - name: Set up PHP
-        uses: shivammathur/setup-php@v2
-        with:
-          tools: composer
-
       - name: Set up Node
         uses: actions/setup-node@v4
         with:
@@ -55,6 +50,25 @@ jobs:
 #        if: steps.cache.outputs.cache-hit != 'true'
         run: yarn install
 
+      - name: Determine latest Composer version
+        id: composer-latest
+        uses: pozetroninc/github-action-get-latest-release@master
+        with:
+          repository: composer/composer
+          token: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Check out latest Composer release
+        uses: actions/checkout@v4
+        with:
+          repository: composer/composer
+          ref: ${{ steps.composer-latest.outputs.release }}
+          token: ${{ secrets.GITHUB_TOKEN }}
+          path: './bin/composer'
+
+      - name: Clean up Composer code base
+        run: rm -r -f .git doc phpstan tests
+        working-directory: './bin/composer'
+
       - name: Download PHP interpreter
         uses: actions/download-artifact@v4
         with:
@@ -62,14 +76,9 @@ jobs:
 
       - name: Create application bundle
         run: |
-          mkdir -p bin
           chmod +x php
           mv php bin
-          cd bin
-          cp $(which composer) composer.phar
-          phar extract -f composer.phar ./composer
-          rm composer.phar
-          curl https://curl.haxx.se/ca/cacert.pem --fail --location --output cacert.pem
+          curl https://curl.haxx.se/ca/cacert.pem --fail --location --output ./bin/cacert.pem
           yarn run build
           yarn run make
 
