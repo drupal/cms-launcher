@@ -17,13 +17,14 @@ This product includes PHP software, freely available from <http://www.php.net/so
 - [How it works](#how-it-works)
 - [Where are the Drupal files and database?](#where-are-the-drupal-files-and-database)
 - [How to uninstall](#how-to-uninstall)
+- [Select correct version](#select-correct-version)
 - [Sponsorship](#sponsorship)
 - [Contributing](#contributing)
 - [Limitations and alternatives](#limitations-and-alternatives)
 
 ## How to try it
 
-[Download the latest release](https://github.com/drupal/cms-launcher/releases) for your operating system.
+[Download the latest release](https://github.com/drupal/cms-launcher/releases) for your operating system, under "Assets". For Linux and macOS users not sure which version to download, see [Select correct version](#select-correct-version) below. On Linux, right-click file and select "Executable as Program".
 
 This app is under development and should not be considered stable. If you encounter buggy behavior, [please report it](https://github.com/drupal/cms-launcher/issues)!
 
@@ -56,6 +57,16 @@ To completely uninstall the Drupal CMS Launcher and remove all associated files:
    - Delete the _drupal_ directory to remove the site files and SQLite database.
 
 After these steps, the application and all its data will be fully removed from your system.
+
+## Select correct version
+
+**Q**: As a macOS user, should I download `silicon` or `Intel` version?
+
+**A**: TO DO: Add a method, as for Linux below .
+
+**Q**: As a Linux user, should I download `x64` or `arm64`?
+
+**A**: Most likely `x64`. `arm64` is for Rapberry Pi, embedded systems, and laptops such as Chromebooks, which use ARM processors. Use the `arch` or `dpkg --print-architecture` command to check, resulting in feedback such as `x86_64` and `amd64`, which work with `x64`. See [ARM or AMD](https://www.reddit.com/r/linux4noobs/comments/m6aywk/arm_or_amd/).
 
 ## Sponsorship
 
