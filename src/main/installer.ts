@@ -1,4 +1,4 @@
-import { bin, installLog, projectRoot, resourceDir } from './config';
+import { bin, installCommands, installLog, projectRoot, resourceDir, webRoot } from './config';
 import { Events } from "../Drupal";
 import { type WebContents } from 'electron';
 import { execFile } from 'node:child_process';
@@ -8,7 +8,6 @@ import { access, appendFile, copyFile, type FileHandle, open, rm } from 'node:fs
 import path from 'node:path';
 import readline from 'node:readline';
 import { promisify as toPromise } from 'node:util';
-import { getWebRoot } from './utils';
 
 // Create an awaitable version of execFile that won't block the main process,
 // which would produce a disconcerting beach ball on macOS.
@@ -38,7 +37,7 @@ async function createProject (win?: WebContents): Promise<void>
         log = null;
     }
 
-    const runComposer = async (command: string[]) => {
+    const runComposer = (command: string[]) => {
         log?.write('\n>>> ' + command.join(' ') + '\n');
 
         command.unshift(
@@ -86,21 +85,9 @@ async function createProject (win?: WebContents): Promise<void>
         return task.catch(log?.close);
     }
 
-    // Create the project, but don't install dependencies yet.
-    await runComposer(['create-project', '--no-install', 'drupal/cms', projectRoot]);
-
-    // Prevent core's scaffold plugin from trying to dynamically determine if
-    // the project is a Git repository, since that will make it try to run Git,
-    // which might not be installed.
-    await runComposer(['config', 'extra.drupal-scaffold.gitignore', 'false', '--json', `--working-dir=${projectRoot}`]);
-
-    // Require Composer as a dev dependency so that Package Manager can use it
-    // without relying on this app.
-    await runComposer(['require', '--dev', '--no-update', 'composer/composer', `--working-dir=${projectRoot}`]);
-
-    // Finally, install dependencies. We suppress the progress bar because it
-    // looks lame when streamed to the renderer.
-    await runComposer(['install', '--no-progress', `--working-dir=${projectRoot}`]);
+    for (const command of installCommands) {
+        await runComposer(command);
+    }
 
     // All done, we can stop logging.
     await log?.close();
@@ -110,8 +97,6 @@ async function createProject (win?: WebContents): Promise<void>
     catch {
         // Couldn't delete the log file -- no big deal.
     }
-
-    const webRoot = getWebRoot(projectRoot);
 
     const siteDir = path.join(webRoot, 'sites', 'default');
     // Create a local settings file so we can skip database set-up in the

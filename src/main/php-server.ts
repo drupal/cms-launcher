@@ -1,9 +1,8 @@
-import { projectRoot, bin } from './config';
+import { projectRoot, bin, webRoot } from './config';
 import { default as getPort, portNumbers } from 'get-port';
 import { type ChildProcess, execFile } from 'node:child_process';
 import path from 'node:path';
 import readline from 'node:readline';
-import { getWebRoot } from './utils';
 
 export default async (): Promise<{ url: string, serverProcess: ChildProcess }> => {
     const port = await getPort({
@@ -23,7 +22,7 @@ export default async (): Promise<{ url: string, serverProcess: ChildProcess }> =
             '.ht.router.php',
         ],
         {
-            cwd: getWebRoot(projectRoot),
+            cwd: webRoot,
         },
     );
     const resolveWith = { url, serverProcess };
