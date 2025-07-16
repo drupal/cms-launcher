@@ -38,16 +38,19 @@ files:
   - '!**/src/**'
 
 linux:
+  artifactName: 'Drupal CMS for Linux (${arch}).${ext}'
   # By default, an AppImage and a snap are built. For the moment, we'll stick with AppImage.
   target: AppImage
 
 mac:
+  artifactName: 'Drupal CMS for macOS (${arch}).${ext}'
   # By default, both a ZIP and a DMG are built. We only need a DMG.
   target: dmg
 
 productName: 'Launch Drupal CMS'
 
 win:
+  artifactName: 'Drupal CMS for Windows.${ext}'
   signtoolOptions:
     # We use Azure Trusted Signing as a separate step on CI.
     # @see .github/workflows/app-windows.yml

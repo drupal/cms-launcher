@@ -73,6 +73,8 @@ jobs:
           curl https://curl.haxx.se/ca/cacert.pem --fail --location --output cacert.pem
           yarn run build
           yarn run make
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
       - name: Delete PHP interpreter artifacts
         uses: geekyeggo/delete-artifact@v5
@@ -95,10 +97,3 @@ jobs:
           file-digest: SHA256
           timestamp-rfc3161: http://timestamp.acs.microsoft.com
           timestamp-digest: SHA256
-
-      - name: Upload archive
-        uses: actions/upload-artifact@v4
-        with:
-          name: app-windows
-          path: './dist/win-unpacked'
-          overwrite: true
