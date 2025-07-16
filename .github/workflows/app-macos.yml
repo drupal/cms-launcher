@@ -118,17 +118,10 @@ jobs:
           curl https://curl.haxx.se/ca/cacert.pem --fail --location --output cacert.pem
           yarn run build
           yarn run make
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
       - name: Delete PHP interpreter artifact
         uses: geekyeggo/delete-artifact@v5
         with:
           name: php-macos
-
-      - name: Upload archive
-        uses: actions/upload-artifact@v4
-        with:
-          name: app-mac-${{ runner.arch }}
-          path: './dist/*.dmg'
-          # The DMG is already compressed.
-          compression-level: 0
-          overwrite: true

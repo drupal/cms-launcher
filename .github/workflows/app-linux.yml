@@ -84,17 +84,10 @@ jobs:
           curl https://curl.haxx.se/ca/cacert.pem --fail --location --output cacert.pem
           yarn run build
           yarn run make
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
       - name: Delete PHP interpreter artifact
         uses: geekyeggo/delete-artifact@v5
         with:
           name: php-linux-${{ matrix.runner }}
-
-      - name: Upload archive
-        uses: actions/upload-artifact@v4
-        with:
-          name: app-linux-${{ runner.arch }}
-          path: './dist/*.AppImage'
-          # The AppImage is already compressed.
-          compression-level: 0
-          overwrite: true
