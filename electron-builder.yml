@@ -1,8 +1,12 @@
 appId: 'org.drupal.cms-launcher'
 
+appImage:
+  artifactName: 'Drupal CMS for Linux (${arch}).${ext}'
+
 artifactName: '${productName}.${ext}'
 
 dmg:
+  artifactName: 'Drupal CMS for macOS (${arch}).${ext}'
   contents:
     - name: 'Launch Drupal CMS.app'
       # The coordinates refer to the *center* of the icon, not the top-left corner.
@@ -38,19 +42,19 @@ files:
   - '!**/src/**'
 
 linux:
-  artifactName: 'Drupal CMS for Linux (${arch}).${ext}'
   # By default, an AppImage and a snap are built. For the moment, we'll stick with AppImage.
   target: AppImage
 
 mac:
-  artifactName: 'Drupal CMS for macOS (${arch}).${ext}'
   # By default, both a ZIP and a DMG are built. We only need a DMG.
   target: dmg
+
+portable:
+  artifactName: 'Drupal CMS for Windows.${ext}'
 
 productName: 'Launch Drupal CMS'
 
 win:
-  artifactName: 'Drupal CMS for Windows.${ext}'
   signtoolOptions:
     # We use Azure Trusted Signing as a separate step on CI.
     # @see .github/workflows/app-windows.yml
