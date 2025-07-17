@@ -49,7 +49,7 @@ mac:
   # By default, both a ZIP and a DMG are built. We only need a DMG.
   target: dmg
 
-portable:
+nsis:
   artifactName: 'Drupal CMS for Windows.${ext}'
 
 productName: 'Launch Drupal CMS'
