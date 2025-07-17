@@ -3,8 +3,6 @@ appId: 'org.drupal.cms-launcher'
 appImage:
   artifactName: 'Drupal CMS for Linux (${arch}).${ext}'
 
-artifactName: '${productName}.${ext}'
-
 dmg:
   artifactName: 'Drupal CMS for macOS (${arch}).${ext}'
   contents:
