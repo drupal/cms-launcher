@@ -48,7 +48,7 @@ jobs:
 
       - name: Install dependencies
 #        if: steps.cache.outputs.cache-hit != 'true'
-        run: yarn workspaces focus --all --production
+        run: yarn install
 
       # For reference -- this will extract the uploaded artifact (which is a ZIP file)
       # into a directory named after the artifact.
