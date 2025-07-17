@@ -47,13 +47,20 @@ mac:
   # The artifact name cannot contain spaces, or it will be renamed before being attached
   # to a GitHub release.
   artifactName: 'Drupal_CMS-macOS-${arch}.${ext}'
-  # Build DMGs for both Intel and Apple silicon.
+  # Build for both Intel and Apple silicon. We need ZIP targets for auto-updating
+  # to work properly.
   target:
     -
       target: dmg
       arch: x64
     -
+      target: zip
+      arch: x64
+    -
       target: dmg
+      arch: arm64
+    -
+      target: zip
       arch: arm64
 
 productName: 'Launch Drupal CMS'
