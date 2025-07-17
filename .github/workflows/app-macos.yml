@@ -81,7 +81,7 @@ jobs:
 
       - name: Install dependencies
 #        if: steps.cache.outputs.cache-hit != 'true'
-        run: yarn install
+        run: yarn workspaces focus --all --production
 
       - name: Download PHP interpreter
         uses: actions/download-artifact@v4
