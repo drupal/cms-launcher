@@ -53,9 +53,11 @@ nsis:
 productName: 'Launch Drupal CMS'
 
 win:
-  signtoolOptions:
-    # We use Azure Trusted Signing as a separate step on CI.
-    # @see .github/workflows/app-windows.yml
-    sign: './build/disable-signtool.js'
+  azureSignOptions:
+    certificateProfileName: drupal-association-cert-profile
+    codeSigningAccountName: da-trusted-signing-001
+    endpoint: 'https://wus2.codesigning.azure.net/'
+    # Best guess.
+    publisherName: 'DrupalCon, Inc.'
   # On Windows, build a portable app that doesn't require installation.
   target: portable
