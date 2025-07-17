@@ -44,17 +44,17 @@ linux:
   target: AppImage
 
 mac:
-  # Build DMGs for both Intel and Apple silicon. Artifact names cannot contain spaces, or
-  # they will be renamed before being attached to a GitHub release.
+  # The artifact name cannot contain spaces, or it will be renamed before being attached
+  # to a GitHub release.
+  artifactName: 'Drupal_CMS-macOS-${arch}.${ext}'
+  # Build DMGs for both Intel and Apple silicon.
   target:
     -
       target: dmg
       arch: x64
-      artifactName: 'Drupal_CMS-macOS-Intel.${ext}'
     -
       target: dmg
       arch: arm64
-      artifactName: 'Drupal_CMS-macOS-Apple_silicon.${ext}'
 
 productName: 'Launch Drupal CMS'
 
