@@ -17,7 +17,7 @@ jobs:
 
   app:
     name: App
-    runs-on: macos-14
+    runs-on: macos-latest
     needs:
       - php
     steps:
@@ -103,7 +103,7 @@ jobs:
           chmod +x ./bin/php
           curl https://curl.haxx.se/ca/cacert.pem --fail --location --output cacert.pem
           yarn run build
-          yarn run make
+          npx electron-builder --universal
         env:
           APPLE_ID: ${{ secrets.APPLE_ID }}
           APPLE_APP_SPECIFIC_PASSWORD: ${{ secrets.APPLE_APP_SPECIFIC_PASSWORD }}
