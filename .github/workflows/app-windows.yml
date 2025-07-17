@@ -68,7 +68,7 @@ jobs:
         working-directory: bin
         shell: bash
 
-      - name: Create application bundle
+      - name: Publish application bundle
         run: |
           curl https://curl.haxx.se/ca/cacert.pem --fail --location --output cacert.pem
           yarn run build

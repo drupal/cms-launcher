@@ -6,7 +6,7 @@
   "scripts": {
     "build": "electron-vite build",
     "start": "electron-vite preview",
-    "make": "electron-builder --publish onTagOrDraft"
+    "make": "electron-builder"
   },
   "author": "Drupal Association",
   "license": "MIT",

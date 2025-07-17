@@ -78,7 +78,7 @@ jobs:
           rm composer.phar
         working-directory: bin
 
-      - name: Create application bundle
+      - name: Publish application bundle
         run: |
           chmod +x ./bin/php
           curl https://curl.haxx.se/ca/cacert.pem --fail --location --output cacert.pem

@@ -37,18 +37,30 @@ files:
   - '!**/src/**'
 
 linux:
+  # The artifact name cannot contain spaces, or it will be renamed before being attached
+  # to a GitHub release.
   artifactName: 'Drupal_CMS-Linux-${arch}.${ext}'
   # By default, an AppImage and a snap are built. For the moment, we'll stick with AppImage.
   target: AppImage
 
 mac:
+  # The artifact name cannot contain spaces, or it will be renamed before being attached
+  # to a GitHub release.
   artifactName: 'Drupal_CMS-macOS-${arch}.${ext}'
-  # By default, both a ZIP and a DMG are built. We only need a DMG.
-  target: dmg
+  # Build DMGs for both Intel and Apple silicon.
+  target:
+    -
+      target: dmg
+      arch: x64
+    -
+      target: dmg
+      arch: arm64
 
 productName: 'Launch Drupal CMS'
 
 win:
+  # The artifact name cannot contain spaces, or it will be renamed before being attached
+  # to a GitHub release.
   artifactName: 'Drupal_CMS-Windows.${ext}'
   azureSignOptions:
     certificateProfileName: drupal-association-cert-profile

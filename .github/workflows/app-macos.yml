@@ -17,12 +17,7 @@ jobs:
 
   app:
     name: App
-    strategy:
-      matrix:
-        os:
-          - macos-13  # x64
-          - macos-14  # arm64
-    runs-on: ${{ matrix.os }}
+    runs-on: macos-14
     needs:
       - php
     steps:
@@ -103,7 +98,7 @@ jobs:
           rm composer.phar
         working-directory: bin
 
-      - name: Create application bundle
+      - name: Publish application bundle
         run: |
           chmod +x ./bin/php
           curl https://curl.haxx.se/ca/cacert.pem --fail --location --output cacert.pem
