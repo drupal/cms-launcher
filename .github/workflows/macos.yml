@@ -61,6 +61,9 @@ jobs:
           composer install
           composer run build:php
           mv ./buildroot/bin/php ./php-${{ runner.arch }}
+        env:
+          # Allows static-php-cli to download its many dependencies more smoothly.
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         working-directory: build
 
       - name: Upload PHP binary
