@@ -10,9 +10,6 @@ on:
   workflow_call:
   workflow_dispatch:
 
-env:
-  GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-
 jobs:
   # The PHP interpreter needs to be its own job so it can be built for both x64 and arm64
   # architectures in parallel, before being merged into a universal binary while building
@@ -37,6 +34,7 @@ jobs:
         with:
           repository: crazywhalecc/static-php-cli
           ref: 2.6.1
+          token: ${{ secrets.GITHUB_TOKEN }}
 
       - if: steps.cache.outputs.cache-hit != 'true'
         name: "Set up PHP"
@@ -87,6 +85,8 @@ jobs:
     steps:
       - uses: actions/checkout@v4
 
+      # Download the PHP interpreter for both arm64 and x64 architectures; we'll combine
+      # them into a universal binary later, before building the app.
       - name: Download PHP binary for arm64
         uses: actions/download-artifact@v4
         with:
@@ -162,21 +162,22 @@ jobs:
       - name: Enable notarization and publishing for the release branch
         if: github.ref_name == 'main'
         run: |
-          # Set environment variables so Electron Builder will notarize in the next step.
+          # Electron Builder needs these environment variables to notarize the app.
           echo "APPLE_ID=${{ secrets.APPLE_ID }}" >> $GITHUB_ENV
           echo "APPLE_APP_SPECIFIC_PASSWORD=${{ secrets.APPLE_APP_SPECIFIC_PASSWORD }}" >> $GITHUB_ENV
           echo "APPLE_TEAM_ID=${{ secrets.APPLE_TEAM_ID }}" >> $GITHUB_ENV
           echo "PUBLISH=onTagOrDraft" >> $GITHUB_ENV
+          # Electron Builder needs our GitHub token to publish the app.
+          echo "GH_TOKEN=${{ secrets.GITHUB_TOKEN }}" >> $GITHUB_ENV
 
       - name: Create universal PHP binary, extract Composer, and make application
         run: |
+          # Combine the x64 and arm64 PHP binaries into a universal binary.
           lipo -create ./build/php-x64/php ./build/php-arm64/php -output ./bin/php
-          composer run extract --working-dir=build
-          chmod +x ./bin/php
-          curl https://curl.haxx.se/ca/cacert.pem --fail --location --output cacert.pem
-          yarn run build
+          source make.sh
           npx electron-builder --universal --publish=${{ env.PUBLISH }}
 
+      # For manual testing, upload the built artifact directly if we're not publishing it.
       - name: Upload distributable
         if: ${{ env.PUBLISH == 'never' }}
         uses: actions/upload-artifact@v4
