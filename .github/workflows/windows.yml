@@ -81,9 +81,10 @@ jobs:
 #          key: yarn-${{ runner.os }}-${{ hashFiles('yarn.lock') }}
 
       - name: Install dependencies
-#       if: steps.cache-yarn.outputs.cache-hit != 'true'
+#        if: steps.cache-yarn.outputs.cache-hit != 'true'
         run: yarn install
 
+      # If we're on a PR branch, we don't want Electron Builder to publish the app.
       - name: Enable publishing for release branch
         if: github.ref_name == 'main'
         run: |
@@ -91,7 +92,7 @@ jobs:
           # Electron Builder needs a token to publish releases.
           echo "GH_TOKEN=${{ secrets.GITHUB_TOKEN }}" >> $GITHUB_ENV
 
-      - name: Extract Composer and make application
+      - name: Make application
         run: |
           cp ./build/buildroot/bin/php.exe ./bin
           composer run assets --working-dir=build

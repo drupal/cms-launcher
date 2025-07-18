@@ -15,5 +15,9 @@
             "spc download --with-php=$PHP_VERSION --for-extensions=$PHP_EXTENSIONS --prefer-pre-built",
             "spc build $PHP_EXTENSIONS --build-cli --with-libs=freetype,libavif,libjpeg,libwebp --debug"
         ]
+    },
+    "script-descriptions": {
+        "assets": "Prepare app assets (extract Composer executable and download CA certificate bundle).",
+        "build:php": "Compile the PHP interpreter. Requires PHP_VERSION and PHP_EXTENSIONS environment variables."
     }
 }
