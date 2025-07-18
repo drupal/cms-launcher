@@ -1,0 +1,11 @@
+{
+    "require": {
+        "crazywhalecc/static-php-cli": "^2.6.1"
+    },
+    "autoload": {
+        "classmap": ["extract.php"]
+    },
+    "scripts": {
+        "extract": "Extractor::extract"
+    }
+}

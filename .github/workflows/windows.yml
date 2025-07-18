@@ -1,0 +1,112 @@
+name: Windows
+
+on:
+  push:
+    branches:
+      - main
+      # PR branches that alter the build process should be prefixed with `build/`, so
+      # that this workflow runs.
+      - 'build/**'
+  workflow_call:
+  workflow_dispatch:
+
+# Since only the x64 architecture is supported on Windows, there's only one job to
+# compile PHP and build the launcher.
+jobs:
+  build:
+    name: Build
+    runs-on: windows-latest
+    env:
+      # The extensions and libraries needed to build PHP. These need to be variables so we can
+      # use them to generate a cache key.
+      # @see https://static-php.dev/en/guide/cli-generator.html
+      PHP_EXTENSIONS: bz2,ctype,curl,dom,filter,gd,iconv,mbstring,opcache,openssl,pdo,pdo_sqlite,phar,session,simplexml,sqlite3,tokenizer,xml,xmlwriter,yaml,zip,zlib
+      PHP_LIBRARIES: libjpeg,libavif,freetype,libwebp
+      PHP_VERSION: 8.3
+      # Don't publish by default. This is overridden for the release branch, below.
+      PUBLISH: never
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Set up PHP
+        uses: shivammathur/setup-php@v2
+        with:
+          # Install PHP with the tools needed to build the interpreter, if necessary.
+          php-version: latest
+          tools: pecl, composer
+          extensions: curl, openssl, mbstring, tokenizer
+          ini-values: memory_limit=-1
+
+      # Cache the built binary so we can skip the build steps if there is a cache hit.
+      - name: Generate cache key
+        shell: bash
+        run: |
+          CACHE_KEY=${{ runner.os }}-$PHP_VERSION-$(echo $PHP_EXTENSIONS | tr ',' '-')
+          echo "CACHE_KEY=${CACHE_KEY}" >> "$GITHUB_ENV"
+
+      - id: cache-php
+        name: Cache binaries
+        uses: actions/cache@v4
+        with:
+          path: build/buildroot/bin
+          key: php-${{ env.CACHE_KEY }}
+
+      - if: steps.cache-php.outputs.cache-hit != 'true'
+        name: Install dependencies and build PHP
+        run: |
+          # Temporarily use the dev HEAD of static-php-cli until
+          # https://github.com/crazywhalecc/static-php-cli/issues/820 is released (in 2.6.2 or later).
+          composer require crazywhalecc/static-php-cli:dev-main
+          composer exec spc -- doctor
+          composer exec spc -- download --with-php="${{ env.PHP_VERSION }}" --for-extensions="${{ env.PHP_EXTENSIONS }}" --prefer-pre-built
+          composer exec spc -- build "${{ env.PHP_EXTENSIONS }}" --build-cli --with-libs="${{ env.PHP_LIBRARIES }}" --debug
+        working-directory: build
+
+      - name: Set up Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: latest
+
+      - name: Set up Yarn
+        run: |
+          corepack enable
+          yarn set version berry
+
+# Dependency caching is temporarily disabled due to https://github.com/npm/cli/issues/4828.
+#      - name: Cache dependencies
+#        id: cache-yarn
+#        uses: actions/cache@v4
+#        with:
+#          path: node_modules
+#          key: yarn-${{ runner.os }}-${{ hashFiles('yarn.lock') }}
+
+      - name: Install dependencies
+#       if: steps.cache-yarn.outputs.cache-hit != 'true'
+        run: yarn install
+
+      - name: Enable publishing for release branch
+        if: github.ref_name == 'main'
+        run: |
+          echo "PUBLISH=onTagOrDraft" >> $GITHUB_ENV
+
+      - name: Extract Composer and make application
+        run: |
+          cp ./build/buildroot/bin/php.exe ./bin
+          composer run extract --working-dir=build
+          curl https://curl.haxx.se/ca/cacert.pem --fail --location --output cacert.pem
+          yarn run build
+          npx electron-builder --publish=${{ env.PUBLISH }}
+        env:
+          AZURE_CLIENT_ID: ${{ secrets.AZURE_CLIENT_ID }}
+          AZURE_TENANT_ID: ${{ secrets.AZURE_TENANT_ID }}
+          AZURE_CLIENT_SECRET: ${{ secrets.AZURE_CLIENT_SECRET }}
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        shell: bash
+
+      - name: Upload distributable
+        if: ${{ env.PUBLISH == 'never' }}
+        uses: actions/upload-artifact@v4
+        with:
+          name: app
+          path: dist/*.exe
+          retention-days: 7
