@@ -57,6 +57,9 @@ jobs:
           # https://github.com/crazywhalecc/static-php-cli/issues/820 is released (in 2.6.2 or later).
           composer require crazywhalecc/static-php-cli:dev-main
           composer run build:php
+        env:
+          # Allows static-php-cli to download its many dependencies more smoothly.
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         working-directory: build
 
       - name: Set up Node
