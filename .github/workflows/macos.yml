@@ -15,13 +15,13 @@ jobs:
   # architectures in parallel, before being merged into a universal binary while building
   # the app itself.
   php:
-    name: Build PHP on ${{ matrix.os }}
+    name: Build PHP on ${{ matrix.runner }}
     strategy:
       matrix:
-        os:
+        runner:
           - macos-13 # x64
-          - macos-14 # arm64
-    runs-on: ${{ matrix.os }}
+          - macos-latest # arm64
+    runs-on: ${{ matrix.runner }}
     env:
       # The extensions and libraries needed to build PHP. These need to be variables so we can
       # use them to generate a cache key.

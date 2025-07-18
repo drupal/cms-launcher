@@ -14,8 +14,13 @@ on:
 # compile PHP and build the launcher.
 jobs:
   build:
-    name: Build
-    runs-on: windows-latest
+    name: Build on ${{ matrix.runner }}
+    strategy:
+      matrix:
+        runner:
+          - windows-latest # x86
+          - windows-11-arm # arm64
+    runs-on: ${{ matrix.runner }}
     env:
       # The extensions and libraries needed to build PHP. These need to be variables so we can
       # use them to generate a cache key.
@@ -41,7 +46,7 @@ jobs:
       - name: Generate cache key
         shell: bash
         run: |
-          CACHE_KEY=${{ runner.os }}-$PHP_VERSION-$(echo $PHP_EXTENSIONS | tr ',' '-')
+          CACHE_KEY=${{ runner.os }}-${{ runner.arch }}-$PHP_VERSION--$(echo $PHP_EXTENSIONS | tr ',' '-')
           echo "CACHE_KEY=${CACHE_KEY}" >> "$GITHUB_ENV"
 
       - id: cache-php
@@ -111,6 +116,6 @@ jobs:
         if: ${{ env.PUBLISH == 'never' }}
         uses: actions/upload-artifact@v4
         with:
-          name: app
+          name: app-${{ runner.arch }}
           path: dist/*.exe
           retention-days: 7
