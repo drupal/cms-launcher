@@ -51,7 +51,7 @@ jobs:
         name: Cache PHP interpreter
         uses: actions/cache@v4
         with:
-          path: buildroot/bin
+          path: build/php-${{ runner.arch }}
           key: php-${{ env.CACHE_KEY }}
 
       - if: steps.cache.outputs.cache-hit != 'true'
@@ -60,13 +60,14 @@ jobs:
           brew install automake gzip
           composer install
           composer run build:php
+          mv ./buildroot/bin/php ./php-${{ runner.arch }}
         working-directory: build
 
-      # Upload the built PHP interpreter.
-      - uses: actions/upload-artifact@v4
+      - name: Upload PHP binary
+        uses: actions/upload-artifact@v4
         with:
           name: php-${{ runner.arch }}
-          path: buildroot/bin
+          path: build/php-${{ runner.arch }}
           retention-days: 1
 
   build:
@@ -80,17 +81,12 @@ jobs:
     steps:
       - uses: actions/checkout@v4
 
-      - name: Download PHP binary for arm64
+      - name: Download PHP binaries
         uses: actions/download-artifact@v4
         with:
-          name: php-ARM64
-          path: build/php-arm64
-
-      - name: Download PHP binary for x64
-        uses: actions/download-artifact@v4
-        with:
-          name: php-X64
-          path: build/php-x64
+          path: build
+          pattern: php-*
+          merge-multiple: true
 
       - name: Set up PHP
         uses: shivammathur/setup-php@v2
@@ -165,7 +161,8 @@ jobs:
 
       - name: Create universal PHP binary, extract Composer, and make application
         run: |
-          lipo -create ./build/php-x64/php ./build/php-arm64/php -output ./bin/php
+          ls -l build
+          lipo -create ./build/php-x64 ./build/php-arm64 -output ./bin/php
           chmod +x ./bin/php
           composer run assets --working-dir=build
           npx electron-vite build
