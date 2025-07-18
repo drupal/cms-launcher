@@ -1,4 +1,4 @@
-name: Mac
+name: macOS
 
 on:
   push:
@@ -10,18 +10,86 @@ on:
   workflow_call:
   workflow_dispatch:
 
+env:
+  GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
 jobs:
   php:
-    name: PHP
-    uses: ./.github/workflows/php-macos.yml
+    name: Build PHP on ${{ matrix.os }}
+    strategy:
+      matrix:
+        os:
+          - macos-13 # x64
+          - macos-14 # arm64
+    runs-on: ${{ matrix.os }}
+    env:
+      PHP_EXTENSIONS: bz2,ctype,curl,dom,filter,gd,iconv,mbstring,opcache,openssl,pcntl,pdo,pdo_sqlite,phar,posix,session,simplexml,sodium,sqlite3,tokenizer,xml,xmlwriter,yaml,zip,zlib
+      PHP_LIBRARIES: freetype,libavif,libjpeg,libwebp
+      PHP_VERSION: 8.3
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          repository: crazywhalecc/static-php-cli
+          ref: 2.6.1
 
-  app:
-    name: App
+      - name: Generate cache key
+        run: |
+          CACHE_KEY=${{ runner.os }}-${{ runner.arch }}-$PHP_VERSION--$(echo $PHP_EXTENSIONS | tr ',' '-')
+          echo "CACHE_KEY=${CACHE_KEY}" >> $GITHUB_ENV
+
+      # Cache the built binaries so we can skip the build steps if there is a cache hit.
+      - id: cache
+        name: Cache binaries
+        uses: actions/cache@v4
+        with:
+          path: buildroot/bin
+          key: php-${{ env.CACHE_KEY }}
+
+      - if: steps.cache.outputs.cache-hit != 'true'
+        name: "Set up PHP"
+        uses: shivammathur/setup-php@v2
+        with:
+          php-version: latest
+          tools: pecl, composer
+          extensions: curl, openssl, mbstring, tokenizer
+          ini-values: memory_limit=-1
+
+      - if: steps.cache.outputs.cache-hit != 'true'
+        name: Install dependencies and build PHP
+        run: |
+          brew install automake gzip
+          composer install --no-dev
+          ./bin/spc download --with-php=${{ env.PHP_VERSION }} --for-extensions=${{ env.PHP_EXTENSIONS }} --prefer-pre-built
+          ./bin/spc build ${{ env.PHP_EXTENSIONS }} --build-cli --with-libs="${{ env.PHP_LIBRARIES }}"
+
+      # Upload the built PHP interpreter.
+      - uses: actions/upload-artifact@v4
+        with:
+          name: php-${{ runner.arch }}
+          path: buildroot/bin
+          retention-days: 1
+
+  build:
+    name: Build app
     runs-on: macos-latest
     needs:
       - php
+    env:
+      PUBLISH: never
     steps:
       - uses: actions/checkout@v4
+
+      - name: Download PHP binary for arm64
+        uses: actions/download-artifact@v4
+        with:
+          name: php-ARM64
+          path: build/php-arm64
+
+      - name: Download PHP binary for x64
+        uses: actions/download-artifact@v4
+        with:
+          name: php-X64
+          path: build/php-x64
 
       # Set up the code signing certificate. This was copied from the example in
       # https://docs.github.com/en/actions/use-cases-and-examples/deploying/installing-an-apple-certificate-on-macos-runners-for-xcode-development.
@@ -80,37 +148,24 @@ jobs:
 #          key: yarn-${{ runner.os }}-${{ hashFiles('yarn.lock') }}
 
       - name: Install dependencies
-#        if: steps.cache.outputs.cache-hit != 'true'
+#       if: steps.cache.outputs.cache-hit != 'true'
         run: yarn install
 
-      - name: Download PHP interpreter
-        uses: actions/download-artifact@v4
-        with:
-          artifact-ids: ${{ needs.php.outputs.artifact-id }}
-
-      - name: Create bin directory
-        run: mv php-macos bin
-
-      - name: Extract Composer
+      - name: Enable notarization and publishing for release branch
+        if: github.ref_name == 'main'
         run: |
+          echo "APPLE_ID=${{ secrets.APPLE_ID }}" >> $GITHUB_ENV
+          echo "APPLE_APP_SPECIFIC_PASSWORD=${{ secrets.APPLE_APP_SPECIFIC_PASSWORD }}" >> $GITHUB_ENV
+          echo "APPLE_TEAM_ID=${{ secrets.APPLE_TEAM_ID }}" >> $GITHUB_ENV
+          echo "PUBLISH=onTagOrDraft" >> $GITHUB_ENV
+
+      - name: Create universal PHP binary, extract Composer, and make application
+        run: |
+          lipo -create ./build/php-x64/php ./build/php-arm64/php -output ./bin/php
           cp $(which composer) composer.phar
-          phar extract -f composer.phar ./composer
+          phar extract -f composer.phar ./bin/composer
           rm composer.phar
-        working-directory: bin
-
-      - name: Publish application bundle
-        run: |
           chmod +x ./bin/php
           curl https://curl.haxx.se/ca/cacert.pem --fail --location --output cacert.pem
           yarn run build
-          npx electron-builder --universal
-        env:
-          APPLE_ID: ${{ secrets.APPLE_ID }}
-          APPLE_APP_SPECIFIC_PASSWORD: ${{ secrets.APPLE_APP_SPECIFIC_PASSWORD }}
-          APPLE_TEAM_ID: ${{ secrets.APPLE_TEAM_ID }}
-          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-
-      - name: Delete PHP interpreter artifact
-        uses: geekyeggo/delete-artifact@v5
-        with:
-          name: php-macos
+          npx electron-builder --universal --publish=${{ env.PUBLISH }}
