@@ -164,8 +164,7 @@ jobs:
 
       - name: Create universal PHP binary, extract Composer, and make application
         run: |
-          ls -l build
-          lipo -create ./build/php-x64 ./build/php-arm64 -output ./bin/php
+          lipo -create ./build/php-X64 ./build/php-ARM64 -output ./bin/php
           chmod +x ./bin/php
           composer run assets --working-dir=build
           npx electron-vite build
