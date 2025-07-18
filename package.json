@@ -4,7 +4,9 @@
   "description": "A quick-start launcher for Drupal CMS.",
   "main": "./out/main/main.js",
   "scripts": {
-    "start": "electron-vite preview"
+    "build": "electron-vite build",
+    "start": "electron-vite preview",
+    "make": "electron-builder"
   },
   "author": "Drupal Association",
   "license": "MIT",

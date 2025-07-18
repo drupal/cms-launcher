@@ -88,23 +88,21 @@ jobs:
         if: github.ref_name == 'main'
         run: |
           echo "PUBLISH=onTagOrDraft" >> $GITHUB_ENV
-          # Electron Builder needs our GitHub token to publish the app.
-          echo "GH_TOKEN=${{ secrets.GITHUB_TOKEN }}" >> $GITHUB_ENV
 
       - name: Extract Composer and make application
         run: |
           cp ./build/buildroot/bin/php.exe ./bin
-          source make.sh
+          composer run extract --working-dir=build
+          curl https://curl.haxx.se/ca/cacert.pem --fail --location --output cacert.pem
+          yarn run build
           npx electron-builder --publish=${{ env.PUBLISH }}
         env:
-          # Set up environment variables needed for Azure Trusted Signing, which Electron
-          # Builder will handle for us automatically.
           AZURE_CLIENT_ID: ${{ secrets.AZURE_CLIENT_ID }}
           AZURE_TENANT_ID: ${{ secrets.AZURE_TENANT_ID }}
           AZURE_CLIENT_SECRET: ${{ secrets.AZURE_CLIENT_SECRET }}
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         shell: bash
 
-      # For manual testing, upload the built artifact directly if we're not publishing it.
       - name: Upload distributable
         if: ${{ env.PUBLISH == 'never' }}
         uses: actions/upload-artifact@v4
