@@ -1,0 +1,5 @@
+{
+    "require": {
+        "crazywhalecc/static-php-cli": "^2.6.1"
+    }
+}
