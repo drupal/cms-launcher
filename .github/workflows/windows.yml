@@ -94,8 +94,7 @@ jobs:
       - name: Extract Composer and make application
         run: |
           cp ./build/buildroot/bin/php.exe ./bin
-          composer run extract --working-dir=build
-          curl https://curl.haxx.se/ca/cacert.pem --fail --location --output cacert.pem
+          composer run assets --working-dir=build
           npx electron-vite build
           npx electron-builder --publish=${{ env.PUBLISH }}
         env:

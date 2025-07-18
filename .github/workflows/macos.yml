@@ -172,9 +172,8 @@ jobs:
       - name: Create universal PHP binary, extract Composer, and make application
         run: |
           lipo -create ./build/php-x64/php ./build/php-arm64/php -output ./bin/php
-          composer run extract --working-dir=build
           chmod +x ./bin/php
-          curl https://curl.haxx.se/ca/cacert.pem --fail --location --output cacert.pem
+          composer run assets --working-dir=build
           npx electron-vite build
           npx electron-builder --universal --publish=${{ env.PUBLISH }}
 
