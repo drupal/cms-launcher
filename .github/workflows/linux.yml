@@ -94,12 +94,9 @@ jobs:
       - name: Extract Composer and make application
         run: |
           cp ./build/buildroot/bin/php ./bin
-          cp $(which composer) composer.phar
-          phar extract -f composer.phar ./composer
-          rm composer.phar
+          composer run extract --working-dir=build
           chmod +x ./bin/php
           curl https://curl.haxx.se/ca/cacert.pem --fail --location --output cacert.pem
-          ls -lR bin
           yarn run build
           npx electron-builder --publish=${{ env.PUBLISH }}
         env:
@@ -109,6 +106,6 @@ jobs:
         if: ${{ env.PUBLISH == 'never' }}
         uses: actions/upload-artifact@v4
         with:
-          name: app
+          name: app-${{ runner.arch }}
           path: dist/*.AppImage
           retention-days: 7

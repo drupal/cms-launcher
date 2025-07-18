@@ -171,9 +171,7 @@ jobs:
       - name: Create universal PHP binary, extract Composer, and make application
         run: |
           lipo -create ./build/php-x64/php ./build/php-arm64/php -output ./bin/php
-          cp $(which composer) composer.phar
-          phar extract -f composer.phar ./bin/composer
-          rm composer.phar
+          composer run extract --working-dir=build
           chmod +x ./bin/php
           curl https://curl.haxx.se/ca/cacert.pem --fail --location --output cacert.pem
           yarn run build
