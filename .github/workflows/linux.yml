@@ -49,7 +49,7 @@ jobs:
           echo "CACHE_KEY=${CACHE_KEY}" >> "$GITHUB_ENV"
 
       - id: cache-php
-        name: Cache binaries
+        name: Cache PHP interpreter
         uses: actions/cache@v4
         with:
           path: build/buildroot/bin
@@ -90,6 +90,8 @@ jobs:
         if: github.ref_name == 'main'
         run: |
           echo "PUBLISH=onTagOrDraft" >> $GITHUB_ENV
+          # Electron Builder needs a token to publish releases.
+          echo "GH_TOKEN=${{ secrets.GITHUB_TOKEN }}" >> $GITHUB_ENV
 
       - name: Extract Composer and make application
         run: |
@@ -97,11 +99,10 @@ jobs:
           composer run extract --working-dir=build
           chmod +x ./bin/php
           curl https://curl.haxx.se/ca/cacert.pem --fail --location --output cacert.pem
-          yarn run build
+          npx electron-vite build
           npx electron-builder --publish=${{ env.PUBLISH }}
-        env:
-          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
+      # For manual testing, upload the final artifact if we're not in a release branch.
       - name: Upload distributable
         if: ${{ env.PUBLISH == 'never' }}
         uses: actions/upload-artifact@v4

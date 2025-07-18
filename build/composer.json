@@ -3,9 +3,9 @@
         "crazywhalecc/static-php-cli": "^2.6.1"
     },
     "autoload": {
-        "classmap": ["extract.php"]
+        "classmap": ["scripts.php"]
     },
     "scripts": {
-        "extract": "Extractor::extract"
+        "extract": "Scripts::extract"
     }
 }

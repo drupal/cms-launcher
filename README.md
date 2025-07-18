@@ -84,7 +84,7 @@ yarn install
 yarn run start
 ```
 
-To test the full app bundle, run `yarn run make` and look for the final binary in the `dist` directory.
+To test the full app bundle, run `npx electron-builder` and look for the final binary in the `dist` directory.
 
 ## Limitations and alternatives
 

@@ -10,9 +10,6 @@ on:
   workflow_call:
   workflow_dispatch:
 
-env:
-  GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-
 jobs:
   # The PHP interpreter needs to be its own job so it can be built for both x64 and arm64
   # architectures in parallel, before being merged into a universal binary while building
@@ -37,11 +34,13 @@ jobs:
         with:
           repository: crazywhalecc/static-php-cli
           ref: 2.6.1
+          token: ${{ secrets.GITHUB_TOKEN }}
 
       - if: steps.cache.outputs.cache-hit != 'true'
         name: "Set up PHP"
         uses: shivammathur/setup-php@v2
         with:
+          # Install PHP with the tools needed to build the interpreter, if necessary.
           php-version: latest
           tools: pecl, composer
           extensions: curl, openssl, mbstring, tokenizer
@@ -54,7 +53,7 @@ jobs:
           echo "CACHE_KEY=${CACHE_KEY}" >> $GITHUB_ENV
 
       - id: cache
-        name: Cache binaries
+        name: Cache PHP interpreter
         uses: actions/cache@v4
         with:
           path: buildroot/bin
@@ -166,6 +165,8 @@ jobs:
           echo "APPLE_ID=${{ secrets.APPLE_ID }}" >> $GITHUB_ENV
           echo "APPLE_APP_SPECIFIC_PASSWORD=${{ secrets.APPLE_APP_SPECIFIC_PASSWORD }}" >> $GITHUB_ENV
           echo "APPLE_TEAM_ID=${{ secrets.APPLE_TEAM_ID }}" >> $GITHUB_ENV
+          # Electron Builder needs a token to publish releases.
+          echo "GH_TOKEN=${{ secrets.GITHUB_TOKEN }}" >> $GITHUB_ENV
           echo "PUBLISH=onTagOrDraft" >> $GITHUB_ENV
 
       - name: Create universal PHP binary, extract Composer, and make application
@@ -174,9 +175,10 @@ jobs:
           composer run extract --working-dir=build
           chmod +x ./bin/php
           curl https://curl.haxx.se/ca/cacert.pem --fail --location --output cacert.pem
-          yarn run build
+          npx electron-vite build
           npx electron-builder --universal --publish=${{ env.PUBLISH }}
 
+      # For manual testing, upload the final artifact if we're not in a release branch.
       - name: Upload distributable
         if: ${{ env.PUBLISH == 'never' }}
         uses: actions/upload-artifact@v4

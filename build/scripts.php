@@ -1,6 +1,6 @@
 <?php
 
-class Extractor {
+class Scripts {
 
   /**
    * Extracts the currently running Composer binary to ../bin.
