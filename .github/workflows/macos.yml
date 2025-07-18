@@ -11,8 +11,8 @@ on:
   workflow_dispatch:
 
 jobs:
-  # The PHP interpreter needs to be its own job so it can be built for both x64 and arm64
-  # architectures in parallel, before being merged into a universal binary while building
+  # The PHP interpreter needs to have its own job so it can be built in parallel for both
+  # x64 and arm64 architectures, before being merged into a universal binary while building
   # the app itself.
   php:
     name: Build PHP on ${{ matrix.os }}
@@ -20,21 +20,16 @@ jobs:
       matrix:
         os:
           - macos-13 # x64
-          - macos-14 # arm64
+          - macos-latest # arm64
     runs-on: ${{ matrix.os }}
     env:
       # The extensions and libraries needed to build PHP. These need to be variables so we can
       # use them to generate a cache key.
       # @see https://static-php.dev/en/guide/cli-generator.html
       PHP_EXTENSIONS: bz2,ctype,curl,dom,filter,gd,iconv,mbstring,opcache,openssl,pcntl,pdo,pdo_sqlite,phar,posix,session,simplexml,sodium,sqlite3,tokenizer,xml,xmlwriter,yaml,zip,zlib
-      PHP_LIBRARIES: freetype,libavif,libjpeg,libwebp
       PHP_VERSION: 8.3
     steps:
       - uses: actions/checkout@v4
-        with:
-          repository: crazywhalecc/static-php-cli
-          ref: 2.6.1
-          token: ${{ secrets.GITHUB_TOKEN }}
 
       - if: steps.cache.outputs.cache-hit != 'true'
         name: "Set up PHP"
@@ -63,10 +58,9 @@ jobs:
         name: Install dependencies and build PHP
         run: |
           brew install automake gzip
-          composer install --no-dev
-          ./bin/spc doctor
-          ./bin/spc download --with-php=${{ env.PHP_VERSION }} --for-extensions=${{ env.PHP_EXTENSIONS }} --prefer-pre-built
-          ./bin/spc build ${{ env.PHP_EXTENSIONS }} --build-cli --with-libs="${{ env.PHP_LIBRARIES }}" --debug
+          composer install
+          composer run build:php
+        working-directory: build
 
       # Upload the built PHP interpreter.
       - uses: actions/upload-artifact@v4
