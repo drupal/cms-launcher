@@ -1,6 +1,6 @@
 import { installLog } from './config';
 import { Commands, Events } from "../Drupal";
-import { app, BrowserWindow, ipcMain, shell } from 'electron';
+import { app, BrowserWindow, ipcMain, Menu, shell } from 'electron';
 import install from './installer';
 import { readFile } from 'node:fs/promises';
 import path from 'node:path';
@@ -62,6 +62,7 @@ function createWindow (): void
             preload: path.join(__dirname, '..', 'preload', 'preload.js'),
         },
     });
+    Menu.setApplicationMenu(null);
     win.loadFile(path.join(__dirname, '..', 'renderer', 'index.html'));
 }
 
