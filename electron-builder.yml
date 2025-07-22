@@ -60,5 +60,3 @@ win:
     endpoint: 'https://wus2.codesigning.azure.net/'
     # Best guess.
     publisherName: 'DrupalCon, Inc.'
-  # On Windows, build a portable app that doesn't require installation.
-  target: portable
