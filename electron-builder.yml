@@ -1,13 +1,15 @@
 # This is a global constant, don't change it.
 appId: 'org.drupal.cms-launcher'
 
-# These fuses are adapted from Electron Forge's boilerplate.
+# These fuses are largely adapted from Electron Forge's boilerplate.
 electronFuses:
   runAsNode: false
   enableCookieEncryption: true
   enableEmbeddedAsarIntegrityValidation: true
   enableNodeOptionsEnvironmentVariable: false
-  enableNodeCliInspectArguments: false
+  # This needs to be `true` for the app to be testable by Playwright.
+  # @see https://playwright.dev/docs/api/class-electron
+  enableNodeCliInspectArguments: true
   onlyLoadAppFromAsar: false
 
 extraResources:
@@ -20,6 +22,8 @@ files:
   - '!**/bin/**'
   # Since we're using a bundler, exclude source code from the packaged app.
   - '!**/src/**'
+  # Don't include tests in the packaged app.
+  - '!**/tests/**'
 
 nsis:
   # This is only applicable to the one-click installer, which is what we build on

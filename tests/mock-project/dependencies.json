@@ -1,0 +1,11 @@
+{
+    "packages": {
+        "composer/composer": [
+            {
+                "version": "2.8.0",
+                "type": "metapackage",
+                "name": "composer/composer"
+            }
+        ]
+    }
+}

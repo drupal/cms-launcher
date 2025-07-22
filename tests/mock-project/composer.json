@@ -1,0 +1,19 @@
+{
+    "name": "drupal/cms",
+    "version": "1.0.0",
+    "description": "A mock version of the Drupal CMS project template for testing purposes.",
+    "type": "project",
+    "repositories": {
+        "dependencies": {
+            "type": "composer",
+            "url": "dependencies.json"
+        },
+        "packagist.org": false
+    },
+    "scripts": {
+        "drupal:recipe-unpack": "echo"
+    },
+    "scripts-descriptions": {
+        "drupal:recipe-unpack": "A mocked drupal:recipe-unpack command that does nothing."
+    }
+}
