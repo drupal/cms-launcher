@@ -20,7 +20,8 @@
   },
   "dependencies": {
     "@sentry/electron": "^6.7.0",
-    "get-port": "^7.1.0"
+    "get-port": "^7.1.0",
+    "yargs": "^18.0.0"
   },
   "packageManager": "yarn@4.9.2"
 }
