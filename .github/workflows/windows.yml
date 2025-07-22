@@ -85,12 +85,13 @@ jobs:
         run: yarn install
 
       # If we're on a PR branch, we don't want Electron Builder to publish the app.
+      # On Windows, adding environment variables in PowerShell has a special syntax: see https://github.com/orgs/community/discussions/25713
       - name: Enable publishing for release branch
         if: github.ref_name == 'main'
         run: |
-          echo "PUBLISH=onTagOrDraft" >> $GITHUB_ENV
+          "PUBLISH=onTagOrDraft" >> $env:GITHUB_ENV
           # Electron Builder needs a token to publish releases.
-          echo "GH_TOKEN=${{ secrets.GITHUB_TOKEN }}" >> $GITHUB_ENV
+          "GH_TOKEN=${{ secrets.GITHUB_TOKEN }}" >> $env:GITHUB_ENV
 
       - name: Make application
         run: |
