@@ -36,6 +36,11 @@ files:
   # Since we're using a bundler, exclude source code from the packaged app.
   - '!**/src/**'
 
+nsis:
+  # This is only applicable to the one-click installer, which is what we build on
+  # Windows. When we uninstall, it should clean up entirely.
+  deleteAppDataOnUninstall: true
+
 linux:
   # The artifact name cannot contain spaces, or it will be renamed before being attached
   # to a GitHub release.
