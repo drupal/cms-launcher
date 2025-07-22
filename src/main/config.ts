@@ -25,19 +25,19 @@ export const installCommands: string[][] = [
     // Prevent core's scaffold plugin from trying to dynamically determine if
     // the project is a Git repository, since that will make it try to run Git,
     // which might not be installed.
-    ['config', 'extra.drupal-scaffold.gitignore', 'false', '--json', `--working-dir=${projectRoot}`],
+    ['config', 'extra.drupal-scaffold.gitignore', 'false', '--json'],
 
     // Require Composer as a dev dependency so that Package Manager can use it
     // without relying on this app.
-    ['require', '--dev', '--no-update', 'composer/composer', `--working-dir=${projectRoot}`],
+    ['require', '--dev', '--no-update', 'composer/composer'],
 
     // Finally, install dependencies. We suppress the progress bar because it
     // looks lame when streamed to the renderer.
-    ['install', '--no-progress', `--working-dir=${projectRoot}`],
+    ['install', '--no-progress'],
 
     // Unpack all recipes. This would normally be done during the `create-project` command
     // if dependencies were being installed at that time.
-    ['drupal:recipe-unpack', `--working-dir=${projectRoot}`],
+    ['drupal:recipe-unpack'],
 ];
 
 // The absolute path of the web root.

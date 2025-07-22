@@ -40,6 +40,18 @@ async function createProject (win?: WebContents): Promise<void>
     const runComposer = (command: string[]) => {
         log?.write('\n>>> ' + command.join(' ') + '\n');
 
+        // Always direct Composer to the created project root, unless we're about to
+        // create it initially.
+        if (command[0] !== 'create-project') {
+            command.push(`--working-dir=${projectRoot}`);
+        }
+        command.push(
+            // Disable ANSI output (i.e., colors) so the log is readable.
+            '--no-ansi',
+            // We don't want Composer to ask us any questions, since we have no way for
+            // the user to answer them.
+            '--no-interaction',
+        );
         command.unshift(
             // Explicitly pass the cURL CA bundle so that HTTPS requests from Composer can
             // succeed on Windows.
@@ -49,13 +61,6 @@ async function createProject (win?: WebContents): Promise<void>
             // line that breaks us, due to GUI-launched Electron apps not inheriting the
             // parent environment in macOS and Linux.
             path.join('composer', 'bin', 'composer'),
-        );
-        command.push(
-            // Disable ANSI output (i.e., colors) so the log is readable.
-            '--no-ansi',
-            // We don't want Composer to ask us any questions, since we have no way for
-            // the user to answer them.
-            '--no-interaction',
         );
 
         const task = execFileAsPromise(path.join(bin, 'php'), command, {
