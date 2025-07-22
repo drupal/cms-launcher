@@ -1,21 +1,6 @@
 # This is a global constant, don't change it.
 appId: 'org.drupal.cms-launcher'
 
-dmg:
-  contents:
-    - name: 'Launch Drupal CMS.app'
-      # The coordinates refer to the *center* of the icon, not the top-left corner.
-      # @see https://www.electron.build/app-builder-lib.interface.dmgcontent#x
-      x: 220
-      y: 360
-    # Figured out how define this link by looking at the Electron Builder source code:
-    # @see https://github.com/electron-userland/electron-builder/blob/master/packages/dmg-builder/src/dmg.ts
-    - path: '/Applications'
-      type: link
-      x: 430
-      y: 360
-  title: 'Drupal CMS'
-
 # These fuses are adapted from Electron Forge's boilerplate.
 electronFuses:
   runAsNode: false
@@ -52,6 +37,8 @@ mac:
   # The artifact name cannot contain spaces, or it will be renamed before being attached
   # to a GitHub release.
   artifactName: 'Drupal_CMS-macOS.${ext}'
+  # Only generate ZIP files, since DMGs cannot be auto-updated without them anyway.
+  target: zip
 
 productName: 'Launch Drupal CMS'
 
