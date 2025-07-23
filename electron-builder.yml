@@ -26,7 +26,7 @@ files:
   - '!**/tests/**'
 
 # @see https://www.electron.build/tutorials/release-using-channels
-generateUpdateFilesForAllChannels: true
+generateUpdatesFilesForAllChannels: true
 
 nsis:
   # This is only applicable to the one-click installer, which is what we build on
