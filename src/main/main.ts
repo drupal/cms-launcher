@@ -1,6 +1,8 @@
 import { installLog } from './config';
 import { Commands, Events } from "../Drupal";
 import { app, BrowserWindow, ipcMain, Menu, shell } from 'electron';
+import logger from 'electron-log';
+import { autoUpdater } from 'electron-updater';
 import install from './installer';
 import { readFile } from 'node:fs/promises';
 import path from 'node:path';
@@ -33,6 +35,14 @@ ipcMain.on( Commands.Start, async ({ sender: win }): Promise<void> => {
 
         const { url, serverProcess } = await startServer();
         app.on('will-quit', () => serverProcess.kill());
+
+
+        // Set up logging to help with debugging auto-update and send errors to Sentry,
+        // then check for updates.
+        autoUpdater.logger = logger;
+        autoUpdater.logger.transports.file.level = "info";
+        autoUpdater.on('error', e => Sentry.captureException(e));
+        autoUpdater.checkForUpdatesAndNotify();
 
         win.send(Events.Started, url);
     }
