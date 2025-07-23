@@ -33,24 +33,18 @@ ipcMain.on( Commands.Start, async ({ sender: win }): Promise<void> => {
     try {
         await install(win);
 
+        // Start the built-in PHP web server and automatically kill it on quit.
         const { url, serverProcess } = await startServer();
         app.on('will-quit', () => serverProcess.kill());
 
+        // Let the user know we're up and running.
         win.send(Events.Started, url);
 
-        // Set up logging to help with debugging auto-update problems, and ensure any
-        // errors are sent to Sentry.
+        // Set up logging to help with debugging auto-update problems, ensure any
+        // errors are sent to Sentry, and check for updates.
         autoUpdater.logger = logger;
         autoUpdater.logger.transports.file.level = "info";
         autoUpdater.on('error', e => Sentry.captureException(e));
-
-        // Examine the app version to figure out which update channel to use. By default,
-        // it will use the `latest` (stable) channel and we don't need to do anything.
-        const match = /-(alpha|beta)$/.exec(app.getVersion());
-        if (match) {
-            autoUpdater.channel = match[1];
-        }
-
         autoUpdater.checkForUpdatesAndNotify();
     }
     catch (e) {

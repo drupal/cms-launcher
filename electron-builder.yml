@@ -25,9 +25,6 @@ files:
   # Don't include tests in the packaged app.
   - '!**/tests/**'
 
-# @see https://www.electron.build/tutorials/release-using-channels
-generateUpdatesFilesForAllChannels: true
-
 nsis:
   # This is only applicable to the one-click installer, which is what we build on
   # Windows. When we uninstall, it should clean up entirely.

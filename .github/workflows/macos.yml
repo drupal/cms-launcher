@@ -159,7 +159,7 @@ jobs:
           echo "APPLE_ID=${{ secrets.APPLE_ID }}" >> $GITHUB_ENV
           echo "APPLE_APP_SPECIFIC_PASSWORD=${{ secrets.APPLE_APP_SPECIFIC_PASSWORD }}" >> $GITHUB_ENV
           echo "APPLE_TEAM_ID=${{ secrets.APPLE_TEAM_ID }}" >> $GITHUB_ENV
-          echo "PUBLISH=always" >> $GITHUB_ENV
+          echo "PUBLISH=onTagOrDraft" >> $GITHUB_ENV
           # Electron Builder needs a token to publish releases.
           echo "GH_TOKEN=${{ secrets.GITHUB_TOKEN }}" >> $GITHUB_ENV
 

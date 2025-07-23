@@ -89,7 +89,7 @@ jobs:
       - name: Enable publishing for release branch
         if: github.ref_name == 'main'
         run: |
-          "PUBLISH=always" >> $env:GITHUB_ENV
+          "PUBLISH=onTagOrDraft" >> $env:GITHUB_ENV
           # Electron Builder needs a token to publish releases.
           "GH_TOKEN=${{ secrets.GITHUB_TOKEN }}" >> $env:GITHUB_ENV
 
