@@ -79,7 +79,35 @@ function createWindow (): void
             preload: path.join(__dirname, '..', 'preload', 'preload.js'),
         },
     });
-    Menu.setApplicationMenu(null);
+
+    // On macOS, totally redefine the menu.
+    if (process.platform === 'darwin') {
+        const menu: Menu = Menu.buildFromTemplate([
+            {
+                label: app.getName(),
+                submenu: [
+                    {
+                        label: 'About',
+                        role: 'about',
+                    },
+                    {
+                        label: 'Quit',
+                        accelerator: 'Command+Q',
+                        click () {
+                            app.quit();
+                        },
+                    },
+                ],
+            }
+        ]);
+        Menu.setApplicationMenu(menu);
+    }
+    else {
+        // Disable the default menu on Windows and Linux, since it doesn't make sense
+        // for this app.
+        Menu.setApplicationMenu(null);
+    }
+
     win.loadFile(path.join(__dirname, '..', 'renderer', 'index.html'));
 }
 
