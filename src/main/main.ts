@@ -36,9 +36,8 @@ ipcMain.on( Commands.Start, async ({ sender: win }): Promise<void> => {
         const { url, serverProcess } = await startServer();
         app.on('will-quit', () => serverProcess.kill());
 
-
-        // Set up logging to help with debugging auto-update and send errors to Sentry,
-        // then check for updates.
+        // Set up logging to help with debugging auto-update problems, and ensure any
+        // errors are sent to Sentry.
         autoUpdater.logger = logger;
         autoUpdater.logger.transports.file.level = "info";
         autoUpdater.on('error', e => Sentry.captureException(e));

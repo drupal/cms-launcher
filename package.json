@@ -1,6 +1,6 @@
 {
   "name": "cms-launcher",
-  "version": "0.1.13",
+  "version": "0.1.13-alpha",
   "description": "A quick-start launcher for Drupal CMS.",
   "main": "./out/main/main.js",
   "scripts": {
