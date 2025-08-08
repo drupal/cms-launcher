@@ -34,7 +34,7 @@ test('happy path test', async () => {
     args: [
       '.',
       `--root=${join(installDir, 'drupal')}`,
-      '--fixture=happy-path',
+      '--fixture=basic',
     ],
     env: {
       COMPOSER_MIRROR_PATH_REPOS: '1',
