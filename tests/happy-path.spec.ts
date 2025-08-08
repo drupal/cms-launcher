@@ -30,19 +30,19 @@ test.afterAll(async () => {
 
 test('happy path test', async () => {
   test.setTimeout(30_000);
-  const launchOptions = { 
+  const launchOptions = {
     args: [
       '.',
       `--root=${join(installDir, 'drupal')}`,
-      '--fixture=tests/mock-project',
+      '--fixture=happy-path',
     ],
-    env: { 
-      COMPOSER_MIRROR_PATH_REPOS: '1', 
+    env: {
+      COMPOSER_MIRROR_PATH_REPOS: '1',
       COMPOSER_DISABLE_NETWORK: '1',
     },
   };
 
-  /*const launchOptions = { 
+  /*const launchOptions = {
     args: ['.']
   };*/
 
@@ -53,7 +53,7 @@ test('happy path test', async () => {
     // the result of the require('electron') in the main app script.
     return app.isPackaged;
   });
- 
+
   expect(isPackaged).toBe(false);
 
   // Wait for the first BrowserWindow to open

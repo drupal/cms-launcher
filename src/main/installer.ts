@@ -77,7 +77,7 @@ async function createProject (win?: WebContents): Promise<void>
                 // For performance reasons, skip security audits for now.
                 // @see https://getcomposer.org/doc/03-cli.md#composer-no-audit
                 COMPOSER_NO_AUDIT: '1',
-                // Composer doesn't work without HOME or COMPOSER_HOME.
+                // Composer doesn't work without COMPOSER_HOME.
                 COMPOSER_HOME: path.join(app.getPath('home'), '.composer'),
             }),
             // No part of installing Drupal CMS should take longer than 10 minutes.
