@@ -1,6 +1,6 @@
 import { bin, installCommands, installLog, projectRoot, resourceDir, webRoot } from './config';
 import { Events } from "../Drupal";
-import { type WebContents } from 'electron';
+import { app, type WebContents } from 'electron';
 import { execFile } from 'node:child_process';
 import { randomBytes } from 'node:crypto';
 import { type EventEmitter } from 'node:events';
@@ -77,6 +77,8 @@ async function createProject (win?: WebContents): Promise<void>
                 // For performance reasons, skip security audits for now.
                 // @see https://getcomposer.org/doc/03-cli.md#composer-no-audit
                 COMPOSER_NO_AUDIT: '1',
+                // Composer doesn't work without HOME or COMPOSER_HOME.
+                COMPOSER_HOME: path.join(app.getPath('home'), '.composer'),
             }),
             // No part of installing Drupal CMS should take longer than 10 minutes.
             timeout: 600000,
