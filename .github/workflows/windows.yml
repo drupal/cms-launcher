@@ -53,9 +53,7 @@ jobs:
       - if: steps.cache-php.outputs.cache-hit != 'true'
         name: Install dependencies and build PHP
         run: |
-          # Temporarily use the dev HEAD of static-php-cli until
-          # https://github.com/crazywhalecc/static-php-cli/issues/820 is released (in 2.6.2 or later).
-          composer require crazywhalecc/static-php-cli:dev-main
+          composer install
           composer run build:php
         env:
           # Allows static-php-cli to download its many dependencies more smoothly.
