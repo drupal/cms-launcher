@@ -64,7 +64,7 @@ export const installCommands: string[][] = [
 if (argv.fixture && ! app.isPackaged) {
     // The option does not need to be escaped or quoted, because Composer is not being
     // executed through a shell.
-    installCommands[0].push(`--repository={"type":"path","url":"${path.join(resourceDir, argv.fixture)}"}`);
+    installCommands[0].push(`--repository=${JSON.stringify({type:"path", url: path.join(resourceDir, argv.fixture)})}`);
 }
 
 // The absolute path of the web root.
