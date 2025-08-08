@@ -17,7 +17,7 @@ const argv = yargs(
     })
     .option('fixture', {
         type: 'string',
-        description: 'The path of a fixture from which to create the Drupal project. This is internal and only used for testing.',
+        description: 'The name of a test fixture from which to create the Drupal project. This is internal and only used for testing.',
         default: null,
         hidden: true,
     })
@@ -62,9 +62,13 @@ export const installCommands: string[][] = [
 // Only allow a fixture to be used if the app is not packaged (i.e., during development or
 // when running tests).
 if (argv.fixture && ! app.isPackaged) {
+    const repository = JSON.stringify({
+        type: 'path',
+        url: path.join(resourceDir, 'tests', 'fixtures', argv.fixture),
+    });
     // The option does not need to be escaped or quoted, because Composer is not being
     // executed through a shell.
-    installCommands[0].push(`--repository={"type":"path","url":"${argv.fixture}"}`);
+    installCommands[0].push(`--repository=${repository}`);
 }
 
 // The absolute path of the web root.
