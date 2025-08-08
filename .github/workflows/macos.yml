@@ -59,7 +59,9 @@ jobs:
         run: |
           brew install automake gzip
           composer install
-          composer run build:php
+          composer exec spc -- doctor
+          composer exec spc -- download --with-php=${{ env.PHP_VERSION }} --for-extensions=${{ env.PHP_EXTENSIONS }} --prefer-pre-built
+          composer exec spc -- build ${{ env.PHP_EXTENSIONS }} --build-cli --with-libs=freetype,libavif,libjpeg,libwebp --debug
           mv ./buildroot/bin/php ./php-${{ runner.arch }}
         env:
           # Allows static-php-cli to download its many dependencies more smoothly.
