@@ -39,7 +39,7 @@ export const installLog: string = path.join(app.getPath('temp'), 'install.log');
 // The series of Composer commands to set up the Drupal project.
 export const installCommands: string[][] = [
     // Create the project, but don't install dependencies yet.
-    ['create-project', '--no-install', 'drupal/cms', projectRoot],
+    ['create-project', '--no-install', 'drupal/cms', `"${projectRoot}"`],
 
     // Prevent core's scaffold plugin from trying to dynamically determine if
     // the project is a Git repository, since that will make it try to run Git,
@@ -64,7 +64,7 @@ export const installCommands: string[][] = [
 if (argv.fixture && ! app.isPackaged) {
     // The option does not need to be escaped or quoted, because Composer is not being
     // executed through a shell.
-    installCommands[0].push(`--repository={"type":"path","url":"${argv.fixture}"}`);
+    installCommands[0].push(`--repository={"type":"path","url":"${path.join(resourceDir, argv.fixture)}"}`);
 }
 
 // The absolute path of the web root.

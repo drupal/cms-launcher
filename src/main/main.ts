@@ -99,7 +99,7 @@ function createWindow (): void
     else {
         // Disable the default menu on Windows and Linux, since it doesn't make sense
         // for this app.
-        Menu.setApplicationMenu(null);
+        //Menu.setApplicationMenu(null);
     }
 
     win.loadFile(path.join(__dirname, '..', 'renderer', 'index.html'));
