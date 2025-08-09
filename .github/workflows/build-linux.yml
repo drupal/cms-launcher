@@ -1,4 +1,4 @@
-name: Windows
+name: Build for Linux
 
 on:
   push:
@@ -10,20 +10,27 @@ on:
   workflow_call:
   workflow_dispatch:
 
-# Since only the x64 architecture is supported on Windows, there's only one job to
-# compile PHP and build the launcher.
+env:
+  # The extensions and libraries needed to build PHP. These need to be variables so we can
+  # use them to generate a cache key.
+  # @see https://static-php.dev/en/guide/cli-generator.html
+  PHP_EXTENSIONS: bz2,ctype,curl,dom,filter,gd,iconv,mbstring,opcache,openssl,pcntl,pdo,pdo_sqlite,phar,posix,session,simplexml,sodium,sqlite3,tokenizer,xml,xmlwriter,yaml,zip,zlib
+  PHP_VERSION: 8.3
+  # Don't publish by default. This is overridden for the release branch, below.
+  PUBLISH: never
+
+# On Linux, we need to build separate versions for x64 and arm64. Their build process is
+# identical; the only difference is what kind of machine they are targeting. So it's all
+# done as a single job, but run as a matrix.
 jobs:
   build:
-    name: Build
-    runs-on: windows-latest
-    env:
-      # The extensions and libraries needed to build PHP. These need to be variables so we can
-      # use them to generate a cache key.
-      # @see https://static-php.dev/en/guide/cli-generator.html
-      PHP_EXTENSIONS: bz2,ctype,curl,dom,filter,gd,iconv,mbstring,opcache,openssl,pdo,pdo_sqlite,phar,session,simplexml,sqlite3,tokenizer,xml,xmlwriter,yaml,zip,zlib
-      PHP_VERSION: 8.3
-      # Don't publish by default. This is overridden for the release branch, below.
-      PUBLISH: never
+    name: Build on ${{ matrix.runner }}
+    strategy:
+      matrix:
+        runner:
+          - ubuntu-latest # x64
+          - ubuntu-22.04-arm # arm64
+    runs-on: ${{ matrix.runner }}
     steps:
       - uses: actions/checkout@v4
 
@@ -40,7 +47,7 @@ jobs:
       - name: Generate cache key
         shell: bash
         run: |
-          CACHE_KEY=${{ runner.os }}-$PHP_VERSION-$(echo $PHP_EXTENSIONS | tr ',' '-')
+          CACHE_KEY=${{ runner.os }}-${{ runner.arch }}-$PHP_VERSION--$(echo $PHP_EXTENSIONS | tr ',' '-')
           echo "CACHE_KEY=${CACHE_KEY}" >> "$GITHUB_ENV"
 
       - id: cache-php
@@ -53,9 +60,7 @@ jobs:
       - if: steps.cache-php.outputs.cache-hit != 'true'
         name: Install dependencies and build PHP
         run: |
-          # Temporarily use the dev HEAD of static-php-cli until
-          # https://github.com/crazywhalecc/static-php-cli/issues/820 is released (in 2.6.2 or later).
-          composer require crazywhalecc/static-php-cli:dev-main
+          composer install
           composer run build:php
         env:
           # Allows static-php-cli to download its many dependencies more smoothly.
@@ -74,44 +79,37 @@ jobs:
 
 # Dependency caching is temporarily disabled due to https://github.com/npm/cli/issues/4828.
 #      - name: Cache dependencies
-#        id: cache-yarn
+#        id: cache
 #        uses: actions/cache@v4
 #        with:
 #          path: node_modules
 #          key: yarn-${{ runner.os }}-${{ hashFiles('yarn.lock') }}
 
       - name: Install dependencies
-#        if: steps.cache-yarn.outputs.cache-hit != 'true'
+#        if: steps.cache.outputs.cache-hit != 'true'
         run: yarn install
 
       # If we're on a PR branch, we don't want Electron Builder to publish the app.
-      # On Windows, adding environment variables in PowerShell has a special syntax: see https://github.com/orgs/community/discussions/25713
       - name: Enable publishing for release branch
         if: github.ref_name == 'main'
         run: |
-          "PUBLISH=onTagOrDraft" >> $env:GITHUB_ENV
+          echo "PUBLISH=onTagOrDraft" >> $GITHUB_ENV
           # Electron Builder needs a token to publish releases.
-          "GH_TOKEN=${{ secrets.GITHUB_TOKEN }}" >> $env:GITHUB_ENV
+          echo "GH_TOKEN=${{ secrets.GITHUB_TOKEN }}" >> $GITHUB_ENV
 
       - name: Make application
         run: |
-          cp ./build/buildroot/bin/php.exe ./bin
+          cp ./build/buildroot/bin/php ./bin
+          chmod +x ./bin/php
           composer run assets --working-dir=build
           npx electron-vite build
           npx electron-builder --publish=${{ env.PUBLISH }}
-        env:
-          # Set environment variables for Azure Trusted Signing. Electron Builder will
-          # handle that for us automatically.
-          AZURE_CLIENT_ID: ${{ secrets.AZURE_CLIENT_ID }}
-          AZURE_TENANT_ID: ${{ secrets.AZURE_TENANT_ID }}
-          AZURE_CLIENT_SECRET: ${{ secrets.AZURE_CLIENT_SECRET }}
-        shell: bash
 
       # For manual testing, upload the final artifact if we're not in a release branch.
       - name: Upload distributable
         if: ${{ env.PUBLISH == 'never' }}
         uses: actions/upload-artifact@v4
         with:
-          name: app
-          path: dist/*.exe
+          name: app-${{ runner.arch }}
+          path: dist/*.AppImage
           retention-days: 7
