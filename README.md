@@ -74,12 +74,7 @@ Found a bug or want to suggest a feature? [Open an issue](https://github.com/dru
 Clone this repository, then `cd` into it and run:
 
 ```shell
-mkdir bin
-ln -s -f $(which php) bin
-cd bin
-cp $(which composer) composer.phar
-phar extract -f composer.phar ./composer
-cd ..
+composer run assets --working-dir=build
 yarn install
 yarn run start
 ```

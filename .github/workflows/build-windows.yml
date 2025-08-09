@@ -13,8 +13,8 @@ on:
 # Since only the x64 architecture is supported on Windows, there's only one job to
 # compile PHP and build the launcher.
 jobs:
-  build:
-    name: Build
+  app:
+    name: App
     runs-on: windows-latest
     env:
       # The extensions and libraries needed to build PHP. These need to be variables so we can
@@ -95,8 +95,8 @@ jobs:
 
       - name: Make application
         run: |
-          cp ./build/buildroot/bin/php.exe ./bin
           composer run assets --working-dir=build
+          Copy-Item -Force ./build/buildroot/bin/php.exe ./bin
           npx electron-vite build
           npx electron-builder --publish=${{ env.PUBLISH }}
         env:
@@ -105,7 +105,6 @@ jobs:
           AZURE_CLIENT_ID: ${{ secrets.AZURE_CLIENT_ID }}
           AZURE_TENANT_ID: ${{ secrets.AZURE_TENANT_ID }}
           AZURE_CLIENT_SECRET: ${{ secrets.AZURE_CLIENT_SECRET }}
-        shell: bash
 
       # For manual testing, upload the final artifact if we're not in a release branch.
       - name: Upload distributable

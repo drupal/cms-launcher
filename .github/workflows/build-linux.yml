@@ -23,8 +23,8 @@ env:
 # identical; the only difference is what kind of machine they are targeting. So it's all
 # done as a single job, but run as a matrix.
 jobs:
-  build:
-    name: Build on ${{ matrix.runner }}
+  app:
+    name: App on ${{ matrix.runner }}
     strategy:
       matrix:
         runner:
@@ -101,9 +101,9 @@ jobs:
 
       - name: Make application
         run: |
-          cp ./build/buildroot/bin/php ./bin
-          chmod +x ./bin/php
           composer run assets --working-dir=build
+          cp -f ./build/buildroot/bin/php ./bin
+          chmod +x ./bin/php
           npx electron-vite build
           npx electron-builder --publish=${{ env.PUBLISH }}
 
