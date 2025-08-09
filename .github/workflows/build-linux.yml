@@ -89,7 +89,9 @@ jobs:
 
       - name: Install dependencies
 #        if: steps.cache.outputs.cache-hit != 'true'
-        run: yarn install
+        run: |
+          composer run assets --working-dir=build
+          yarn install
 
       # If we're on a PR branch, we don't want Electron Builder to publish the app.
       - name: Enable publishing for release branch
@@ -101,7 +103,6 @@ jobs:
 
       - name: Make application
         run: |
-          composer run assets --working-dir=build
           cp -f ./build/buildroot/bin/php ./bin
           chmod +x ./bin/php
           npx electron-vite build
