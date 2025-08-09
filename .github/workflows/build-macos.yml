@@ -167,6 +167,7 @@ jobs:
 
       - name: Create universal PHP binary and make application
         run: |
+          composer run assets --working-dir=build
           # Generate a universal binary of the PHP interpreter.
           lipo -create ./build/php-X64 ./build/php-ARM64 -output ./bin/php
           chmod +x ./bin/php

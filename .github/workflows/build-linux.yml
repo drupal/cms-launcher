@@ -101,6 +101,7 @@ jobs:
 
       - name: Make application
         run: |
+          composer run assets --working-dir=build
           cp -f ./build/buildroot/bin/php ./bin
           chmod +x ./bin/php
           npx electron-vite build

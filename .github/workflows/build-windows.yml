@@ -95,6 +95,7 @@ jobs:
 
       - name: Make application
         run: |
+          composer run assets --working-dir=build
           cp -f ./build/buildroot/bin/php.exe ./bin
           npx electron-vite build
           npx electron-builder --publish=${{ env.PUBLISH }}
