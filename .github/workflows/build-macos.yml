@@ -1,4 +1,4 @@
-name: macOS
+name: Build for macOS
 
 on:
   push:
@@ -15,7 +15,7 @@ jobs:
   # x64 and arm64 architectures, before being merged into a universal binary while building
   # the app itself.
   php:
-    name: Build PHP on ${{ matrix.os }}
+    name: PHP on ${{ matrix.os }}
     strategy:
       matrix:
         os:
@@ -75,8 +75,8 @@ jobs:
           path: build/php-${{ runner.arch }}
           retention-days: 1
 
-  build:
-    name: Build app
+  app:
+    name: App
     runs-on: macos-latest
     needs:
       - php
@@ -170,7 +170,6 @@ jobs:
           # Generate a universal binary of the PHP interpreter.
           lipo -create ./build/php-X64 ./build/php-ARM64 -output ./bin/php
           chmod +x ./bin/php
-          composer run assets --working-dir=build
           npx electron-vite build
           npx electron-builder --universal --publish=${{ env.PUBLISH }}
 

@@ -4,6 +4,7 @@
   "description": "A quick-start launcher for Drupal CMS.",
   "main": "./out/main/main.js",
   "scripts": {
+    "postinstall": "composer run assets --working-dir=build",
     "start": "electron-vite preview"
   },
   "author": "Drupal Association",
