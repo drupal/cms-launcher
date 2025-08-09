@@ -63,8 +63,8 @@ export const installCommands: string[][] = [
 // when running tests).
 if (argv.fixture && ! app.isPackaged) {
     const repository = JSON.stringify({
-        type: 'path',
-        url: path.join(resourceDir, 'tests', 'fixtures', argv.fixture),
+       type: 'path',
+       url: path.join(resourceDir, 'tests', 'fixtures', argv.fixture),
     });
     // The option does not need to be escaped or quoted, because Composer is not being
     // executed through a shell.
