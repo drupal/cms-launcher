@@ -118,7 +118,9 @@ jobs:
 
       - name: Install dependencies
 #       if: steps.cache.outputs.cache-hit != 'true'
-        run: yarn install
+        run: |
+          composer run assets --working-dir=build
+          yarn install
 
       # This was copied from the example in
       # https://docs.github.com/en/actions/use-cases-and-examples/deploying/installing-an-apple-certificate-on-macos-runners-for-xcode-development.
@@ -167,7 +169,6 @@ jobs:
 
       - name: Create universal PHP binary and make application
         run: |
-          composer run assets --working-dir=build
           # Generate a universal binary of the PHP interpreter.
           lipo -create ./build/php-X64 ./build/php-ARM64 -output ./bin/php
           chmod +x ./bin/php
