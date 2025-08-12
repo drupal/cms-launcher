@@ -44,6 +44,8 @@ jobs:
         run: |
           composer run assets --working-dir=build
           npx playwright test
+        env:
+          DEBUG: 'pw:browser*'
 
       - uses: actions/upload-artifact@v4
         if: ${{ !cancelled() }}
