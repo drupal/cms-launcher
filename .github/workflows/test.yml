@@ -1,0 +1,41 @@
+name: Test
+
+on:
+  pull_request:
+    branches:
+      - main
+  workflow_dispatch:
+
+jobs:
+  test:
+    name: Test on ${{ matrix.os }}
+    strategy:
+      matrix:
+        os:
+          - macos-latest
+    runs-on: ${{ matrix.os }}
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Set up PHP
+        uses: shivammathur/setup-php@v2
+        with:
+          php-version: latest
+          tools: composer
+          ini-values: memory_limit=-1
+
+      - name: Set up Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: latest
+
+      - name: Set up Yarn
+        run: |
+          corepack enable
+          yarn set version berry
+
+      - name: Install dependencies
+        run: |
+          composer run assets --working-dir=build
+          yarn install
+          ls -l bin

@@ -7,7 +7,6 @@ on:
       # PR branches that alter the build process should be prefixed with `build/`, so
       # that this workflow runs.
       - 'build/**'
-  workflow_call:
   workflow_dispatch:
 
 jobs:
