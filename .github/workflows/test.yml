@@ -20,7 +20,9 @@ jobs:
       fail-fast: false
       matrix:
         os:
-          - ubuntu-latest
+          # Testing on Linux is temporarily disabled because of SUID sandbox problems.
+          # @see https://github.com/drupal/cms-launcher/actions/runs/16914740761/job/47925647449?pr=114#step:5:1368
+          # - ubuntu-latest
           - windows-latest
           - macos-latest
     steps:
