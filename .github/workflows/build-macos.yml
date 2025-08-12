@@ -103,24 +103,16 @@ jobs:
         with:
           node-version: latest
 
-      - name: Set up Yarn
-        run: |
-          corepack enable
-          yarn set version berry
-
-# Dependency caching is temporarily disabled due to https://github.com/npm/cli/issues/4828.
-#      - name: Cache dependencies
-#        id: cache
-#        uses: actions/cache@v4
-#        with:
-#          path: node_modules
-#          key: yarn-${{ runner.os }}-${{ hashFiles('yarn.lock') }}
+      - name: Cache dependencies
+        id: cache
+        uses: actions/cache@v4
+        with:
+          path: node_modules
+          key: npm-${{ runner.os }}-${{ runner.arch }}-${{ hashFiles('package-lock.json') }}
 
       - name: Install dependencies
-#       if: steps.cache.outputs.cache-hit != 'true'
-        run: |
-          composer run assets --working-dir=build
-          yarn install
+        if: steps.cache.outputs.cache-hit != 'true'
+        run: npm install
 
       # This was copied from the example in
       # https://docs.github.com/en/actions/use-cases-and-examples/deploying/installing-an-apple-certificate-on-macos-runners-for-xcode-development.
@@ -169,6 +161,7 @@ jobs:
 
       - name: Create universal PHP binary and make application
         run: |
+          composer run assets --working-dir=build
           # Generate a universal binary of the PHP interpreter.
           lipo -create ./build/php-X64 ./build/php-ARM64 -output ./bin/php
           chmod +x ./bin/php
@@ -181,5 +174,5 @@ jobs:
         uses: actions/upload-artifact@v4
         with:
           name: app
-          path: dist/*.dmg
+          path: dist/*.zip
           retention-days: 7
