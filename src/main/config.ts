@@ -21,6 +21,11 @@ const argv = yargs(
         default: null,
         hidden: true,
     })
+    .option('log', {
+        type: 'string',
+        description: "Path of a file where Composer's output should be logged.",
+        default: path.join(app.getPath('temp'), 'install.log'),
+    })
     .parse();
 
 // The Drupal project root.
@@ -34,7 +39,7 @@ export const resourceDir = app.isPackaged ? process.resourcesPath : app.getAppPa
 export const bin: string = path.join(resourceDir, 'bin');
 
 // A file where we can log Composer's full output for debugging purposes.
-export const installLog: string = path.join(app.getPath('temp'), 'install.log');
+export const installLog: string = argv.log;
 
 // The series of Composer commands to set up the Drupal project.
 export const installCommands: string[][] = [

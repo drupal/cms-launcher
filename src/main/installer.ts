@@ -4,7 +4,7 @@ import { app, type WebContents } from 'electron';
 import { execFile } from 'node:child_process';
 import { randomBytes } from 'node:crypto';
 import { type EventEmitter } from 'node:events';
-import { access, appendFile, copyFile, type FileHandle, open, rm } from 'node:fs/promises';
+import { access, appendFile, copyFile, type FileHandle, open } from 'node:fs/promises';
 import path from 'node:path';
 import readline from 'node:readline';
 import { promisify as toPromise } from 'node:util';
@@ -95,15 +95,8 @@ async function createProject (win?: WebContents): Promise<void>
     for (const command of installCommands) {
         await runComposer(command);
     }
-
     // All done, we can stop logging.
     await log?.close();
-    try {
-        await rm(installLog);
-    }
-    catch {
-        // Couldn't delete the log file -- no big deal.
-    }
 
     const siteDir = path.join(webRoot, 'sites', 'default');
     // Create a local settings file so we can skip database set-up in the
