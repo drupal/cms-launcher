@@ -1,30 +1,40 @@
-import { projectRoot, bin, webRoot } from './config';
+import { bin, webRoot } from './config';
+import { app } from 'electron';
 import { default as getPort, portNumbers } from 'get-port';
 import { type ChildProcess, execFile } from 'node:child_process';
+import { realpath } from 'node:fs/promises';
 import path from 'node:path';
 import readline from 'node:readline';
+import process from "node:process";
 
-export default async (): Promise<{ url: string, serverProcess: ChildProcess }> => {
+export async function phpCommand (command: string[] = []): Promise<string[]>
+{
+    const phpBin = path.join(bin, process.platform === 'win32' ? 'php.exe' : 'php');
+    const caFile = path.join(bin, 'cacert.pem');
+
+    return [
+        app.isPackaged ? phpBin : await realpath(phpBin),
+        // Explicitly pass the cURL CA bundle so that HTTPS requests from Drupal can
+        // succeed on Windows.
+        '-d', `curl.cainfo="${caFile}"`,
+        ...command,
+    ];
+}
+
+export async function startServer (): Promise<{ url: string, serverProcess: ChildProcess }>
+{
     const port = await getPort({
         port: portNumbers(8888, 9999),
     });
     const url = `http://localhost:${port}`;
-    const caFile = path.join(bin, 'cacert.pem');
+
+    const command = await phpCommand([
+        '-S', url.substring(7),
+        '.ht.router.php',
+    ]);
 
     // Start the built-in PHP web server.
-    const serverProcess = execFile(
-        path.join(bin, 'php'),
-        [
-            // Explicitly pass the cURL CA bundle so that HTTPS requests from Drupal can
-            // succeed on Windows.
-            '-d', `curl.cainfo="${caFile}"`,
-            '-S', url.substring(7),
-            '.ht.router.php',
-        ],
-        {
-            cwd: webRoot,
-        },
-    );
+    const serverProcess = execFile(command[0], command.slice(1), { cwd: webRoot });
     const resolveWith = { url, serverProcess };
 
     return new Promise((resolve): void => {

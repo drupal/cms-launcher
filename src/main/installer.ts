@@ -8,6 +8,7 @@ import { access, appendFile, copyFile, type FileHandle, open } from 'node:fs/pro
 import path from 'node:path';
 import readline from 'node:readline';
 import { promisify as toPromise } from 'node:util';
+import { phpCommand } from './php';
 
 // Create an awaitable version of execFile that won't block the main process,
 // which would produce a disconcerting beach ball on macOS.
@@ -25,7 +26,7 @@ async function createProject (win?: WebContents): Promise<void>
         // @todo Remove EventEmitter from the intersection type when Node's type
         // definitions are updated to reflect the documentation.
         // @see https://nodejs.org/docs/latest/api/fs.html#class-filehandle
-        log = await open(installLog, 'w') as FileHandle&EventEmitter;
+        log = await open(installLog, 'a') as FileHandle&EventEmitter;
 
         // Invalidate the handle when the file is closed, so we don't try to write to
         // it accidentally.
@@ -37,33 +38,32 @@ async function createProject (win?: WebContents): Promise<void>
         log = null;
     }
 
-    const runComposer = (command: string[]) => {
-        log?.write('\n>>> ' + command.join(' ') + '\n');
+    // Always invoke Composer directly through the PHP interpreter, with a known set
+    // of options.
+    const _phpCommand = [
+        ...await phpCommand(),
+        // We use an unpacked version of Composer because the phar file has a shebang
+        // line that breaks us, due to GUI-launched Electron apps not inheriting the
+        // parent environment in macOS and Linux.
+        path.join('composer', 'bin', 'composer'),
+        // Disable ANSI output (i.e., colors) so the log is readable.
+        '--no-ansi',
+        // We don't want Composer to ask us any questions, since we have no way for
+        // the user to answer them.
+        '--no-interaction',
+    ];
 
+    const runComposer = (command: string[]) => {
         // Always direct Composer to the created project root, unless we're about to
         // create it initially.
         if (command[0] !== 'create-project') {
             command.push(`--working-dir=${projectRoot}`);
         }
-        command.push(
-            // Disable ANSI output (i.e., colors) so the log is readable.
-            '--no-ansi',
-            // We don't want Composer to ask us any questions, since we have no way for
-            // the user to answer them.
-            '--no-interaction',
-        );
-        command.unshift(
-            // Explicitly pass the cURL CA bundle so that HTTPS requests from Composer can
-            // succeed on Windows.
-            '-d',
-            'curl.cainfo=' + path.join(bin, 'cacert.pem'),
-            // We use an unpacked version of Composer because the phar file has a shebang
-            // line that breaks us, due to GUI-launched Electron apps not inheriting the
-            // parent environment in macOS and Linux.
-            path.join('composer', 'bin', 'composer'),
-        );
+        command.unshift(..._phpCommand);
+        // For forensic purposes, log the complete command we're about to execute.
+        log?.write('\n>>> ' + command.join(' ') + '\n');
 
-        const task = execFileAsPromise(path.join(bin, 'php'), command, {
+        const task = execFileAsPromise(command[0], command.slice(1), {
             // Run from the `bin` directory so we can use a relative path to Composer.
             cwd: bin,
             // Send a customized copy of the current environment variables to Composer.

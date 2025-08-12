@@ -18,11 +18,10 @@ jobs:
     strategy:
       matrix:
         os:
-          - macos-latest
+          # - macos-latest
           # Testing on Linux is temporarily disabled until we can figure out the SUID sandboxing issue.
           # - ubuntu-latest
-          # Testing on Windows is temporarily disabled because it's broken.
-          # - windows-latest
+          - windows-latest
     runs-on: ${{ matrix.os }}
     steps:
       - uses: actions/checkout@v4
