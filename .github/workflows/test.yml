@@ -38,7 +38,6 @@ jobs:
         run: |
           composer run assets --working-dir=build
           yarn install
-          npx playwright install firefox --with-deps
 
       - name: Run tests
         run: npx playwright test
