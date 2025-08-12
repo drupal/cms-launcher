@@ -1,4 +1,4 @@
-name: macOS
+name: Build for macOS
 
 on:
   push:
@@ -15,7 +15,7 @@ jobs:
   # x64 and arm64 architectures, before being merged into a universal binary while building
   # the app itself.
   php:
-    name: Build PHP on ${{ matrix.os }}
+    name: PHP on ${{ matrix.os }}
     strategy:
       matrix:
         os:
@@ -59,7 +59,9 @@ jobs:
         run: |
           brew install automake gzip
           composer install
-          composer run build:php
+          composer exec spc -- doctor
+          composer exec spc -- download --with-php=${{ env.PHP_VERSION }} --for-extensions=${{ env.PHP_EXTENSIONS }} --prefer-pre-built
+          composer exec spc -- build ${{ env.PHP_EXTENSIONS }} --build-cli --with-libs=freetype,libavif,libjpeg,libwebp --debug
           mv ./buildroot/bin/php ./php-${{ runner.arch }}
         env:
           # Allows static-php-cli to download its many dependencies more smoothly.
@@ -73,8 +75,8 @@ jobs:
           path: build/php-${{ runner.arch }}
           retention-days: 1
 
-  build:
-    name: Build app
+  app:
+    name: App
     runs-on: macos-latest
     needs:
       - php
@@ -116,7 +118,9 @@ jobs:
 
       - name: Install dependencies
 #       if: steps.cache.outputs.cache-hit != 'true'
-        run: yarn install
+        run: |
+          composer run assets --working-dir=build
+          yarn install
 
       # This was copied from the example in
       # https://docs.github.com/en/actions/use-cases-and-examples/deploying/installing-an-apple-certificate-on-macos-runners-for-xcode-development.
@@ -168,7 +172,6 @@ jobs:
           # Generate a universal binary of the PHP interpreter.
           lipo -create ./build/php-X64 ./build/php-ARM64 -output ./bin/php
           chmod +x ./bin/php
-          composer run assets --working-dir=build
           npx electron-vite build
           npx electron-builder --universal --publish=${{ env.PUBLISH }}
 
