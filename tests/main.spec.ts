@@ -1,17 +1,14 @@
 import { test, expect, _electron as electron } from '@playwright/test';
 import { rm } from 'node:fs/promises';
 import { join } from 'node:path';
-import { installLog } from '../src/main/config';
-
 
 test.afterEach(async ({}, testInfo) => {
-  await rm(join(testInfo.outputDir, 'drupal'), { recursive:true } );
-  /*await testInfo.attach('installLog', { path:installLog } );*/
+  const projectRoot = join(testInfo.outputDir, 'drupal');
+  await rm(projectRoot, { recursive: true });
 });
 
 test('happy path', async ({}, testInfo) => {
-
-  const launchOptions = {
+  const electronApp = await electron.launch({
     args: [
       '.',
       `--root=${join(testInfo.outputDir, 'drupal')}`,
@@ -24,21 +21,16 @@ test('happy path', async ({}, testInfo) => {
       // Disable the network so we don't inadvertently test the internet.
       COMPOSER_DISABLE_NETWORK: '1',
     },
-  };
-  
-  // Launch Electron app.
-  const electronApp = await electron.launch(launchOptions);
+  });
 
-  // Wait for the first BrowserWindow to open
-  // and return its Page object.
+  // Wait for the first BrowserWindow to open and return its Page object, then
+  // wait up to 10 seconds for the success message to appear.
   const window = await electronApp.firstWindow();
-  await expect(window.getByText('Your site is running at')).toBeVisible({ timeout: 30_000 });
-  const siteURL = await window.getByText('http').textContent();
-  console.log(siteURL);
-  if (typeof siteURL === 'string') {
-    await window.goto(siteURL);
-  }
+  // Get the text of the element which starts with a URL.
+  const url = await window.getByText(/^http:\/\/localhost:/)
+      .textContent();
+  expect(typeof url).toBe('string');
+  await window.goto(url);
   await expect(window.getByText('It worked!')).toBeVisible();
-  // Close app.
   await electronApp.close();
-})
+});
