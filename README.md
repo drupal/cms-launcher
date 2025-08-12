@@ -75,8 +75,8 @@ Clone this repository, then `cd` into it and run:
 
 ```shell
 composer run assets --working-dir=build
-yarn install
-yarn run start
+npm install
+npm run start
 ```
 
 To test the full app bundle, run `npx electron-builder` and look for the final binary in the `dist` directory.
