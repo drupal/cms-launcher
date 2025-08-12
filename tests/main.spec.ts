@@ -2,6 +2,7 @@ import { test, expect, _electron as electron } from '@playwright/test';
 import { rm } from 'node:fs/promises';
 import { join } from 'node:path';
 
+
 test.afterEach(async ({}, testInfo) => {
   const projectRoot = join(testInfo.outputDir, 'drupal');
   await rm(projectRoot, { recursive: true });
@@ -13,6 +14,7 @@ test('happy path', async ({}, testInfo) => {
       '.',
       `--root=${join(testInfo.outputDir, 'drupal')}`,
       '--fixture=basic',
+      `--log=${join(testInfo.outputDir, 'install.log')}`,
     ],
     env: {
       // The fixture is located in a path repository, so we want to ensure Composer
