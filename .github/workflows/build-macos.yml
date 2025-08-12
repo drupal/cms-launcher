@@ -174,5 +174,5 @@ jobs:
         uses: actions/upload-artifact@v4
         with:
           name: app
-          path: dist/*.dmg
+          path: dist/*.zip
           retention-days: 7
