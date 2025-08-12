@@ -4,7 +4,10 @@ import { join } from 'node:path';
 
 test.afterEach(async ({}, testInfo) => {
   const projectRoot = join(testInfo.outputDir, 'drupal');
-  await rm(projectRoot, { recursive: true });
+  await rm(projectRoot, {
+    force: true,
+    recursive: true,
+  });
 });
 
 test('happy path', async ({}, testInfo) => {
