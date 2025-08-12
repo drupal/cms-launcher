@@ -18,7 +18,8 @@ jobs:
           - macos-latest
           # Testing on Linux is temporarily disabled until we can figure out the SUID sandboxing issue.
           # - ubuntu-latest
-          - windows-latest
+          # Testing on Windows is temporarily disabled because it's broken.
+          # - windows-latest
     runs-on: ${{ matrix.os }}
     steps:
       - uses: actions/checkout@v4
@@ -54,8 +55,6 @@ jobs:
       - uses: actions/upload-artifact@v4
         if: ${{ !cancelled() }}
         with:
-          name: playwright-report
-          path: |
-            playwright-report/
-            test-results/
+          name: playwright-report-${{ runner.os }}
+          path: playwright-report/
           retention-days: 7
