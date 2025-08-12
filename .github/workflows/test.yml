@@ -29,18 +29,21 @@ jobs:
         with:
           node-version: latest
 
-      - name: Set up Yarn
-        run: |
-          corepack enable
-          yarn set version berry
+      - name: Cache dependencies
+        id: cache
+        uses: actions/cache@v4
+        with:
+          path: node_modules
+          key: npm-${{ runner.os }}-${{ runner.arch }}-${{ hashFiles('package-lock.json') }}
 
       - name: Install dependencies
-        run: |
-          composer run assets --working-dir=build
-          yarn install
+        if: steps.cache.outputs.cache-hit != 'true'
+        run: npm install
 
       - name: Run tests
-        run: npx playwright test
+        run: |
+          composer run assets --working-dir=build
+          npx playwright test
 
       - uses: actions/upload-artifact@v4
         if: ${{ !cancelled() }}
