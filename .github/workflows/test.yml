@@ -38,4 +38,4 @@ jobs:
         run: |
           composer run assets --working-dir=build
           yarn install
-          ls -l bin
+          npx playwright install firefox --with-deps
