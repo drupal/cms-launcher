@@ -1,10 +1,10 @@
-import { installLog } from './config';
+import { installLog, projectRoot } from './config';
 import { Commands, Events } from "../Drupal";
 import { app, BrowserWindow, ipcMain, Menu, shell } from 'electron';
 import logger from 'electron-log';
 import { autoUpdater } from 'electron-updater';
 import install from './installer';
-import { readFile } from 'node:fs/promises';
+import { readFile, rm } from 'node:fs/promises';
 import path from 'node:path';
 import startServer from './php-server';
 import * as Sentry from "@sentry/electron/main";
@@ -52,6 +52,9 @@ ipcMain.on( Commands.Start, async ({ sender: win }): Promise<void> => {
         // users to file a GitHub issue.
         Sentry.captureException(e);
         win.send(Events.Error, e);
+
+        // Delete the Drupal directory:
+        await rm(projectRoot, { force: true, recursive: true, maxRetries: 3 });
     }
 } );
 
