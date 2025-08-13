@@ -3,6 +3,12 @@ import { type ChildProcess, execFile, type ExecFileOptions } from 'node:child_pr
 import { realpath } from 'node:fs/promises';
 import { dirname, join } from 'node:path';
 
+export enum OutputType {
+    Output = 'out',
+    Error = 'err',
+    Debug = 'debug',
+}
+
 /**
  * An abstraction layer for invoking the PHP interpreter in a consistent way.
  */
@@ -17,7 +23,7 @@ export class PhpCommand
         this.arguments = options;
     }
 
-    async toArray (): Promise<string[]>
+    protected async getCommandLine (): Promise<[string, string[]]>
     {
         const phpBin = app.isPackaged
             ? PhpCommand.binary
@@ -29,19 +35,12 @@ export class PhpCommand
 
         return [
             phpBin,
-            '-d', `curl.cainfo="${caFile}"`,
-            ...this.arguments,
+            ['-d', `curl.cainfo="${caFile}"`, ...this.arguments],
         ];
     }
 
     async start (options: ExecFileOptions = {}): Promise<ChildProcess>
     {
-        const command = await this.toArray();
-
-        return execFile(
-            command[0],
-            command.slice(1),
-            options,
-        );
+        return execFile(...await this.getCommandLine(), options);
     }
 }

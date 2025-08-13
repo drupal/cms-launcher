@@ -1,5 +1,6 @@
 // Contains runtime configuration for the Drupal Launcher.
 
+import { ComposerCommand } from './ComposerCommand';
 import { app } from 'electron';
 import path from 'node:path';
 import yargs from 'yargs';
@@ -39,6 +40,8 @@ export const resourceDir = app.isPackaged ? process.resourcesPath : app.getAppPa
 export const bin: string = path.join(resourceDir, 'bin');
 
 PhpCommand.binary = path.join(bin, process.platform === 'win32' ? 'php.exe' : 'php');
+
+ComposerCommand.binary = path.join(bin, 'composer', 'bin', 'composer');
 
 // A file where we can log Composer's full output for debugging purposes.
 export const installLog: string = argv.log;

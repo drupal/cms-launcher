@@ -1,18 +1,12 @@
-import { bin, installCommands, installLog, projectRoot, resourceDir, webRoot } from './config';
-import { Events } from "../Drupal";
-import { app, type WebContents } from 'electron';
-import { execFile } from 'node:child_process';
+import { installCommands, installLog, projectRoot, resourceDir, webRoot } from './config';
+import { ComposerCommand } from './ComposerCommand';
+import { Events } from '../Drupal';
+import { type WebContents } from 'electron';
 import { randomBytes } from 'node:crypto';
 import { type EventEmitter } from 'node:events';
 import { access, appendFile, copyFile, type FileHandle, open } from 'node:fs/promises';
 import path from 'node:path';
-import readline from 'node:readline';
-import { promisify as toPromise } from 'node:util';
-import { PhpCommand } from './PhpCommand';
-
-// Create an awaitable version of execFile that won't block the main process,
-// which would produce a disconcerting beach ball on macOS.
-const execFileAsPromise = toPromise(execFile);
+import { OutputType } from './PhpCommand';
 
 async function createProject (win?: WebContents): Promise<void>
 {
@@ -38,57 +32,26 @@ async function createProject (win?: WebContents): Promise<void>
         log = null;
     }
 
-    // Always invoke Composer directly through the PHP interpreter, with a known set
-    // of options.
-    const _phpCommand = await new PhpCommand(
-        // We use an unpacked version of Composer because the phar file has a shebang
-        // line that breaks us, due to GUI-launched Electron apps not inheriting the
-        // parent environment in macOS and Linux.
-        path.join('composer', 'bin', 'composer'),
-        // Disable ANSI output (i.e., colors) so the log is readable.
-        '--no-ansi',
-        // We don't want Composer to ask us any questions, since we have no way for
-        // the user to answer them.
-        '--no-interaction',
-    ).toArray();
+    const runComposer = async (command: string[]) => {
+        const runner = new ComposerCommand(...command);
 
-    const runComposer = (command: string[]) => {
         // Always direct Composer to the created project root, unless we're about to
         // create it initially.
         if (command[0] !== 'create-project') {
-            command.push(`--working-dir=${projectRoot}`);
+            runner.append(`--working-dir=${projectRoot}`);
         }
-        command.unshift(..._phpCommand);
-        // For forensic purposes, log the complete command we're about to execute.
-        log?.write('\n>>> ' + command.join(' ') + '\n');
 
-        const task = execFileAsPromise(command[0], command.slice(1), {
-            // Run from the `bin` directory so we can use a relative path to Composer.
-            cwd: bin,
-            // Send a customized copy of the current environment variables to Composer.
-            env: Object.assign({}, process.env, {
-                // Set COMPOSER_ROOT_VERSION so that Composer won't try to guess the root
-                // package version, which would cause it to invoke Git and other
-                // command-line utilities that might not be installed and could therefore
-                // raise unexpected warnings on macOS.
-                // @see https://getcomposer.org/doc/03-cli.md#composer-root-version
-                COMPOSER_ROOT_VERSION: '1.0.0',
-                // For performance reasons, skip security audits for now.
-                // @see https://getcomposer.org/doc/03-cli.md#composer-no-audit
-                COMPOSER_NO_AUDIT: '1',
-                // Composer doesn't work without COMPOSER_HOME.
-                COMPOSER_HOME: path.join(app.getPath('home'), '.composer'),
-            }),
-            // No part of installing Drupal CMS should take longer than 10 minutes.
-            timeout: 600000,
-        });
-        if (task.child.stderr) {
-            readline.createInterface(task.child.stderr).on('line', (line: string): void => {
+        const onOutput = (line: string, type: OutputType): void => {
+            if (type === OutputType.Debug) {
+                log?.write('\n>>> ' + line + '\n');
+            } else if (type === OutputType.Error) {
                 log?.write(line + '\n');
                 win?.send(Events.Output, line);
-            });
-        }
-        return task.catch(log?.close);
+            }
+        };
+
+        // Run from the `bin` directory so we can use a relative path to Composer.
+        return runner.run(undefined, onOutput).catch(log?.close);
     }
 
     for (const command of installCommands) {
