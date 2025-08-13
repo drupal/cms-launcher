@@ -6,7 +6,7 @@
   "scripts": {
     "start": "electron-vite preview",
     "test": "electron-vite build && playwright test"
-  },
+  }, 
   "author": "Drupal Association",
   "license": "MIT",
   "devDependencies": {

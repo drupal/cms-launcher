@@ -21,6 +21,7 @@ test('happy path', async ({}, testInfo) => {
       `--root=${testInfo.outputPath('drupal')}`,
       '--fixture=basic',
       `--log=${testInfo.outputPath('install.log')}`,
+      '--no-sandbox',
     ],
     env: {
       // The fixture is located in a path repository, so we want to ensure Composer
