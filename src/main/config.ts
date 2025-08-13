@@ -27,6 +27,12 @@ const argv = yargs(
         description: "Path of a file where Composer's output should be logged.",
         default: path.join(app.getPath('temp'), 'install.log'),
     })
+    .option('composer', {
+        type: 'string',
+        description: 'The path of the Composer PHP script. This is internal and only used for testing.',
+        default: null,
+        hidden: true,
+    })
     .parse();
 
 // The Drupal project root.
@@ -72,13 +78,19 @@ export const installCommands: string[][] = [
 // Only allow a fixture to be used if the app is not packaged (i.e., during development or
 // when running tests).
 if (argv.fixture && ! app.isPackaged) {
+    const fixturesDir = path.join(resourceDir, 'tests', 'fixtures');
+
     const repository = JSON.stringify({
        type: 'path',
-       url: path.join(resourceDir, 'tests', 'fixtures', argv.fixture),
+       url: path.join(fixturesDir, argv.fixture),
     });
     // The option does not need to be escaped or quoted, because Composer is not being
     // executed through a shell.
     installCommands[0].push(`--repository=${repository}`);
+
+    if (argv.composer) {
+        ComposerCommand.binary = argv.composer;
+    }
 }
 
 // The absolute path of the web root.
