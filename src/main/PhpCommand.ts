@@ -1,5 +1,5 @@
 import { app } from 'electron';
-import {type ChildProcess, execFile, type ExecFileOptions} from 'node:child_process';
+import { type ChildProcess, execFile, type ExecFileOptions } from 'node:child_process';
 import { realpath } from 'node:fs/promises';
 import { dirname, join } from 'node:path';
 
@@ -8,7 +8,7 @@ import { dirname, join } from 'node:path';
  */
 export class PhpCommand
 {
-    private arguments: string[] = [];
+    protected arguments: string[] = [];
 
     public static binary: string;
 
@@ -34,7 +34,7 @@ export class PhpCommand
         ];
     }
 
-    async start (options?: ExecFileOptions): Promise<ChildProcess>
+    async start (options: ExecFileOptions = {}): Promise<ChildProcess>
     {
         const command = await this.toArray();
 
