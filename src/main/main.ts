@@ -53,7 +53,7 @@ ipcMain.on( Commands.Start, async ({ sender: win }): Promise<void> => {
         Sentry.captureException(e);
         win.send(Events.Error, e);
 
-        // Delete the Drupal directory:
+        // Remove unfinished install directory, so installation can be tried again cleanly.
         await rm(projectRoot, { force: true, recursive: true, maxRetries: 3 });
     }
 } );
