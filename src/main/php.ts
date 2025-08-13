@@ -1,30 +1,19 @@
-import { projectRoot, bin, webRoot } from './config';
+import { webRoot } from './config';
 import { default as getPort, portNumbers } from 'get-port';
-import { type ChildProcess, execFile } from 'node:child_process';
-import path from 'node:path';
+import { type ChildProcess } from 'node:child_process';
 import readline from 'node:readline';
+import { PhpCommand } from './PhpCommand';
 
-export default async (): Promise<{ url: string, serverProcess: ChildProcess }> => {
+export async function startServer (): Promise<{ url: string, serverProcess: ChildProcess }>
+{
     const port = await getPort({
         port: portNumbers(8888, 9999),
     });
     const url = `http://localhost:${port}`;
-    const caFile = path.join(bin, 'cacert.pem');
 
     // Start the built-in PHP web server.
-    const serverProcess = execFile(
-        path.join(bin, 'php'),
-        [
-            // Explicitly pass the cURL CA bundle so that HTTPS requests from Drupal can
-            // succeed on Windows.
-            '-d', `curl.cainfo="${caFile}"`,
-            '-S', url.substring(7),
-            '.ht.router.php',
-        ],
-        {
-            cwd: webRoot,
-        },
-    );
+    const serverProcess = await new PhpCommand('-S', url.substring(7), '.ht.router.php')
+        .start({ cwd: webRoot });
     const resolveWith = { url, serverProcess };
 
     return new Promise((resolve): void => {

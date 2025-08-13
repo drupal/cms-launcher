@@ -2,19 +2,25 @@ import { test, expect, _electron as electron } from '@playwright/test';
 import { rm } from 'node:fs/promises';
 import { join } from 'node:path';
 
-
 test.afterEach(async ({}, testInfo) => {
-  const projectRoot = join(testInfo.outputDir, 'drupal');
-  await rm(projectRoot, { recursive: true });
+  // Always attach the install log, regardless of success or failure.
+  await testInfo.attach('install log', {
+    path: testInfo.outputPath('install.log'),
+  });
+
+  await rm(testInfo.outputPath('drupal'), {
+    force: true,
+    recursive: true,
+  });
 });
 
 test('happy path', async ({}, testInfo) => {
   const electronApp = await electron.launch({
     args: [
       '.',
-      `--root=${join(testInfo.outputDir, 'drupal')}`,
+      `--root=${testInfo.outputPath('drupal')}`,
       '--fixture=basic',
-      `--log=${join(testInfo.outputDir, 'install.log')}`,
+      `--log=${testInfo.outputPath('install.log')}`,
     ],
     env: {
       // The fixture is located in a path repository, so we want to ensure Composer

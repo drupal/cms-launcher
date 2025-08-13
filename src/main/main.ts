@@ -6,7 +6,7 @@ import { autoUpdater } from 'electron-updater';
 import install from './installer';
 import { readFile, rm } from 'node:fs/promises';
 import path from 'node:path';
-import startServer from './php-server';
+import { startServer } from './php';
 import * as Sentry from "@sentry/electron/main";
 
 Sentry.init({
