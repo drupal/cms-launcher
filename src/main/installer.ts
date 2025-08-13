@@ -32,7 +32,17 @@ async function createProject (win?: WebContents): Promise<void>
         log = null;
     }
 
-    const runComposer = async (command: string[]) => {
+    const onOutput = (line: string, type: OutputType): void => {
+        if (type === OutputType.Debug) {
+            log?.write('\n>>> ' + line + '\n');
+        }
+        else if (type === OutputType.Error) {
+            log?.write(line + '\n');
+            win?.send(Events.Output, line);
+        }
+    };
+
+    for (const command of installCommands) {
         const runner = new ComposerCommand(...command);
 
         // Always direct Composer to the created project root, unless we're about to
@@ -40,22 +50,7 @@ async function createProject (win?: WebContents): Promise<void>
         if (command[0] !== 'create-project') {
             runner.append(`--working-dir=${projectRoot}`);
         }
-
-        const onOutput = (line: string, type: OutputType): void => {
-            if (type === OutputType.Debug) {
-                log?.write('\n>>> ' + line + '\n');
-            } else if (type === OutputType.Error) {
-                log?.write(line + '\n');
-                win?.send(Events.Output, line);
-            }
-        };
-
-        // Run from the `bin` directory so we can use a relative path to Composer.
-        return runner.run(undefined, onOutput).catch(log?.close);
-    }
-
-    for (const command of installCommands) {
-        await runComposer(command);
+        await runner.run(undefined, onOutput).catch(log?.close);
     }
     // All done, we can stop logging.
     await log?.close();
