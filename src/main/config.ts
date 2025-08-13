@@ -2,9 +2,9 @@
 
 import { app } from 'electron';
 import path from 'node:path';
-import process from 'node:process';
 import yargs from 'yargs';
 import { hideBin } from 'yargs/helpers';
+import { PhpCommand } from './PhpCommand';
 
 // Parse the command line so we can override certain things for testing.
 const argv = yargs(
@@ -37,6 +37,8 @@ export const resourceDir = app.isPackaged ? process.resourcesPath : app.getAppPa
 
 // Absolute path of the directory with the PHP and Composer binaries.
 export const bin: string = path.join(resourceDir, 'bin');
+
+PhpCommand.binary = path.join(bin, process.platform === 'win32' ? 'php.exe' : 'php');
 
 // A file where we can log Composer's full output for debugging purposes.
 export const installLog: string = argv.log;
