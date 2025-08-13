@@ -51,7 +51,11 @@ export class ComposerCommand extends PhpCommand
         const p = (toPromise(execFile))(...commandLine, options);
 
         if (callback) {
-            callback(commandLine.join(' '), OutputType.Debug);
+            // For forensic purposes, log the command line we just executed.
+            callback(
+                commandLine.reduce((line, item) => line.concat(typeof item === 'string' ? item : item.join(' ')), '') as string,
+                OutputType.Debug,
+            );
 
             if (p.child.stdout) {
                 readFrom(p.child.stdout).on('line', (line: string): void => {
