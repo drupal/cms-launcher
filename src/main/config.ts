@@ -37,7 +37,7 @@ export const projectRoot: string = argv.root;
 export const resourceDir = app.isPackaged ? process.resourcesPath : app.getAppPath();
 
 // Absolute path of the directory with the PHP and Composer binaries.
-export const bin: string = path.join(resourceDir, 'bin');
+const bin: string = path.join(resourceDir, 'bin');
 
 PhpCommand.binary = path.join(bin, process.platform === 'win32' ? 'php.exe' : 'php');
 
