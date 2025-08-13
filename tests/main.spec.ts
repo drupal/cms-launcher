@@ -15,6 +15,7 @@ test.afterEach(async ({}, testInfo) => {
 });
 
 test('happy path', async ({}, testInfo) => {
+  console.log(process.env);
   const electronApp = await electron.launch({
     args: [
       '.',
