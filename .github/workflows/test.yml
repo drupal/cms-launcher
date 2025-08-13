@@ -48,18 +48,7 @@ jobs:
         if: steps.cache.outputs.cache-hit != 'true'
         run: npm install
 
-      - name: Run tests with xvfb
-        if: runner.os == 'Linux'
-        run: |
-          sudo apt-get update
-          sudo apt-get install -y xvfb
-          composer run assets --working-dir=build
-          xvfb-run -a npm test
-        env:
-          DISPLAY: ':99'
-
       - name: Run tests
-        if: runner.os != 'Linux'
         run: |
           composer run assets --working-dir=build
           npm run test

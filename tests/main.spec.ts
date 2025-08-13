@@ -29,6 +29,7 @@ test('happy path', async ({}, testInfo) => {
       COMPOSER_MIRROR_PATH_REPOS: '1',
       // Disable the network so we don't inadvertently test the internet.
       COMPOSER_DISABLE_NETWORK: '1',
+      DISPLAY: process.env.DISPLAY,
     },
   });
 
