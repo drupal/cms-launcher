@@ -8,7 +8,7 @@ import { access, appendFile, copyFile, type FileHandle, open } from 'node:fs/pro
 import path from 'node:path';
 import readline from 'node:readline';
 import { promisify as toPromise } from 'node:util';
-import { phpCommand } from './php';
+import { PhpCommand } from './PhpCommand';
 
 // Create an awaitable version of execFile that won't block the main process,
 // which would produce a disconcerting beach ball on macOS.
@@ -40,8 +40,7 @@ async function createProject (win?: WebContents): Promise<void>
 
     // Always invoke Composer directly through the PHP interpreter, with a known set
     // of options.
-    const _phpCommand = [
-        ...await phpCommand(),
+    const _phpCommand = await new PhpCommand(
         // We use an unpacked version of Composer because the phar file has a shebang
         // line that breaks us, due to GUI-launched Electron apps not inheriting the
         // parent environment in macOS and Linux.
@@ -51,7 +50,7 @@ async function createProject (win?: WebContents): Promise<void>
         // We don't want Composer to ask us any questions, since we have no way for
         // the user to answer them.
         '--no-interaction',
-    ];
+    ).toArray();
 
     const runComposer = (command: string[]) => {
         // Always direct Composer to the created project root, unless we're about to
