@@ -36,21 +36,23 @@ async function createProject (win?: WebContents): Promise<void>
         if (type === OutputType.Debug) {
             log?.write('\n>>> ' + line + '\n');
         }
-        else if (type === OutputType.Error) {
+        else {
+            // Progress messages are sent to STDERR.
+            if (type === OutputType.Error) {
+                win?.send(Events.Output, line);
+            }
             log?.write(line + '\n');
-            win?.send(Events.Output, line);
         }
     };
-
     for (const command of installCommands) {
-        const runner = new ComposerCommand(...command);
-
         // Always direct Composer to the created project root, unless we're about to
         // create it initially.
         if (command[0] !== 'create-project') {
-            runner.append(`--working-dir=${projectRoot}`);
+            command.push(`--working-dir=${projectRoot}`);
         }
-        await runner.run(undefined, onOutput).catch(log?.close);
+        await new ComposerCommand(...command)
+            .run(undefined, onOutput)
+            .catch(log?.close);
     }
     // All done, we can stop logging.
     await log?.close();

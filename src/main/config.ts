@@ -89,7 +89,7 @@ if (argv.fixture && ! app.isPackaged) {
     installCommands[0].push(`--repository=${repository}`);
 
     if (argv.composer) {
-        ComposerCommand.binary = argv.composer;
+        ComposerCommand.binary = path.join(fixturesDir, argv.composer);
     }
 }
 
