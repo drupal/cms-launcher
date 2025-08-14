@@ -16,11 +16,7 @@ const rawFormat = format((info) => {
 
 const logger = createLogger({
     level: 'debug',
-    format: format.combine(
-        rawFormat(),
-        // Strip out any ANSI color codes from Composer's output.
-        format.uncolorize(),
-    ),
+    format: rawFormat(),
     transports: [
         new transports.File({ filename: installLog }),
     ],

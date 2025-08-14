@@ -9,6 +9,20 @@ import { promisify as toPromise } from 'node:util';
  */
 export class ComposerCommand extends PhpCommand
 {
+    constructor (...options: string[])
+    {
+        super(
+            ComposerCommand.binary,
+            // Don't let Composer ask any questions, since users have no way
+            // to answer them.
+            '--no-interaction',
+            // Strip out any ANSI color codes, since they are useless in the
+            // GUI and make logs unreadable.
+            '--no-ansi',
+            ...options,
+        );
+    }
+
     inDirectory (dir: string): ComposerCommand
     {
         this.arguments.push(
@@ -19,13 +33,6 @@ export class ComposerCommand extends PhpCommand
 
     async run (options: ExecFileOptions = {}, callback?: OutputHandler): Promise<{ stdout: string, stderr: string }>
     {
-        this.arguments.unshift(
-            ComposerCommand.binary,
-            // Don't let Composer ask any questions, since users have no way
-            // to answer them.
-            '--no-interaction',
-        );
-
         options.env = Object.assign({}, process.env, {
             // Set COMPOSER_ROOT_VERSION so that Composer won't try to guess the
             // root package version, which would cause it to invoke Git and other
