@@ -5,7 +5,7 @@
   "main": "./out/main/main.js",
   "scripts": {
     "start": "electron-vite preview",
-    "test": "electron-vite build && playwright test"
+    "test": "electron-vite build && xvfb-maybe playwright test"
   },
   "author": "Drupal Association",
   "license": "MIT",
@@ -16,7 +16,8 @@
     "electron-builder": "^26.0.16",
     "electron-vite": "^3.1.0",
     "typescript": "^5.8.3",
-    "vite": "^6.3.5"
+    "vite": "^6.3.5",
+    "xvfb-maybe": "^0.2.1"
   },
   "dependencies": {
     "@sentry/electron": "^6.7.0",

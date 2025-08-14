@@ -19,8 +19,7 @@ jobs:
       matrix:
         os:
           - macos-latest
-          # Testing on Linux is temporarily disabled until we can figure out the SUID sandboxing issue.
-          # - ubuntu-latest
+          - ubuntu-latest
           - windows-latest
     runs-on: ${{ matrix.os }}
     steps:

@@ -15,12 +15,14 @@ test.afterEach(async ({}, testInfo) => {
 });
 
 test('happy path', async ({}, testInfo) => {
+  console.log(process.env);
   const electronApp = await electron.launch({
     args: [
       '.',
       `--root=${testInfo.outputPath('drupal')}`,
       '--fixture=basic',
       `--log=${testInfo.outputPath('install.log')}`,
+      '--no-sandbox',
     ],
     env: {
       // The fixture is located in a path repository, so we want to ensure Composer
@@ -28,6 +30,7 @@ test('happy path', async ({}, testInfo) => {
       COMPOSER_MIRROR_PATH_REPOS: '1',
       // Disable the network so we don't inadvertently test the internet.
       COMPOSER_DISABLE_NETWORK: '1',
+      DISPLAY: process.env.DISPLAY,
     },
   });
 
