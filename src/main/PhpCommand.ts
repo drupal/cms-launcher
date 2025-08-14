@@ -1,14 +1,23 @@
 import { app } from 'electron';
-import {type ChildProcess, execFile, type ExecFileOptions} from 'node:child_process';
+import { type ChildProcess, execFile, type ExecFileOptions } from 'node:child_process';
 import { realpath } from 'node:fs/promises';
 import { dirname, join } from 'node:path';
+import { createInterface as readFrom } from 'node:readline';
+
+export enum OutputType {
+    Output = 'out',
+    Error = 'err',
+    Debug = 'debug',
+}
+
+export type OutputHandler = (line: string, type: OutputType, process: ChildProcess) => void;
 
 /**
  * An abstraction layer for invoking the PHP interpreter in a consistent way.
  */
 export class PhpCommand
 {
-    private arguments: string[] = [];
+    protected arguments: string[] = [];
 
     public static binary: string;
 
@@ -17,7 +26,7 @@ export class PhpCommand
         this.arguments = options;
     }
 
-    async toArray (): Promise<string[]>
+    protected async getCommandLine (): Promise<[string, string[]]>
     {
         const phpBin = app.isPackaged
             ? PhpCommand.binary
@@ -29,19 +38,31 @@ export class PhpCommand
 
         return [
             phpBin,
-            '-d', `curl.cainfo="${caFile}"`,
-            ...this.arguments,
+            ['-d', `curl.cainfo="${caFile}"`, ...this.arguments],
         ];
     }
 
-    async start (options?: ExecFileOptions): Promise<ChildProcess>
+    protected setOutputHandler (process: ChildProcess, callback: OutputHandler): void
     {
-        const command = await this.toArray();
+        if (process.stdout) {
+            readFrom(process.stdout).on('line', (line: string): void => {
+                callback(line, OutputType.Output, process);
+            });
+        }
+        if (process.stderr) {
+            readFrom(process.stderr).on('line', (line: string): void => {
+                callback(line, OutputType.Error, process);
+            });
+        }
+    }
 
-        return execFile(
-            command[0],
-            command.slice(1),
-            options,
-        );
+    async start (options: ExecFileOptions = {}, callback?: OutputHandler): Promise<ChildProcess>
+    {
+        const process = execFile(...await this.getCommandLine(), options);
+
+        if (callback) {
+            this.setOutputHandler(process, callback);
+        }
+        return process;
     }
 }

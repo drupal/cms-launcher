@@ -1,6 +1,8 @@
 // Contains runtime configuration for the Drupal Launcher.
 
+import { ComposerCommand } from './ComposerCommand';
 import { app } from 'electron';
+import logger from 'electron-log';
 import path from 'node:path';
 import yargs from 'yargs';
 import { hideBin } from 'yargs/helpers';
@@ -23,8 +25,14 @@ const argv = yargs(
     })
     .option('log', {
         type: 'string',
-        description: "Path of a file where Composer's output should be logged.",
-        default: path.join(app.getPath('temp'), 'install.log'),
+        description: "Path of the log file.",
+        default: null,
+    })
+    .option('composer', {
+        type: 'string',
+        description: 'The path of the Composer PHP script. This is internal and only used for testing.',
+        default: null,
+        hidden: true,
     })
     .parse();
 
@@ -36,17 +44,20 @@ export const projectRoot: string = argv.root;
 export const resourceDir = app.isPackaged ? process.resourcesPath : app.getAppPath();
 
 // Absolute path of the directory with the PHP and Composer binaries.
-export const bin: string = path.join(resourceDir, 'bin');
+const bin: string = path.join(resourceDir, 'bin');
 
 PhpCommand.binary = path.join(bin, process.platform === 'win32' ? 'php.exe' : 'php');
 
-// A file where we can log Composer's full output for debugging purposes.
-export const installLog: string = argv.log;
+ComposerCommand.binary = path.join(bin, 'composer', 'bin', 'composer');
+
+if (argv.log) {
+    logger.transports.file.resolvePathFn = () => argv.log;
+}
 
 // The series of Composer commands to set up the Drupal project.
 export const installCommands: string[][] = [
     // Create the project, but don't install dependencies yet.
-    ['create-project', '--no-install', 'drupal/cms', projectRoot],
+    ['create-project', '--no-install', 'drupal/cms'],
 
     // Prevent core's scaffold plugin from trying to dynamically determine if
     // the project is a Git repository, since that will make it try to run Git,
@@ -69,13 +80,19 @@ export const installCommands: string[][] = [
 // Only allow a fixture to be used if the app is not packaged (i.e., during development or
 // when running tests).
 if (argv.fixture && ! app.isPackaged) {
+    const fixturesDir = path.join(resourceDir, 'tests', 'fixtures');
+
     const repository = JSON.stringify({
        type: 'path',
-       url: path.join(resourceDir, 'tests', 'fixtures', argv.fixture),
+       url: path.join(fixturesDir, argv.fixture),
     });
     // The option does not need to be escaped or quoted, because Composer is not being
     // executed through a shell.
     installCommands[0].push(`--repository=${repository}`);
+
+    if (argv.composer) {
+        ComposerCommand.binary = path.join(fixturesDir, argv.composer);
+    }
 }
 
 // The absolute path of the web root.
