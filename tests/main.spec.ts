@@ -3,9 +3,9 @@ import { rm } from 'node:fs/promises';
 import { join } from 'node:path';
 
 test.afterEach(async ({}, testInfo) => {
-  // Always attach the install log, regardless of success or failure.
-  await testInfo.attach('install log', {
-    path: testInfo.outputPath('install.log'),
+  // Always attach the log, regardless of success or failure.
+  await testInfo.attach('log', {
+    path: testInfo.outputPath('app.log'),
   });
 
   await rm(testInfo.outputPath('drupal'), {
@@ -20,7 +20,7 @@ test('happy path', async ({}, testInfo) => {
       '.',
       `--root=${testInfo.outputPath('drupal')}`,
       '--fixture=basic',
-      `--log=${testInfo.outputPath('install.log')}`,
+      `--log=${testInfo.outputPath('app.log')}`,
     ],
     env: {
       // The fixture is located in a path repository, so we want to ensure Composer

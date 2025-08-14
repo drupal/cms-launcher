@@ -2,6 +2,7 @@
 
 import { ComposerCommand } from './ComposerCommand';
 import { app } from 'electron';
+import logger from 'electron-log';
 import path from 'node:path';
 import yargs from 'yargs';
 import { hideBin } from 'yargs/helpers';
@@ -24,8 +25,8 @@ const argv = yargs(
     })
     .option('log', {
         type: 'string',
-        description: "Path of a file where Composer's output should be logged.",
-        default: path.join(app.getPath('temp'), 'install.log'),
+        description: "Path of the log file.",
+        default: null,
     })
     .option('composer', {
         type: 'string',
@@ -49,8 +50,9 @@ PhpCommand.binary = path.join(bin, process.platform === 'win32' ? 'php.exe' : 'p
 
 ComposerCommand.binary = path.join(bin, 'composer', 'bin', 'composer');
 
-// A file where we can log Composer's full output for debugging purposes.
-export const installLog: string = argv.log;
+if (argv.log) {
+    logger.transports.file.resolvePathFn = () => argv.log;
+}
 
 // The series of Composer commands to set up the Drupal project.
 export const installCommands: string[][] = [
