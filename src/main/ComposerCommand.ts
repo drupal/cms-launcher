@@ -13,8 +13,6 @@ export class ComposerCommand extends PhpCommand
     {
         this.arguments.unshift(
             ComposerCommand.binary,
-            // Disable ANSI output (i.e., colors) so logs are readable.
-            '--no-ansi',
             // Don't let Composer ask any questions, since users have no way
             // to answer them.
             '--no-interaction',

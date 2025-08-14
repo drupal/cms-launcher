@@ -3,45 +3,38 @@ import { ComposerCommand } from './ComposerCommand';
 import { Events } from '../Drupal';
 import { type WebContents } from 'electron';
 import { randomBytes } from 'node:crypto';
-import { type EventEmitter } from 'node:events';
-import { access, appendFile, copyFile, type FileHandle, open } from 'node:fs/promises';
+import { access, appendFile, copyFile } from 'node:fs/promises';
 import path from 'node:path';
 import { OutputType } from './PhpCommand';
+import { createLogger, format, transports } from 'winston';
 
 async function createProject (win?: WebContents): Promise<void>
 {
     // Let the renderer know we're about to install Drupal.
     win?.send(Events.InstallStarted);
 
-    // Try to open a file where we can log Composer's output for forensic purposes
-    // if an error occurs.
-    let log: any = null;
-    try {
-        // @todo Remove EventEmitter from the intersection type when Node's type
-        // definitions are updated to reflect the documentation.
-        // @see https://nodejs.org/docs/latest/api/fs.html#class-filehandle
-        log = await open(installLog, 'a') as FileHandle&EventEmitter;
-
-        // Invalidate the handle when the file is closed, so we don't try to write to
-        // it accidentally.
-        log.on('close', (): void => {
-            log = null;
-        });
-    }
-    catch {
-        log = null;
-    }
+    const logger = createLogger({
+        level: 'debug',
+        format: format.combine(
+            format.simple(),
+            // Strip out any ANSI color codes from Composer's output.
+            format.uncolorize(),
+        ),
+        transports: [
+            new transports.File({ filename: installLog }),
+        ],
+    });
 
     const onOutput = (line: string, type: OutputType): void => {
         if (type === OutputType.Debug) {
-            log?.write('\n>>> ' + line + '\n');
+            logger.debug(line);
         }
         else {
             // Progress messages are sent to STDERR.
             if (type === OutputType.Error) {
                 win?.send(Events.Output, line);
             }
-            log?.write(line + '\n');
+            logger.info(line);
         }
     };
     for (const command of installCommands) {
@@ -50,12 +43,8 @@ async function createProject (win?: WebContents): Promise<void>
         if (command[0] !== 'create-project') {
             command.push(`--working-dir=${projectRoot}`);
         }
-        await new ComposerCommand(...command)
-            .run(undefined, onOutput)
-            .catch(log?.close);
+        await new ComposerCommand(...command).run(undefined, onOutput);
     }
-    // All done, we can stop logging.
-    await log?.close();
 
     const siteDir = path.join(webRoot, 'sites', 'default');
     // Create a local settings file so we can skip database set-up in the
