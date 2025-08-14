@@ -1,7 +1,8 @@
 import { app } from 'electron';
+import logger from 'electron-log';
 import { execFile, type ExecFileOptions } from 'node:child_process';
 import { join } from 'node:path';
-import { OutputHandler, OutputType, PhpCommand } from './PhpCommand';
+import { OutputHandler, PhpCommand } from './PhpCommand';
 import { promisify as toPromise } from 'node:util';
 
 /**
@@ -54,12 +55,16 @@ export class ComposerCommand extends PhpCommand
         const commandLine = await this.getCommandLine();
         const p = (toPromise(execFile))(...commandLine, options);
 
-        if (callback) {
-            // For forensic purposes, log the command line we just executed.
-            callback(`${commandLine[0]} ${commandLine[1].join(' ')}`, OutputType.Debug, p.child);
+        // For forensic purposes, log the command line we just executed.
+        logger.debug(`${commandLine[0]} ${commandLine[1].join(' ')}`);
 
-            this.setOutputHandler(p.child, callback);
-        }
+        this.setOutputHandler(p.child, (line: string, ...rest): void => {
+            logger.debug(line);
+
+            if (callback) {
+                callback(line, ...rest);
+            }
+        });
         return p;
     }
 }
