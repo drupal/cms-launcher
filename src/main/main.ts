@@ -34,8 +34,8 @@ ipcMain.on( Commands.Start, async ({ sender: win }): Promise<void> => {
         await install(win);
 
         // Start the built-in PHP web server and automatically kill it on quit.
-        const { url, serverProcess } = await startServer();
-        app.on('will-quit', () => serverProcess.kill());
+        const { url, process: server } = await startServer();
+        app.on('will-quit', () => server.kill());
 
         // Let the user know we're up and running.
         win.send(Events.Started, url);

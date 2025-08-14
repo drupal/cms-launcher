@@ -1,18 +1,15 @@
 import { app } from 'electron';
 import { execFile, type ExecFileOptions } from 'node:child_process';
 import { join } from 'node:path';
-import { OutputType, PhpCommand } from './PhpCommand';
-import { createInterface as readFrom } from 'node:readline';
+import { OutputHandler, OutputType, PhpCommand } from './PhpCommand';
 import { promisify as toPromise } from 'node:util';
-
-type OutputCallback = (line: string, type: OutputType) => void;
 
 /**
  * An abstraction layer for running Composer commands in a consistent way.
  */
 export class ComposerCommand extends PhpCommand
 {
-    async run (options: ExecFileOptions = {}, callback?: OutputCallback): Promise<{ stdout: string, stderr: string }>
+    async run (options: ExecFileOptions = {}, callback?: OutputHandler): Promise<{ stdout: string, stderr: string }>
     {
         this.arguments.unshift(
             ComposerCommand.binary,
@@ -46,18 +43,9 @@ export class ComposerCommand extends PhpCommand
 
         if (callback) {
             // For forensic purposes, log the command line we just executed.
-            callback(`${commandLine[0]} ${commandLine[1].join(' ')}`, OutputType.Debug);
+            callback(`${commandLine[0]} ${commandLine[1].join(' ')}`, OutputType.Debug, p.child);
 
-            if (p.child.stdout) {
-                readFrom(p.child.stdout).on('line', (line: string): void => {
-                    callback(line, OutputType.Output);
-                });
-            }
-            if (p.child.stderr) {
-                readFrom(p.child.stderr).on('line', (line: string): void => {
-                   callback(line, OutputType.Error);
-                });
-            }
+            this.setOutputHandler(p.child, callback);
         }
         return p;
     }

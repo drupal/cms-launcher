@@ -2,12 +2,15 @@ import { app } from 'electron';
 import { type ChildProcess, execFile, type ExecFileOptions } from 'node:child_process';
 import { realpath } from 'node:fs/promises';
 import { dirname, join } from 'node:path';
+import { createInterface as readFrom } from 'node:readline';
 
 export enum OutputType {
     Output = 'out',
     Error = 'err',
     Debug = 'debug',
 }
+
+export type OutputHandler = (line: string, type: OutputType, process: ChildProcess) => void;
 
 /**
  * An abstraction layer for invoking the PHP interpreter in a consistent way.
@@ -39,8 +42,27 @@ export class PhpCommand
         ];
     }
 
-    async start (options: ExecFileOptions = {}): Promise<ChildProcess>
+    protected setOutputHandler (process: ChildProcess, callback: OutputHandler): void
     {
-        return execFile(...await this.getCommandLine(), options);
+        if (process.stdout) {
+            readFrom(process.stdout).on('line', (line: string): void => {
+                callback(line, OutputType.Output, process);
+            });
+        }
+        if (process.stderr) {
+            readFrom(process.stderr).on('line', (line: string): void => {
+                callback(line, OutputType.Error, process);
+            });
+        }
+    }
+
+    async start (options: ExecFileOptions = {}, callback?: OutputHandler): Promise<ChildProcess>
+    {
+        const process = execFile(...await this.getCommandLine(), options);
+
+        if (callback) {
+            this.setOutputHandler(process, callback);
+        }
+        return process;
     }
 }
