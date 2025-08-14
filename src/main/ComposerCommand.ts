@@ -9,6 +9,14 @@ import { promisify as toPromise } from 'node:util';
  */
 export class ComposerCommand extends PhpCommand
 {
+    inDirectory (dir: string): ComposerCommand
+    {
+        this.arguments.push(
+            this.arguments.includes('create-project') ? dir : `--working-dir=${dir}`,
+        );
+        return this;
+    }
+
     async run (options: ExecFileOptions = {}, callback?: OutputHandler): Promise<{ stdout: string, stderr: string }>
     {
         this.arguments.unshift(

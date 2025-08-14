@@ -6,28 +6,34 @@ import { randomBytes } from 'node:crypto';
 import { access, appendFile, copyFile } from 'node:fs/promises';
 import path from 'node:path';
 import { OutputType } from './PhpCommand';
+import { MESSAGE } from 'triple-beam';
 import { createLogger, format, transports } from 'winston';
+
+const rawFormat = format((info) => {
+    info[MESSAGE] = info.message;
+    return info;
+});
+
+const logger = createLogger({
+    level: 'debug',
+    format: format.combine(
+        rawFormat(),
+        // Strip out any ANSI color codes from Composer's output.
+        format.uncolorize(),
+    ),
+    transports: [
+        new transports.File({ filename: installLog }),
+    ],
+});
 
 async function createProject (win?: WebContents): Promise<void>
 {
     // Let the renderer know we're about to install Drupal.
     win?.send(Events.InstallStarted);
 
-    const logger = createLogger({
-        level: 'debug',
-        format: format.combine(
-            format.simple(),
-            // Strip out any ANSI color codes from Composer's output.
-            format.uncolorize(),
-        ),
-        transports: [
-            new transports.File({ filename: installLog }),
-        ],
-    });
-
     const onOutput = (line: string, type: OutputType): void => {
         if (type === OutputType.Debug) {
-            logger.debug(line);
+            logger.debug(`>>> ${line}`);
         }
         else {
             // Progress messages are sent to STDERR.
@@ -38,12 +44,9 @@ async function createProject (win?: WebContents): Promise<void>
         }
     };
     for (const command of installCommands) {
-        // Always direct Composer to the created project root, unless we're about to
-        // create it initially.
-        if (command[0] !== 'create-project') {
-            command.push(`--working-dir=${projectRoot}`);
-        }
-        await new ComposerCommand(...command).run(undefined, onOutput);
+        await new ComposerCommand(...command)
+            .inDirectory(projectRoot)
+            .run(undefined, onOutput);
     }
 
     const siteDir = path.join(webRoot, 'sites', 'default');

@@ -55,7 +55,7 @@ export const installLog: string = argv.log;
 // The series of Composer commands to set up the Drupal project.
 export const installCommands: string[][] = [
     // Create the project, but don't install dependencies yet.
-    ['create-project', '--no-install', 'drupal/cms', projectRoot],
+    ['create-project', '--no-install', 'drupal/cms'],
 
     // Prevent core's scaffold plugin from trying to dynamically determine if
     // the project is a Git repository, since that will make it try to run Git,
