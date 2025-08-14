@@ -7,7 +7,6 @@ import { createInterface as readFrom } from 'node:readline';
 export enum OutputType {
     Output = 'out',
     Error = 'err',
-    Debug = 'debug',
 }
 
 export type OutputHandler = (line: string, type: OutputType, process: ChildProcess) => void;

@@ -2,7 +2,6 @@ import { installCommands, projectRoot, resourceDir, webRoot } from './config';
 import { ComposerCommand } from './ComposerCommand';
 import { Events } from '../Drupal';
 import { type WebContents } from 'electron';
-import logger from 'electron-log';
 import { randomBytes } from 'node:crypto';
 import { access, appendFile, copyFile } from 'node:fs/promises';
 import path from 'node:path';
@@ -13,22 +12,15 @@ async function createProject (win?: WebContents): Promise<void>
     // Let the renderer know we're about to install Drupal.
     win?.send(Events.InstallStarted);
 
-    const onOutput = (line: string, type: OutputType): void => {
-        if (type === OutputType.Debug) {
-            logger.debug(line);
-        }
-        else {
-            // Progress messages are sent to STDERR.
-            if (type === OutputType.Error) {
-                win?.send(Events.Output, line);
-            }
-            logger.info(line);
-        }
-    };
     for (const command of installCommands) {
         await new ComposerCommand(...command)
             .inDirectory(projectRoot)
-            .run(undefined, onOutput);
+            .run({}, (line: string, type: OutputType): void => {
+                // Progress messages are sent to STDERR; forward them to the render.
+                if (type === OutputType.Error) {
+                    win?.send(Events.Output, line);
+                }
+            });
     }
 
     const siteDir = path.join(webRoot, 'sites', 'default');
