@@ -1,26 +1,23 @@
-import { installLog } from './config';
 import { Commands, Events } from "../Drupal";
 import { app, BrowserWindow, ipcMain, Menu, shell } from 'electron';
 import logger from 'electron-log';
 import { autoUpdater } from 'electron-updater';
 import install from './installer';
-import { readFile } from 'node:fs/promises';
-import path from 'node:path';
+import { basename, join } from 'node:path';
 import { startServer } from './php';
 import * as Sentry from "@sentry/electron/main";
 
 Sentry.init({
-    beforeSend: async (event, hint) => {
-        try {
+    beforeSend: (event, hint) => {
+        logger.transports.file.readAllLogs().forEach((log) => {
+            hint.attachments ??= [];
+
             hint.attachments = [{
-                filename: 'install.log',
-                data: await readFile(installLog, { encoding: 'utf-8' }),
+                filename: basename(log.path),
+                data: log.lines.join('\n'),
                 contentType: 'text/plain',
             }];
-        }
-        catch {
-            // Couldn't read the install log, so just omit it.
-        }
+        });
         return event;
     },
     dsn: "https://12eb563e258a6344878c10f16bbde85e@o4509476487233536.ingest.de.sentry.io/4509476503683152",
@@ -28,6 +25,8 @@ Sentry.init({
     // by default, but we don't want it changing unexpectedly.
     sendDefaultPii: false,
 });
+
+logger.initialize();
 
 ipcMain.on( Commands.Start, async ({ sender: win }): Promise<void> => {
     try {
@@ -43,7 +42,6 @@ ipcMain.on( Commands.Start, async ({ sender: win }): Promise<void> => {
         // Set up logging to help with debugging auto-update problems, ensure any
         // errors are sent to Sentry, and check for updates.
         autoUpdater.logger = logger;
-        autoUpdater.logger.transports.file.level = "info";
         autoUpdater.on('error', e => Sentry.captureException(e));
         autoUpdater.checkForUpdatesAndNotify();
     }
@@ -70,7 +68,7 @@ function createWindow (): void
         width: 800,
         height: 500,
         webPreferences: {
-            preload: path.join(__dirname, '..', 'preload', 'preload.js'),
+            preload: join(__dirname, '..', 'preload', 'preload.js'),
         },
     });
 
@@ -102,7 +100,7 @@ function createWindow (): void
         Menu.setApplicationMenu(null);
     }
 
-    win.loadFile(path.join(__dirname, '..', 'renderer', 'index.html'));
+    win.loadFile(join(__dirname, '..', 'renderer', 'index.html'));
 }
 
 app.whenReady().then((): void => {

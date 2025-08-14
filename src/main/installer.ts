@@ -1,26 +1,12 @@
-import { installCommands, installLog, projectRoot, resourceDir, webRoot } from './config';
+import { installCommands, projectRoot, resourceDir, webRoot } from './config';
 import { ComposerCommand } from './ComposerCommand';
 import { Events } from '../Drupal';
 import { type WebContents } from 'electron';
+import logger from 'electron-log';
 import { randomBytes } from 'node:crypto';
 import { access, appendFile, copyFile } from 'node:fs/promises';
 import path from 'node:path';
 import { OutputType } from './PhpCommand';
-import { MESSAGE } from 'triple-beam';
-import { createLogger, format, transports } from 'winston';
-
-const rawFormat = format((info) => {
-    info[MESSAGE] = info.message;
-    return info;
-});
-
-const logger = createLogger({
-    level: 'debug',
-    format: rawFormat(),
-    transports: [
-        new transports.File({ filename: installLog }),
-    ],
-});
 
 async function createProject (win?: WebContents): Promise<void>
 {
@@ -29,7 +15,7 @@ async function createProject (win?: WebContents): Promise<void>
 
     const onOutput = (line: string, type: OutputType): void => {
         if (type === OutputType.Debug) {
-            logger.debug(`>>> ${line}`);
+            logger.debug(line);
         }
         else {
             // Progress messages are sent to STDERR.
