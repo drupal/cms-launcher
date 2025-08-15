@@ -1,8 +1,10 @@
+import { projectRoot } from './config';
 import { Commands, Events } from "../Drupal";
 import { app, BrowserWindow, ipcMain, Menu, shell } from 'electron';
 import logger from 'electron-log';
 import { autoUpdater } from 'electron-updater';
 import install from './installer';
+import { rm } from 'node:fs/promises';
 import { basename, join } from 'node:path';
 import { startServer } from './php';
 import * as Sentry from "@sentry/electron/main";
@@ -50,6 +52,9 @@ ipcMain.on( Commands.Start, async ({ sender: win }): Promise<void> => {
         // users to file a GitHub issue.
         Sentry.captureException(e);
         win.send(Events.Error, e);
+
+        // Remove unfinished install directory, so installation can be tried again cleanly.
+        await rm(projectRoot, { force: true, recursive: true, maxRetries: 3 });
     }
 } );
 
