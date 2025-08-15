@@ -1,6 +1,8 @@
 import { test, expect, _electron as electron } from '@playwright/test';
 import { accessSync } from 'node:fs';
 import { rm } from 'node:fs/promises';
+import { join } from 'node:path';
+import { PhpCommand } from '@/main/PhpCommand';
 
 async function launchApp(root: string, fixture: string, log: string, composer?: string) {
   const args = [
@@ -23,6 +25,10 @@ async function launchApp(root: string, fixture: string, log: string, composer?: 
     },
   });
 }
+
+test.beforeAll(() => {
+  PhpCommand.binary = join(__dirname, '..', 'bin', process.platform == 'win32' ? 'php.exe' : 'php');
+});
 
 test.afterEach(async ({}, testInfo) => {
   // Always attach the log, regardless of success or failure.
@@ -57,6 +63,12 @@ test('happy path', async ({}, testInfo) => {
   await window.goto(url);
   await expect(window.getByText('It worked!')).toBeVisible();
   await electronApp.close();
+
+  // Confirm that launcher-specific Drupal settings are valid PHP.
+  await new PhpCommand('-f', join(root, 'assert-settings.php'), '-d', 'zend.assertions=1')
+      .run({ cwd: root }, (line: string): void => {
+        console.debug(line);
+      });
 });
 
 test('clean up directory on failed install', {

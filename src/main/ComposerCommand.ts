@@ -1,9 +1,8 @@
 import { app } from 'electron';
 import logger from 'electron-log';
-import { execFile, type ExecFileOptions } from 'node:child_process';
+import { type ExecFileOptions } from 'node:child_process';
 import { join } from 'node:path';
 import { OutputHandler, PhpCommand } from './PhpCommand';
-import { promisify as toPromise } from 'node:util';
 
 /**
  * An abstraction layer for running Composer commands in a consistent way.
@@ -32,7 +31,7 @@ export class ComposerCommand extends PhpCommand
         return this;
     }
 
-    async run (options: ExecFileOptions = {}, callback?: OutputHandler): Promise<{ stdout: string, stderr: string }>
+    async run (options: ExecFileOptions = {}, callback?: OutputHandler): Promise<any>
     {
         options.env = Object.assign({}, process.env, {
             // Set COMPOSER_ROOT_VERSION so that Composer won't try to guess the
@@ -47,24 +46,16 @@ export class ComposerCommand extends PhpCommand
             // Composer doesn't work without COMPOSER_HOME.
             COMPOSER_HOME: join(app.getPath('home'), '.composer'),
         });
-
         // An exceptionally generous timeout. No Composer command should take
         // 10 minutes.
         options.timeout ??= 600000;
 
-        const commandLine = await this.getCommandLine();
-        const p = (toPromise(execFile))(...commandLine, options);
-
-        // For forensic purposes, log the command line we just executed.
-        logger.debug(`${commandLine[0]} ${commandLine[1].join(' ')}`);
-
-        this.setOutputHandler(p.child, (line: string, ...rest): void => {
+        return super.run(options, (line: string, ...rest): void => {
             logger.debug(line);
 
             if (callback) {
                 callback(line, ...rest);
             }
         });
-        return p;
     }
 }

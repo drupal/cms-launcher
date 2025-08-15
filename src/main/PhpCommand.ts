@@ -1,8 +1,9 @@
-import { app } from 'electron';
-import { type ChildProcess, execFile, type ExecFileOptions } from 'node:child_process';
-import { realpath } from 'node:fs/promises';
+import logger from 'electron-log';
+import { type ChildProcess, execFile, type ExecFileOptions, type PromiseWithChild } from 'node:child_process';
+import { access, realpath } from 'node:fs/promises';
 import { dirname, join } from 'node:path';
 import { createInterface as readFrom } from 'node:readline';
+import { promisify as toPromise } from 'node:util';
 
 export enum OutputType {
     Output = 'out',
@@ -10,6 +11,8 @@ export enum OutputType {
 }
 
 export type OutputHandler = (line: string, type: OutputType, process: ChildProcess) => void;
+
+const execFileAsPromise = toPromise(execFile);
 
 /**
  * An abstraction layer for invoking the PHP interpreter in a consistent way.
@@ -25,23 +28,28 @@ export class PhpCommand
         this.arguments = options;
     }
 
-    protected async getCommandLine (): Promise<[string, string[]]>
+    private async getCommandLine (): Promise<[string, string[]]>
     {
-        const phpBin = app.isPackaged
-            ? PhpCommand.binary
-            : await realpath(PhpCommand.binary);
+        const phpBin = await realpath(PhpCommand.binary);
 
         // Always provide the cURL CA bundle so that HTTPS requests from Composer
         // and Drupal have a better chance of succeeding (especially on Windows).
         const caFile = join(dirname(phpBin), 'cacert.pem');
+        try {
+            await access(caFile);
+            this.arguments.unshift('-d', `curl.cainfo="${caFile}"`);
+        }
+        catch {
+            logger.warn(`CA bundle not found: ${caFile}`);
+        }
 
-        return [
-            phpBin,
-            ['-d', `curl.cainfo="${caFile}"`, ...this.arguments],
-        ];
+        // For forensic purposes, log the full command line.
+        logger.debug(`${phpBin} ${this.arguments.join(' ')}`);
+
+        return [phpBin, this.arguments];
     }
 
-    protected setOutputHandler (process: ChildProcess, callback: OutputHandler): void
+    private setOutputHandler (process: ChildProcess, callback: OutputHandler): void
     {
         if (process.stdout) {
             readFrom(process.stdout).on('line', (line: string): void => {
@@ -63,5 +71,15 @@ export class PhpCommand
             this.setOutputHandler(process, callback);
         }
         return process;
+    }
+
+    async run (options: ExecFileOptions = {}, callback?: OutputHandler): Promise<any>
+    {
+        const p = execFileAsPromise(...await this.getCommandLine(), options) as PromiseWithChild<any>;
+
+        if (callback) {
+            this.setOutputHandler(p.child, callback);
+        }
+        return p;
     }
 }
