@@ -47,7 +47,7 @@ export class PhpCommand
         return [phpBin, the_arguments];
     }
 
-    protected setOutputHandler (process: ChildProcess, callback: OutputHandler): void
+    private setOutputHandler (process: ChildProcess, callback: OutputHandler): void
     {
         if (process.stdout) {
             readFrom(process.stdout).on('line', (line: string): void => {
