@@ -3,12 +3,7 @@ import { default as getPort, portNumbers } from 'get-port';
 import { type ChildProcess } from 'node:child_process';
 import { PhpCommand } from './PhpCommand';
 
-type Server = {
-    url: string;
-    process: ChildProcess;
-}
-
-export async function startServer (): Promise<Server>
+export async function startServer (): Promise<[string, ChildProcess]>
 {
     const port = await getPort({
         port: portNumbers(8888, 9999),
@@ -20,7 +15,7 @@ export async function startServer (): Promise<Server>
 
         const onOutput = (line: string, undefined: any, process: ChildProcess): void => {
             if (line.includes(startedText)) {
-                resolve({ url, process });
+                resolve([url, process]);
             }
         };
 
