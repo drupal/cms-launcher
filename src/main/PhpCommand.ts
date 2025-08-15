@@ -1,7 +1,6 @@
-import { app } from 'electron';
 import logger from 'electron-log';
 import { type ChildProcess, execFile, type ExecFileOptions, type PromiseWithChild } from 'node:child_process';
-import { realpath } from 'node:fs/promises';
+import { access, realpath } from 'node:fs/promises';
 import { dirname, join } from 'node:path';
 import { createInterface as readFrom } from 'node:readline';
 import { promisify as toPromise } from 'node:util';
@@ -31,20 +30,23 @@ export class PhpCommand
 
     private async getCommandLine (): Promise<[string, string[]]>
     {
-        const phpBin = app.isPackaged
-            ? PhpCommand.binary
-            : await realpath(PhpCommand.binary);
+        const phpBin = await realpath(PhpCommand.binary);
 
         // Always provide the cURL CA bundle so that HTTPS requests from Composer
         // and Drupal have a better chance of succeeding (especially on Windows).
         const caFile = join(dirname(phpBin), 'cacert.pem');
-
-        const the_arguments = ['-d', `curl.cainfo="${caFile}"`, ...this.arguments];
+        try {
+            await access(caFile);
+            this.arguments.unshift('-d', `curl.cainfo="${caFile}"`);
+        }
+        catch {
+            logger.warn(`CA bundle not found: ${caFile}`);
+        }
 
         // For forensic purposes, log the full command line.
-        logger.debug(`${phpBin} ${the_arguments.join(' ')}`);
+        logger.debug(`${phpBin} ${this.arguments.join(' ')}`);
 
-        return [phpBin, the_arguments];
+        return [phpBin, this.arguments];
     }
 
     private setOutputHandler (process: ChildProcess, callback: OutputHandler): void
