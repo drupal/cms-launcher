@@ -10,6 +10,7 @@ import yargs from 'yargs';
 import { hideBin } from 'yargs/helpers';
 import { PhpCommand } from './PhpCommand';
 import { ComposerCommand } from './ComposerCommand';
+import { type ChildProcess } from 'node:child_process';
 
 // The shape of our command-line options, to help the type checker deal with yargs.
 interface Options
@@ -103,20 +104,21 @@ ipcMain.on(Commands.Start, async ({ sender: win }): Promise<void> => {
         win.send(Events.InstallStarted);
     });
     drupal.on(Events.Output, (line: string): void => {
+        // Stream Composer's progress messages to the renderer.
         win.send(Events.Output, line);
     });
     drupal.on(Events.InstallFinished, (): void => {
         win.send(Events.InstallFinished);
     });
-
-    try {
-        const [url, server] = await drupal.start(argv.url);
-
+    drupal.on(Events.Started, (url: string, server: ChildProcess): void => {
         // Automatically kill the server on quit.
         app.on('will-quit', () => server.kill());
-
         // Let the user know we're up and running.
         win.send(Events.Started, url);
+    });
+
+    try {
+        await drupal.start(argv.url);
     }
     catch (e) {
         // Send the exception to Sentry so we can analyze it later, without requiring

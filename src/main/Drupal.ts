@@ -57,7 +57,7 @@ export class Drupal extends EventEmitter
         }
     }
 
-    public async start (url?: string): Promise<[string, ChildProcess]>
+    public async start (url?: string): Promise<void>
     {
         try {
             await access(this.root);
@@ -73,7 +73,7 @@ export class Drupal extends EventEmitter
             }
         }
         this.emit(Events.InstallFinished);
-        return this.serve(url);
+        await this.serve(url);
     }
 
     private webRoot (): string
@@ -120,7 +120,7 @@ export class Drupal extends EventEmitter
         await writeFile(filePath, lines.join('\n'));
     }
 
-    private async serve (url?: string): Promise<[string, ChildProcess]>
+    private async serve (url?: string): Promise<void>
     {
         if (typeof url === 'undefined') {
             const port = await getPort({
@@ -134,10 +134,11 @@ export class Drupal extends EventEmitter
                reject('The web server did not start after 3 seconds.');
             }, 3000);
 
-            const onOutput = (line: string, _: any, process: ChildProcess): void => {
+            const onOutput = (line: string, _: any, server: ChildProcess): void => {
                 if (line.includes(`(${url}) started`)) {
                     clearTimeout(timeout);
-                    resolve([url, process]);
+                    this.emit(Events.Started, url, server);
+                    resolve();
                 }
             };
 
