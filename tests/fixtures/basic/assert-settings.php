@@ -20,7 +20,9 @@ namespace Composer {
 namespace {
 
   assert(PHP_SAPI === 'cli');
-  require __DIR__ . '/web/sites/default/default.settings.php';
+  $app_root = __DIR__ . '/web';
+  $site_path = 'sites/default';
+  require $app_root . '/' . $site_path . '/default.settings.php';
 
   assert(isset($settings, $config));
   assert($settings['skip_permissions_hardening'] === true);
