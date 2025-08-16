@@ -2,7 +2,6 @@ import { installCommands, projectRoot, resourceDir, webRoot } from './config';
 import { ComposerCommand } from './ComposerCommand';
 import { Events } from '../Drupal';
 import { type WebContents } from 'electron';
-import { randomBytes } from 'node:crypto';
 import { access, appendFile, copyFile } from 'node:fs/promises';
 import path from 'node:path';
 import { OutputType } from './PhpCommand';
@@ -32,12 +31,6 @@ async function createProject (win?: WebContents): Promise<void>
     await copyFile(
         path.join(resourceDir, 'settings.local.php'),
         localSettingsFile,
-    );
-    await appendFile(
-        localSettingsFile,
-        `
-$settings['hash_salt'] = '${randomBytes(32).toString('hex')}';
-$settings['config_sync_directory'] = '${path.join(projectRoot, 'config')}';`
     );
     // Make sure we load the local settings if using the built-in web server.
     await appendFile(
