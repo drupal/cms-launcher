@@ -18,6 +18,7 @@ interface Options
     log: string;
     composer: string;
     fixture?: string;
+    url?: string;
 }
 
 // If any uncaught exception happens, send it to Sentry.
@@ -63,6 +64,10 @@ const commandLine = yargs().options({
         description: "The path of the Composer PHP script. Don't set this unless you know what you're doing.",
         default: join(binDir, 'composer', 'bin', 'composer'),
     },
+    url: {
+        type: 'string',
+        description: "The URL of the Drupal site. Don't set this unless you know what you're doing.",
+    },
 });
 
 // If in development, allow the Drupal code base to be spun up from a test fixture.
@@ -98,7 +103,7 @@ ipcMain.on(Commands.Start, async ({ sender: win }): Promise<void> => {
         await drupal.install(win);
 
         // Start the built-in PHP web server and automatically kill it on quit.
-        const [url, server] = await drupal.serve();
+        const [url, server] = await drupal.serve(argv.url);
         app.on('will-quit', () => server.kill());
 
         // Let the user know we're up and running.
