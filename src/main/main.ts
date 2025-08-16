@@ -10,6 +10,7 @@ import yargs from 'yargs';
 import { hideBin } from 'yargs/helpers';
 import { PhpCommand } from './PhpCommand';
 import { ComposerCommand } from './ComposerCommand';
+import { type ChildProcess } from 'node:child_process';
 
 // The shape of our command-line options, to help the type checker deal with yargs.
 interface Options
@@ -19,6 +20,7 @@ interface Options
     composer: string;
     fixture?: string;
     url?: string;
+    timeout: number;
 }
 
 // If any uncaught exception happens, send it to Sentry.
@@ -68,6 +70,11 @@ const commandLine = yargs().options({
         type: 'string',
         description: "The URL of the Drupal site. Don't set this unless you know what you're doing.",
     },
+    timeout: {
+        type: 'number',
+        description: 'How long to wait for the web server to start before timing out, in seconds.',
+        default: 30,
+    },
 });
 
 // If in development, allow the Drupal code base to be spun up from a test fixture.
@@ -99,28 +106,31 @@ logger.transports.file.resolvePathFn = (): string => argv.log;
 ipcMain.on(Commands.Start, async ({ sender: win }): Promise<void> => {
     const drupal = new Drupal(argv.root, argv.fixture);
 
-    let installed: boolean = false;
-    try {
-        await drupal.install(win);
-        installed = true;
-
-        // Start the built-in PHP web server and automatically kill it on quit.
-        const [url, server] = await drupal.serve(argv.url);
+    drupal.on(Events.InstallStarted, (): void => {
+        win.send(Events.InstallStarted);
+    });
+    drupal.on(Events.Output, (line: string): void => {
+        // Stream Composer's progress messages to the renderer.
+        win.send(Events.Output, line);
+    });
+    drupal.on(Events.InstallFinished, (): void => {
+        win.send(Events.InstallFinished);
+    });
+    drupal.on(Events.Started, (url: string, server: ChildProcess): void => {
+        // Automatically kill the server on quit.
         app.on('will-quit', () => server.kill());
-
         // Let the user know we're up and running.
         win.send(Events.Started, url);
+    });
+
+    try {
+        await drupal.start(argv.url, argv.timeout);
     }
     catch (e) {
         // Send the exception to Sentry so we can analyze it later, without requiring
         // users to file a GitHub issue.
         Sentry.captureException(e);
         win.send(Events.Error, e);
-
-        // Remove unfinished install directory, so installation can be tried again cleanly.
-        if (! installed) {
-            await drupal.destroy();
-        }
     }
     finally {
         // Set up logging to help with debugging auto-update problems, ensure any

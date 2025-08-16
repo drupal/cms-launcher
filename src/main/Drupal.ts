@@ -1,16 +1,17 @@
 import type { ChildProcess } from 'node:child_process';
 import { default as getPort, portNumbers } from 'get-port';
 import { OutputType, PhpCommand } from './PhpCommand';
-import { app, type WebContents } from 'electron';
+import { app } from 'electron';
 import { Events } from './Events';
 import { ComposerCommand } from './ComposerCommand';
 import { join } from 'node:path';
 import { access, copyFile, readFile, rm, writeFile } from 'node:fs/promises';
+import { EventEmitter } from 'node:events';
 
 /**
  * Provides methods for installing and serving a Drupal code base.
  */
-export class Drupal
+export class Drupal extends EventEmitter
 {
     private readonly root: string;
 
@@ -42,6 +43,7 @@ export class Drupal
 
     constructor (root: string, fixture?: string)
     {
+        super();
         this.root = root;
 
         if (fixture) {
@@ -55,42 +57,50 @@ export class Drupal
         }
     }
 
-    public async destroy (): Promise<void>
+    public async start (url?: string, timeout: number = 2): Promise<void>
     {
-        await rm(this.root, { force: true, recursive: true, maxRetries: 3 });
+        try {
+            await access(this.root);
+        }
+        catch {
+            this.emit(Events.InstallStarted);
+            try {
+                await this.install();
+            }
+            catch (e) {
+                await rm(this.root, { force: true, recursive: true, maxRetries: 3 });
+                throw e;
+            }
+        }
+        this.emit(Events.InstallFinished);
+
+        if (typeof url === 'undefined') {
+            const port = await getPort({
+                port: portNumbers(8888, 9999),
+            });
+            url = `http://localhost:${port}`;
+        }
+        await this.serve(url, timeout);
     }
 
-    public webRoot (): string
+    private webRoot (): string
     {
         return join(this.root, 'web');
     }
 
-    public async install (win?: WebContents, fixture?: string): Promise<void>
+    private async install (): Promise<void>
     {
-        try {
-            await access(this.root);
-            return win?.send(Events.InstallFinished);
-        }
-        catch {
-            // Not installed, so proceed!
-        }
-
-        // Let the renderer know we're about to install Drupal.
-        win?.send(Events.InstallStarted);
-
         for (const command of this.commands.install) {
             await new ComposerCommand(...command)
                 .inDirectory(this.root)
                 .run({}, (line: string, type: OutputType): void => {
                     // Progress messages are sent to STDERR; forward them to the render.
                     if (type === OutputType.Error) {
-                        win?.send(Events.Output, line);
+                        this.emit(Events.Output, line);
                     }
                 });
         }
         await this.prepareSettings();
-
-        win?.send(Events.InstallFinished);
     }
 
     private async prepareSettings (): Promise<void>
@@ -117,29 +127,23 @@ export class Drupal
         await writeFile(filePath, lines.join('\n'));
     }
 
-    public async serve (url?: string): Promise<[string, ChildProcess]>
+    private async serve (url: string, timeout: number): Promise<void>
     {
-        if (typeof url === 'undefined') {
-            const port = await getPort({
-                port: portNumbers(8888, 9999),
-            });
-            url = `http://localhost:${port}`;
-        }
-
         return new Promise(async (resolve, reject): Promise<void> => {
-            const timeout = setTimeout((): void => {
-               reject('The web server did not start after 3 seconds.');
-            }, 3000);
+            const timeoutId = setTimeout((): void => {
+               reject(`The web server did not start after ${timeout} seconds.`);
+            }, timeout * 1000);
 
-            const onOutput = (line: string, _: any, process: ChildProcess): void => {
+            const checkForServerStart = (line: string, _: any, server: ChildProcess): void => {
                 if (line.includes(`(${url}) started`)) {
-                    clearTimeout(timeout);
-                    resolve([url, process]);
+                    clearTimeout(timeoutId);
+                    this.emit(Events.Started, url, server);
+                    resolve();
                 }
             };
 
             await new PhpCommand('-S', url.substring(7), '.ht.router.php')
-                .start({ cwd: this.webRoot() }, onOutput);
+                .start({ cwd: this.webRoot() }, checkForServerStart);
         });
     }
 }
