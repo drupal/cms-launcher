@@ -99,8 +99,10 @@ logger.transports.file.resolvePathFn = (): string => argv.log;
 ipcMain.on(Commands.Start, async ({ sender: win }): Promise<void> => {
     const drupal = new Drupal(argv.root, argv.fixture);
 
+    let installed: boolean = false;
     try {
         await drupal.install(win);
+        installed = true;
 
         // Start the built-in PHP web server and automatically kill it on quit.
         const [url, server] = await drupal.serve(argv.url);
@@ -116,7 +118,9 @@ ipcMain.on(Commands.Start, async ({ sender: win }): Promise<void> => {
         win.send(Events.Error, e);
 
         // Remove unfinished install directory, so installation can be tried again cleanly.
-        await drupal.destroy();
+        if (! installed) {
+            await drupal.destroy();
+        }
     }
     finally {
         // Set up logging to help with debugging auto-update problems, ensure any
