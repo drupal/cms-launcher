@@ -3,20 +3,16 @@ import { accessSync } from 'node:fs';
 import { join } from 'node:path';
 import { PhpCommand } from '@/main/PhpCommand';
 
-async function launchApp(testInfo: TestInfo, fixture: string, composer?: string): Promise<[ElectronApplication, string]> {
+async function launchApp(testInfo: TestInfo, ...options: string[]): Promise<[ElectronApplication, string]> {
   const root = testInfo.outputPath('drupal');
 
-  const args = [
-      '.',
-      `--root=${root}`,
-      `--fixture=${fixture}`,
-      `--log=${testInfo.outputPath('app.log')}`,
-    ];
-  if (composer) {
-    args.push(`--composer=${composer}`);
-  }
   const app = await electron.launch({
-    args: args,
+    args: [
+        '.',
+        `--root=${root}`,
+        `--log=${testInfo.outputPath('app.log')}`,
+        ...options,
+    ],
     env: {
       // The fixture is located in a path repository, so we want to ensure Composer
       // makes a full copy of it.
@@ -40,7 +36,7 @@ test.afterEach(async ({}, testInfo) => {
 });
 
 test('happy path', async ({}, testInfo) => {
-  const [app, root] = await launchApp(testInfo, 'basic');
+  const [app, root] = await launchApp(testInfo, '--fixture=basic');
 
   // Wait for the first BrowserWindow to open and return its Page object, then
   // wait up to 10 seconds for the success message to appear.
@@ -59,8 +55,8 @@ test('happy path', async ({}, testInfo) => {
       });
 });
 
-test('clean up directory on failed install', async ({}, testInfo) => {
-  const [app, root] = await launchApp(testInfo, 'basic', 'composer-install-error.php');
+test('clean up on failed install', async ({}, testInfo) => {
+  const [app, root] = await launchApp(testInfo, '--fixture=basic', '--composer=composer-install-error.php');
 
   const window = await app.firstWindow();
   await expect(window.locator('.error')).toBeVisible();
@@ -68,4 +64,20 @@ test('clean up directory on failed install', async ({}, testInfo) => {
   // directory has been deleted.
   expect(() => accessSync(root)).toThrow();
   await app.close();
+});
+
+test("no clean up if server doesn't start", async ({}, testInfo) => {
+  const [app, root] = await launchApp(testInfo, '--fixture=basic', '--url=not-a-valid-host');
+
+  const window = await app.firstWindow();
+  await expect(window.getByText('The web server did not start after 3 seconds.')).toBeVisible();
+
+  // The Drupal root should still exist, because the install succeeded but
+  // the server failed to start.
+  try {
+    accessSync(root);
+  }
+  finally {
+    await app.close();
+  }
 });
