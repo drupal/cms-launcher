@@ -5,18 +5,59 @@ import { app, type WebContents } from 'electron';
 import { Events } from './Events';
 import { ComposerCommand } from './ComposerCommand';
 import { join } from 'node:path';
-import { access, copyFile, readFile, writeFile } from 'node:fs/promises';
+import { access, copyFile, readFile, rm, writeFile } from 'node:fs/promises';
 
 /**
  * Provides methods for installing and serving a Drupal code base.
  */
 export class Drupal
 {
-    public readonly root: string;
+    private readonly root: string;
 
-    constructor (root: string)
+    private readonly commands = {
+
+        install: [
+            // Create the project, but don't install dependencies yet.
+            ['create-project', '--no-install', 'drupal/cms'],
+
+            // Prevent core's scaffold plugin from trying to dynamically determine if
+            // the project is a Git repository, since that will make it try to run Git,
+            // which might not be installed.
+            ['config', 'extra.drupal-scaffold.gitignore', 'false', '--json'],
+
+            // Require Composer as a dev dependency so that Package Manager can use it
+            // without relying on this app.
+            ['require', '--dev', '--no-update', 'composer/composer'],
+
+            // Finally, install dependencies. We suppress the progress bar because it
+            // looks lame when streamed to the renderer.
+            ['install', '--no-progress'],
+
+            // Unpack all recipes. This would normally be done during the `create-project` command
+            // if dependencies were being installed at that time.
+            ['drupal:recipe-unpack'],
+        ],
+
+    }
+
+    constructor (root: string, fixture?: string)
     {
         this.root = root;
+
+        if (fixture) {
+            const repository = JSON.stringify({
+                type: 'path',
+                url: join(__dirname, '..', '..', 'tests', 'fixtures', fixture),
+            });
+            // The option does not need to be escaped or quoted, because Composer is not being
+            // executed through a shell.
+            this.commands.install[0].push(`--repository=${repository}`);
+        }
+    }
+
+    public async destroy (): Promise<void>
+    {
+        await rm(this.root, { force: true, recursive: true, maxRetries: 3 });
     }
 
     public webRoot (): string
@@ -37,38 +78,7 @@ export class Drupal
         // Let the renderer know we're about to install Drupal.
         win?.send(Events.InstallStarted);
 
-        const installCommands: string[][] = [
-            // Create the project, but don't install dependencies yet.
-            ['create-project', '--no-install', 'drupal/cms'],
-
-            // Prevent core's scaffold plugin from trying to dynamically determine if
-            // the project is a Git repository, since that will make it try to run Git,
-            // which might not be installed.
-            ['config', 'extra.drupal-scaffold.gitignore', 'false', '--json'],
-
-            // Require Composer as a dev dependency so that Package Manager can use it
-            // without relying on this app.
-            ['require', '--dev', '--no-update', 'composer/composer'],
-
-            // Finally, install dependencies. We suppress the progress bar because it
-            // looks lame when streamed to the renderer.
-            ['install', '--no-progress'],
-
-            // Unpack all recipes. This would normally be done during the `create-project` command
-            // if dependencies were being installed at that time.
-            ['drupal:recipe-unpack'],
-        ];
-        if (fixture) {
-            const repository = JSON.stringify({
-                type: 'path',
-                url: join(__dirname, '..', '..', 'tests', 'fixtures', fixture),
-            });
-            // The option does not need to be escaped or quoted, because Composer is not being
-            // executed through a shell.
-            installCommands[0].push(`--repository=${repository}`);
-        }
-
-        for (const command of installCommands) {
+        for (const command of this.commands.install) {
             await new ComposerCommand(...command)
                 .inDirectory(this.root)
                 .run({}, (line: string, type: OutputType): void => {
