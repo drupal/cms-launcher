@@ -57,7 +57,7 @@ export class Drupal extends EventEmitter
         }
     }
 
-    public async start (url?: string): Promise<void>
+    public async start (url?: string, timeout: number = 2): Promise<void>
     {
         try {
             await access(this.root);
@@ -73,7 +73,14 @@ export class Drupal extends EventEmitter
             }
         }
         this.emit(Events.InstallFinished);
-        await this.serve(url);
+
+        if (typeof url === 'undefined') {
+            const port = await getPort({
+                port: portNumbers(8888, 9999),
+            });
+            url = `http://localhost:${port}`;
+        }
+        await this.serve(url, timeout);
     }
 
     private webRoot (): string
@@ -120,30 +127,23 @@ export class Drupal extends EventEmitter
         await writeFile(filePath, lines.join('\n'));
     }
 
-    private async serve (url?: string): Promise<void>
+    private async serve (url: string, timeout: number): Promise<void>
     {
-        if (typeof url === 'undefined') {
-            const port = await getPort({
-                port: portNumbers(8888, 9999),
-            });
-            url = `http://localhost:${port}`;
-        }
-
         return new Promise(async (resolve, reject): Promise<void> => {
-            const timeout = setTimeout((): void => {
-               reject('The web server did not start after 3 seconds.');
-            }, 3000);
+            const timeoutId = setTimeout((): void => {
+               reject(`The web server did not start after ${timeout} seconds.`);
+            }, timeout * 1000);
 
-            const onOutput = (line: string, _: any, server: ChildProcess): void => {
+            const checkForServerStart = (line: string, _: any, server: ChildProcess): void => {
                 if (line.includes(`(${url}) started`)) {
-                    clearTimeout(timeout);
+                    clearTimeout(timeoutId);
                     this.emit(Events.Started, url, server);
                     resolve();
                 }
             };
 
             await new PhpCommand('-S', url.substring(7), '.ht.router.php')
-                .start({ cwd: this.webRoot() }, onOutput);
+                .start({ cwd: this.webRoot() }, checkForServerStart);
         });
     }
 }

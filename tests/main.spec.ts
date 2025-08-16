@@ -11,6 +11,7 @@ async function launchApp(testInfo: TestInfo, ...options: string[]): Promise<[Ele
         '.',
         `--root=${root}`,
         `--log=${testInfo.outputPath('app.log')}`,
+        `--timeout=2`,
         ...options,
     ],
     env: {
@@ -70,7 +71,7 @@ test("no clean up if server doesn't start", async ({}, testInfo) => {
   const [app, root] = await launchApp(testInfo, '--fixture=basic', '--url=not-a-valid-host');
 
   const window = await app.firstWindow();
-  await expect(window.getByText('The web server did not start after 3 seconds.')).toBeVisible();
+  await expect(window.getByText('The web server did not start after 2 seconds.')).toBeVisible();
 
   // The Drupal root should still exist, because the install succeeded but
   // the server failed to start.

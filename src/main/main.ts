@@ -20,6 +20,7 @@ interface Options
     composer: string;
     fixture?: string;
     url?: string;
+    timeout: number;
 }
 
 // If any uncaught exception happens, send it to Sentry.
@@ -68,6 +69,11 @@ const commandLine = yargs().options({
     url: {
         type: 'string',
         description: "The URL of the Drupal site. Don't set this unless you know what you're doing.",
+    },
+    timeout: {
+        type: 'number',
+        description: 'How long to wait for the web server to start before timing out, in seconds.',
+        default: 30,
     },
 });
 
@@ -118,7 +124,7 @@ ipcMain.on(Commands.Start, async ({ sender: win }): Promise<void> => {
     });
 
     try {
-        await drupal.start(argv.url);
+        await drupal.start(argv.url, argv.timeout);
     }
     catch (e) {
         // Send the exception to Sentry so we can analyze it later, without requiring
