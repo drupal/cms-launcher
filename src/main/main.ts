@@ -99,9 +99,19 @@ logger.transports.file.resolvePathFn = (): string => argv.log;
 ipcMain.on(Commands.Start, async ({ sender: win }): Promise<void> => {
     const drupal = new Drupal(argv.root, argv.fixture);
 
+    drupal.on(Events.InstallStarted, (): void => {
+        win.send(Events.InstallStarted);
+    });
+    drupal.on(Events.Output, (line: string): void => {
+        win.send(Events.Output, line);
+    });
+    drupal.on(Events.InstallFinished, (): void => {
+        win.send(Events.InstallFinished);
+    });
+
     let installed: boolean = false;
     try {
-        await drupal.install(win);
+        await drupal.install();
         installed = true;
 
         // Start the built-in PHP web server and automatically kill it on quit.

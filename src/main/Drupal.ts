@@ -1,16 +1,17 @@
 import type { ChildProcess } from 'node:child_process';
 import { default as getPort, portNumbers } from 'get-port';
 import { OutputType, PhpCommand } from './PhpCommand';
-import { app, type WebContents } from 'electron';
+import { app } from 'electron';
 import { Events } from './Events';
 import { ComposerCommand } from './ComposerCommand';
 import { join } from 'node:path';
 import { access, copyFile, readFile, rm, writeFile } from 'node:fs/promises';
+import { EventEmitter } from 'node:events';
 
 /**
  * Provides methods for installing and serving a Drupal code base.
  */
-export class Drupal
+export class Drupal extends EventEmitter
 {
     private readonly root: string;
 
@@ -42,6 +43,7 @@ export class Drupal
 
     constructor (root: string, fixture?: string)
     {
+        super();
         this.root = root;
 
         if (fixture) {
@@ -65,18 +67,19 @@ export class Drupal
         return join(this.root, 'web');
     }
 
-    public async install (win?: WebContents, fixture?: string): Promise<void>
+    public async install (): Promise<void>
     {
         try {
             await access(this.root);
-            return win?.send(Events.InstallFinished);
+            this.emit(Events.InstallFinished);
+            return;
         }
         catch {
             // Not installed, so proceed!
         }
 
         // Let the renderer know we're about to install Drupal.
-        win?.send(Events.InstallStarted);
+        this.emit(Events.InstallStarted);
 
         for (const command of this.commands.install) {
             await new ComposerCommand(...command)
@@ -84,13 +87,13 @@ export class Drupal
                 .run({}, (line: string, type: OutputType): void => {
                     // Progress messages are sent to STDERR; forward them to the render.
                     if (type === OutputType.Error) {
-                        win?.send(Events.Output, line);
+                        this.emit(Events.Output, line);
                     }
                 });
         }
         await this.prepareSettings();
 
-        win?.send(Events.InstallFinished);
+        this.emit(Events.InstallFinished);
     }
 
     private async prepareSettings (): Promise<void>
