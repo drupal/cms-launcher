@@ -109,13 +109,10 @@ ipcMain.on(Commands.Start, async ({ sender: win }): Promise<void> => {
         win.send(Events.InstallFinished);
     });
 
-    let installed: boolean = false;
     try {
-        await drupal.install();
-        installed = true;
+        const [url, server] = await drupal.start(argv.url);
 
-        // Start the built-in PHP web server and automatically kill it on quit.
-        const [url, server] = await drupal.serve(argv.url);
+        // Automatically kill the server on quit.
         app.on('will-quit', () => server.kill());
 
         // Let the user know we're up and running.
@@ -126,11 +123,6 @@ ipcMain.on(Commands.Start, async ({ sender: win }): Promise<void> => {
         // users to file a GitHub issue.
         Sentry.captureException(e);
         win.send(Events.Error, e);
-
-        // Remove unfinished install directory, so installation can be tried again cleanly.
-        if (! installed) {
-            await drupal.destroy();
-        }
     }
     finally {
         // Set up logging to help with debugging auto-update problems, ensure any

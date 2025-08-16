@@ -57,30 +57,32 @@ export class Drupal extends EventEmitter
         }
     }
 
-    public async destroy (): Promise<void>
+    public async start (url?: string): Promise<[string, ChildProcess]>
     {
-        await rm(this.root, { force: true, recursive: true, maxRetries: 3 });
+        try {
+            await access(this.root);
+        }
+        catch {
+            this.emit(Events.InstallStarted);
+            try {
+                await this.install();
+            }
+            catch (e) {
+                await rm(this.root, { force: true, recursive: true, maxRetries: 3 });
+                throw e;
+            }
+        }
+        this.emit(Events.InstallFinished);
+        return this.serve(url);
     }
 
-    public webRoot (): string
+    private webRoot (): string
     {
         return join(this.root, 'web');
     }
 
-    public async install (): Promise<void>
+    private async install (): Promise<void>
     {
-        try {
-            await access(this.root);
-            this.emit(Events.InstallFinished);
-            return;
-        }
-        catch {
-            // Not installed, so proceed!
-        }
-
-        // Let the renderer know we're about to install Drupal.
-        this.emit(Events.InstallStarted);
-
         for (const command of this.commands.install) {
             await new ComposerCommand(...command)
                 .inDirectory(this.root)
@@ -92,8 +94,6 @@ export class Drupal extends EventEmitter
                 });
         }
         await this.prepareSettings();
-
-        this.emit(Events.InstallFinished);
     }
 
     private async prepareSettings (): Promise<void>
@@ -120,7 +120,7 @@ export class Drupal extends EventEmitter
         await writeFile(filePath, lines.join('\n'));
     }
 
-    public async serve (url?: string): Promise<[string, ChildProcess]>
+    private async serve (url?: string): Promise<[string, ChildProcess]>
     {
         if (typeof url === 'undefined') {
             const port = await getPort({
