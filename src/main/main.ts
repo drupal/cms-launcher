@@ -1,14 +1,26 @@
-import { projectRoot } from './config';
-import { Commands, Events } from "../Drupal";
+import { Events } from './Events'
 import { app, BrowserWindow, ipcMain, Menu, shell } from 'electron';
 import logger from 'electron-log';
 import { autoUpdater } from 'electron-updater';
-import install from './installer';
-import { rm } from 'node:fs/promises';
 import { basename, join } from 'node:path';
-import { startServer } from './php';
 import * as Sentry from "@sentry/electron/main";
+import { Commands } from '../preload/Commands'
+import { Drupal } from './Drupal';
+import yargs from 'yargs';
+import { hideBin } from 'yargs/helpers';
+import { PhpCommand } from './PhpCommand';
+import { ComposerCommand } from './ComposerCommand';
 
+// The shape of our command-line options, to help the type checker deal with yargs.
+interface Options
+{
+    root: string;
+    log: string;
+    composer: string;
+    fixture?: string;
+}
+
+// If any uncaught exception happens, send it to Sentry.
 Sentry.init({
     beforeSend: (event, hint) => {
         logger.transports.file.readAllLogs().forEach((log) => {
@@ -30,22 +42,67 @@ Sentry.init({
 
 logger.initialize();
 
-ipcMain.on( Commands.Start, async ({ sender: win }): Promise<void> => {
+// Where our binaries are stored, which depends on whether the app has been packaged
+// for release.
+const binDir = join(app.isPackaged ? process.resourcesPath : app.getAppPath(), 'bin');
+
+// Define the command-line options we support.
+const commandLine = yargs().options({
+    root: {
+        type: 'string',
+        description: 'The absolute path to the Drupal project root.',
+        default: join(app.getPath('documents'), 'drupal'),
+    },
+    log: {
+        type: 'string',
+        description: "Path of the log file.",
+        default: logger.transports.file.getFile().path,
+    },
+    composer: {
+        type: 'string',
+        description: "The path of the Composer PHP script. Don't set this unless you know what you're doing.",
+        default: join(binDir, 'composer', 'bin', 'composer'),
+    },
+});
+
+// If in development, allow the Drupal code base to be spun up from a test fixture.
+if (! app.isPackaged) {
+    commandLine.option('fixture', {
+        type: 'string',
+        description: 'The name of a test fixture from which to create the Drupal project.',
+    });
+}
+
+// Parse the command line and use it to set the path to Composer and the log file.
+const argv: Options = commandLine.parseSync(
+    hideBin(process.argv),
+);
+
+// The path to PHP. This cannot be overridden because PHP is an absolute hard requirement
+// of this app.
+PhpCommand.binary = join(binDir, process.platform === 'win32' ? 'php.exe' : 'php');
+
+// Set the path to the Composer executable. We need to use an unpacked version of Composer
+// because the phar file has a shebang line that breaks us due to environment variables not
+// being inherited when this app is launched from the UI.
+ComposerCommand.binary = argv.composer;
+
+// Set the path to the log file. It's a little awkward that this needs to be done by setting
+// a function, but that's just how electron-log works.
+logger.transports.file.resolvePathFn = (): string => argv.log;
+
+ipcMain.on(Commands.Start, async ({ sender: win }): Promise<void> => {
+    const drupal = new Drupal(argv.root, argv.fixture);
+
     try {
-        await install(win);
+        await drupal.install(win);
 
         // Start the built-in PHP web server and automatically kill it on quit.
-        const [url, server] = await startServer();
+        const [url, server] = await drupal.serve();
         app.on('will-quit', () => server.kill());
 
         // Let the user know we're up and running.
         win.send(Events.Started, url);
-
-        // Set up logging to help with debugging auto-update problems, ensure any
-        // errors are sent to Sentry, and check for updates.
-        autoUpdater.logger = logger;
-        autoUpdater.on('error', e => Sentry.captureException(e));
-        autoUpdater.checkForUpdatesAndNotify();
     }
     catch (e) {
         // Send the exception to Sentry so we can analyze it later, without requiring
@@ -54,13 +111,20 @@ ipcMain.on( Commands.Start, async ({ sender: win }): Promise<void> => {
         win.send(Events.Error, e);
 
         // Remove unfinished install directory, so installation can be tried again cleanly.
-        await rm(projectRoot, { force: true, recursive: true, maxRetries: 3 });
+        await drupal.destroy();
     }
-} );
+    finally {
+        // Set up logging to help with debugging auto-update problems, ensure any
+        // errors are sent to Sentry, and check for updates.
+        autoUpdater.logger = logger;
+        autoUpdater.on('error', e => Sentry.captureException(e));
+        await autoUpdater.checkForUpdatesAndNotify();
+    }
+});
 
-ipcMain.on(Commands.Open, (undefined, url: string): void => {
-    shell.openExternal(url);
-} );
+ipcMain.on(Commands.Open, async (_: any, url: string): Promise<void> => {
+    await shell.openExternal(url);
+});
 
 // Quit the app when all windows are closed. Normally you'd keep keep the app
 // running on macOS, even with no windows open, since that's the common pattern.

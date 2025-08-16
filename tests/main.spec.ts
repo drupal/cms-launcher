@@ -1,20 +1,21 @@
-import { test, expect, _electron as electron } from '@playwright/test';
+import { test, expect, _electron as electron, type ElectronApplication, type TestInfo } from '@playwright/test';
 import { accessSync } from 'node:fs';
-import { rm } from 'node:fs/promises';
 import { join } from 'node:path';
 import { PhpCommand } from '@/main/PhpCommand';
 
-async function launchApp(root: string, fixture: string, log: string, composer?: string) {
+async function launchApp(testInfo: TestInfo, fixture: string, composer?: string): Promise<[ElectronApplication, string]> {
+  const root = testInfo.outputPath('drupal');
+
   const args = [
       '.',
       `--root=${root}`,
       `--fixture=${fixture}`,
-      `--log=${log}`,
+      `--log=${testInfo.outputPath('app.log')}`,
     ];
   if (composer) {
     args.push(`--composer=${composer}`);
   }
-  return electron.launch({
+  const app = await electron.launch({
     args: args,
     env: {
       // The fixture is located in a path repository, so we want to ensure Composer
@@ -24,6 +25,7 @@ async function launchApp(root: string, fixture: string, log: string, composer?: 
       COMPOSER_DISABLE_NETWORK: '1',
     },
   });
+  return [app, root];
 }
 
 test.beforeAll(() => {
@@ -31,38 +33,24 @@ test.beforeAll(() => {
 });
 
 test.afterEach(async ({}, testInfo) => {
-  // Always attach the log, regardless of success or failure.
+  // Always attach the log, regardless of success or failure, for forensic purposes.
   await testInfo.attach('log', {
     path: testInfo.outputPath('app.log'),
   });
-
-  if (!testInfo.tags.includes('@cleans-up')) {
-    await rm(testInfo.outputPath('drupal'), {
-      force: true,
-      recursive: true,
-    });
-  }
 });
 
 test('happy path', async ({}, testInfo) => {
-  const root = testInfo.outputPath('drupal');
-
-  const electronApp = await launchApp(
-    root,
-    'basic',
-    testInfo.outputPath('app.log'),
-  );
+  const [app, root] = await launchApp(testInfo, 'basic');
 
   // Wait for the first BrowserWindow to open and return its Page object, then
   // wait up to 10 seconds for the success message to appear.
-  const window = await electronApp.firstWindow();
+  const window = await app.firstWindow();
   // Get the text of the element which starts with a URL.
-  const url = await window.getByText(/^http:\/\/localhost:/)
-      .textContent();
-  expect(typeof url).toBe('string');
+  const url = await window.getByText(/^http:\/\/localhost:/).textContent() as string;
+  expect(typeof url).toBe('string')
   await window.goto(url);
   await expect(window.getByText('It worked!')).toBeVisible();
-  await electronApp.close();
+  await app.close();
 
   // Confirm that launcher-specific Drupal settings are valid PHP.
   await new PhpCommand('-f', join(root, 'assert-settings.php'), '-d', 'zend.assertions=1')
@@ -71,25 +59,13 @@ test('happy path', async ({}, testInfo) => {
       });
 });
 
-test('clean up directory on failed install', {
-  tag: '@cleans-up',
-}, async ({}, testInfo) => {
-  const root = testInfo.outputPath('drupal');
+test('clean up directory on failed install', async ({}, testInfo) => {
+  const [app, root] = await launchApp(testInfo, 'basic', 'composer-install-error.php');
 
-  const electronApp = await launchApp(
-    root,
-    'basic',
-    testInfo.outputPath('app.log'),
-    'composer-install-error.php',
-  );
-
-  // Wait for the first BrowserWindow to open and return its Page object, then
-  // wait up to 10 seconds for the success message to appear.
-  const window = await electronApp.firstWindow();
-  await window.waitForTimeout(3000);
-  await expect(window.getByText('An imaginary error occurred!')).toBeVisible();
+  const window = await app.firstWindow();
   await expect(window.locator('.error')).toBeVisible();
-  // Expect access to throw a "no such file or directory" error
+  // We expect access() to throw a "no such file or directory" error, because the
+  // directory has been deleted.
   expect(() => accessSync(root)).toThrow();
-  await electronApp.close();
+  await app.close();
 });

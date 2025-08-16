@@ -1,24 +1,4 @@
-export enum Events
-{
-    InstallStarted = 'drupal-will-install',
-
-    InstallFinished = 'drupal-is-installed',
-
-    Output = 'drupal-output',
-
-    Started = 'drupal-is-started',
-
-    Error = 'drupal-error',
-}
-
-export enum Commands
-{
-    Start = 'drupal-start',
-
-    Open = 'drupal-open',
-}
-
-export interface Drupal
+export interface Launcher
 {
     start: () => void;
 
