@@ -57,9 +57,15 @@ test('happy path', async ({}, testInfo) => {
 });
 
 test('clean up on failed install', async ({}, testInfo) => {
-  const [app, root] = await launchApp(testInfo, '--fixture=basic', '--composer=composer-install-error.php');
+  const [app, root] = await launchApp(
+      testInfo,
+      '--fixture=basic',
+      `--composer=${join(__dirname, 'fixtures', 'composer-install-error.php')}`,
+  );
 
   const window = await app.firstWindow();
+  // Confirm that STDERR output (i.e., progress messages) is streamed to the window.
+  await expect(window.getByText('Doing step: create-project')).toBeVisible();
   await expect(window.locator('.error')).toBeVisible();
   // We expect access() to throw a "no such file or directory" error, because the
   // directory has been deleted.

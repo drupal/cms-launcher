@@ -129,6 +129,8 @@ export class Drupal extends EventEmitter
 
     private async serve (url: string, timeout: number): Promise<void>
     {
+        // This needs to be returned as a promise so that, if we reach the timeout,
+        // the exception will be caught by the calling code.
         return new Promise(async (resolve, reject): Promise<void> => {
             const timeoutId = setTimeout((): void => {
                reject(`The web server did not start after ${timeout} seconds.`);
