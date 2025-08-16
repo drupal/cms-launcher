@@ -117,30 +117,29 @@ export class Drupal
         await writeFile(filePath, lines.join('\n'));
     }
 
-    public async serve (): Promise<[string, ChildProcess]>
+    public async serve (url?: string): Promise<[string, ChildProcess]>
     {
-        const port = await getPort({
-            port: portNumbers(8888, 9999),
-        });
-        const url = `http://localhost:${port}`;
+        if (typeof url === 'undefined') {
+            const port = await getPort({
+                port: portNumbers(8888, 9999),
+            });
+            url = `http://localhost:${port}`;
+        }
 
-        return new Promise(async (resolve): Promise<void> => {
-            const startedText = `(${url}) started`;
+        return new Promise(async (resolve, reject): Promise<void> => {
+            const timeout = setTimeout((): void => {
+               reject('The web server did not start after 3 seconds.');
+            }, 3000);
 
             const onOutput = (line: string, _: any, process: ChildProcess): void => {
-                if (line.includes(startedText)) {
+                if (line.includes(`(${url}) started`)) {
+                    clearTimeout(timeout);
                     resolve([url, process]);
                 }
             };
 
-            const process = await new PhpCommand('-S', url.substring(7), '.ht.router.php')
+            await new PhpCommand('-S', url.substring(7), '.ht.router.php')
                 .start({ cwd: this.webRoot() }, onOutput);
-
-            // If we're not able to capture server output, just wait three seconds, simulate
-            // the output we're looking for, and hope for the best.
-            if (process.stderr === null) {
-                setTimeout(() => onOutput(startedText, null, process), 3000);
-            }
         });
     }
 }
