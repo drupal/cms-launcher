@@ -30,7 +30,9 @@ jobs:
 
       - name: Check out latest tag
         # if: scheduled
-        run: git describe --tags --abbrev=0
+        run: |
+          LATEST_TAG=`git describe --tags --abbrev=0`
+          git checkout $LATEST_TAG
 
       - name: Set up PHP
         uses: shivammathur/setup-php@v2
