@@ -146,16 +146,16 @@ jobs:
           mkdir -p ~/Library/Developer/Xcode/UserData/Provisioning\ Profiles
           cp $PROVISION_PROFILE_PATH ~/Library/Developer/Xcode/UserData/Provisioning\ Profiles
 
-      - name: Create universal PHP binary
+      - name: Create universal PHP binary and build app
         run: |
           composer run assets --working-dir=build
           # Generate a universal binary of the PHP interpreter.
           lipo -create ./build/php-X64 ./build/php-ARM64 -output ./bin/php
           chmod +x ./bin/php
+          npx electron-vite build
 
       - name: Pre-build Drupal site
         run: |
-          npx electron-vite build
           npx electron . --root=drupal --no-server
           find drupal -depth -type d -name tests -exec rm -r -f {} ';'
           tar -c -z -f prebuilt.tar.gz --directory=drupal .
@@ -173,7 +173,7 @@ jobs:
           # Electron Builder needs a token to publish releases.
           echo "GH_TOKEN=${{ secrets.GITHUB_TOKEN }}" >> $GITHUB_ENV
 
-      - name: Make application
+      - name: Package and publish application
         run: npx electron-builder --universal --publish=${{ env.PUBLISH }}
 
       # For manual testing, upload the final artifact if we're not in a release branch.

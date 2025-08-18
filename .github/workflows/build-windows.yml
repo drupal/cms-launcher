@@ -77,12 +77,15 @@ jobs:
         if: steps.cache.outputs.cache-hit != 'true'
         run: npm install
 
-      - name: Pre-build Drupal site
+      - name: Build app
         run: |
           composer run assets --working-dir=build
           Remove-Item -Recurse -Force ./bin/php.exe
           Copy-Item -Force ./build/buildroot/bin/php.exe ./bin
           npx electron-vite build
+
+      - name: Pre-build Drupal site
+        run: |
           npx electron . --root=drupal --no-server
           Get-ChildItem -Path drupal -Recurse -Directory -Name tests | ForEach-Object { Remove-Item "drupal\$_" -Recurse -Force }
           tar -c -z -f prebuilt.tar.gz --directory=drupal .
@@ -97,7 +100,7 @@ jobs:
           # Electron Builder needs a token to publish releases.
           "GH_TOKEN=${{ secrets.GITHUB_TOKEN }}" >> $env:GITHUB_ENV
 
-      - name: Make application
+      - name: Package and publish application
         run: npx electron-builder --publish=${{ env.PUBLISH }}
         env:
           # Set environment variables for Azure Trusted Signing. Electron Builder will
