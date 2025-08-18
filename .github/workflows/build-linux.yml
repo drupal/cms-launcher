@@ -7,6 +7,10 @@ on:
       # PR branches that alter the build process should be prefixed with `build/`, so
       # that this workflow runs.
       - 'build/**'
+  schedule:
+    # Run this workflow every 6 hours to repackage the pre-built Drupal CMS site
+    # with the latest dependencies.
+    - cron: 0 */6 * * *
   workflow_dispatch:
 
 env:
