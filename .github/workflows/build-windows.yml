@@ -77,6 +77,17 @@ jobs:
         if: steps.cache.outputs.cache-hit != 'true'
         run: npm install
 
+      - name: Pre-build Drupal site
+        run: |
+          composer run assets --working-dir=build
+          Remove-Item -Recurse -Force ./bin/php.exe
+          Copy-Item -Force ./build/buildroot/bin/php.exe ./bin
+          npx electron-vite build
+          npx electron . --root=drupal --no-server
+          Get-ChildItem -Path drupal -Recurse -Directory -Name tests | ForEach-Object { Remove-Item "drupal\$_" -Recurse -Force }
+          tar -c -z -f prebuilt.tar.gz --directory=drupal .
+          Remove-Item -Path drupal -Recurse -Force
+
       # If we're on a PR branch, we don't want Electron Builder to publish the app.
       # On Windows, adding environment variables in PowerShell has a special syntax: see https://github.com/orgs/community/discussions/25713
       - name: Enable publishing for release branch
@@ -87,12 +98,7 @@ jobs:
           "GH_TOKEN=${{ secrets.GITHUB_TOKEN }}" >> $env:GITHUB_ENV
 
       - name: Make application
-        run: |
-          composer run assets --working-dir=build
-          Remove-Item -Recurse -Force ./bin/php.exe
-          Copy-Item -Force ./build/buildroot/bin/php.exe ./bin
-          npx electron-vite build
-          npx electron-builder --publish=${{ env.PUBLISH }}
+        run: npx electron-builder --publish=${{ env.PUBLISH }}
         env:
           # Set environment variables for Azure Trusted Signing. Electron Builder will
           # handle that for us automatically.
