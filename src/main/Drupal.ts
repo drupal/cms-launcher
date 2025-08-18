@@ -8,6 +8,7 @@ import { join } from 'node:path';
 import { access, copyFile, readFile, rm, writeFile } from 'node:fs/promises';
 import { EventEmitter } from 'node:events';
 import { tgz } from 'compressing';
+import logger from 'electron-log';
 
 /**
  * Provides methods for installing and serving a Drupal code base.
@@ -94,13 +95,15 @@ export class Drupal extends EventEmitter
     private async install (archive?: string): Promise<void>
     {
         if (archive) {
+            logger.debug(`Using pre-built archive: ${archive}`);
+
             try {
                 await access(archive);
                 this.emit(Events.Output, 'Extracting archive...');
                 return tgz.uncompress(archive, this.root);
             }
             catch {
-                // The archive doesn't exist, so fall back to Composer.
+                logger.info('Falling back to Composer because pre-built archive does not exist.');
             }
         }
 
