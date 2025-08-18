@@ -90,9 +90,12 @@ jobs:
       - name: Check out latest tag
         # if: scheduled
         run: |
-          LATEST_TAG=$(git describe --tags --abbrev=0)
-          git checkout $LATEST_TAG
-          echo "LATEST_TAG=$LATEST_TAG" >> $GITHUB_ENV
+          # Trick Electron Builder into "re-publishing" this tag.
+          # @see https://github.com/electron-userland/electron-builder/blob/master/packages/electron-publish/src/publisher.ts#L47
+          GITHUB_REF_NAME=$(git describe --tags --abbrev=0)
+          git checkout $GITHUB_REF_NAME
+          echo "_GITHUB_REF_NAME=$GITHUB_REF_NAME" >> $GITHUB_ENV
+          echo "_GITHUB_REF_TYPE=tag" >> $GITHUB_ENV
 
       - name: Download PHP binaries
         uses: actions/download-artifact@v4
