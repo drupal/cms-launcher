@@ -92,6 +92,7 @@ jobs:
         run: |
           LATEST_TAG=$(git describe --tags --abbrev=0)
           git checkout $LATEST_TAG
+          echo "LATEST_TAG=$LATEST_TAG" >> $GITHUB_ENV
 
       - name: Download PHP binaries
         uses: actions/download-artifact@v4
