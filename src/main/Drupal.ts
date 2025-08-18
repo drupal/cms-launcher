@@ -58,7 +58,7 @@ export class Drupal extends EventEmitter
         }
     }
 
-    public async start (prebuiltArchive?: string, url?: string | false, timeout: number = 2): Promise<void>
+    public async start (archive?: string, url?: string | false, timeout: number = 2): Promise<void>
     {
         try {
             await access(this.root);
@@ -66,7 +66,7 @@ export class Drupal extends EventEmitter
         catch {
             this.emit(Events.InstallStarted);
             try {
-                await this.install(prebuiltArchive);
+                await this.install(archive);
             }
             catch (e) {
                 await rm(this.root, { force: true, recursive: true, maxRetries: 3 });
@@ -91,10 +91,17 @@ export class Drupal extends EventEmitter
         return join(this.root, 'web');
     }
 
-    private async install (prebuiltArchive?: string): Promise<void>
+    private async install (archive?: string): Promise<void>
     {
-        if (prebuiltArchive) {
-            return tgz.uncompress(prebuiltArchive, this.root);
+        if (archive) {
+            try {
+                await access(archive);
+                this.emit(Events.Output, 'Extracting archive...');
+                return tgz.uncompress(archive, this.root);
+            }
+            catch {
+                // The archive doesn't exist, so fall back to Composer.
+            }
         }
 
         for (const command of this.commands.install) {
