@@ -108,7 +108,11 @@ test('server can be disabled', async ({}, testInfo) => {
 });
 
 test('install from a pre-built archive', async ({}, testInfo) => {
-  const [app] = await launchApp(testInfo, `--archive=${join(__dirname, 'fixtures', 'prebuilt.tar.gz')}`);
+  const [app] = await launchApp(
+      testInfo,
+      `--archive=${join(__dirname, 'fixtures', 'prebuilt.tar.gz')}`,
+      '--composer=composer-always-error.php',
+  );
 
   const page = await visitSite(app);
   await expect(page.locator('body')).toContainText('A prebuilt archive worked! Running PHP via cli-server.');
