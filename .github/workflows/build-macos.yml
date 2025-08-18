@@ -90,7 +90,7 @@ jobs:
       - name: Check out latest tag
         # if: scheduled
         run: |
-          LATEST_TAG=`git describe --tags --abbrev=0`
+          LATEST_TAG=$(git describe --tags --abbrev=0)
           git checkout $LATEST_TAG
 
       - name: Download PHP binaries
