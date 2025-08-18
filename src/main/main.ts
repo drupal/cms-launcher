@@ -34,9 +34,7 @@ Sentry.init({
 
 logger.initialize();
 
-// Where our binaries are stored, which depends on whether the app has been packaged
-// for release.
-const binDir = join(app.isPackaged ? process.resourcesPath : app.getAppPath(), 'bin');
+const resourceDir = app.isPackaged ? process.resourcesPath : app.getAppPath();
 
 // Define the command-line options we support.
 const commandLine = yargs().options({
@@ -53,7 +51,7 @@ const commandLine = yargs().options({
     composer: {
         type: 'string',
         description: "The path of the Composer PHP script. Don't set this unless you know what you're doing.",
-        default: join(binDir, 'composer', 'bin', 'composer'),
+        default: join(resourceDir, 'bin', 'composer', 'bin', 'composer'),
     },
     url: {
         type: 'string',
@@ -68,7 +66,12 @@ const commandLine = yargs().options({
         type: 'boolean',
         description: 'Whether to automatically start the web server once Drupal is installed.',
         default: true,
-    }
+    },
+    archive: {
+        type: 'string',
+        description: "The path of a .tar.gz archive that contains the pre-built Drupal code base.",
+        default: join(resourceDir, 'prebuilt.tar.gz'),
+    },
 });
 
 // If in development, allow the Drupal code base to be spun up from a test fixture.
@@ -89,6 +92,7 @@ interface Options
     url?: string;
     timeout: number;
     server: boolean;
+    archive: string;
 }
 
 // Parse the command line and use it to set the path to Composer and the log file.
@@ -98,7 +102,7 @@ const argv: Options = commandLine.parseSync(
 
 // The path to PHP. This cannot be overridden because PHP is an absolute hard requirement
 // of this app.
-PhpCommand.binary = join(binDir, process.platform === 'win32' ? 'php.exe' : 'php');
+PhpCommand.binary = join(resourceDir, 'bin', process.platform === 'win32' ? 'php.exe' : 'php');
 
 // Set the path to the Composer executable. We need to use an unpacked version of Composer
 // because the phar file has a shebang line that breaks us due to environment variables not
@@ -142,7 +146,7 @@ ipcMain.on(Commands.Start, async ({ sender: win }): Promise<void> => {
     });
 
     try {
-        await drupal.start(argv.server ? argv.url : false, argv.timeout);
+        await drupal.start(argv.archive, argv.server ? argv.url : false, argv.timeout);
     }
     catch (e) {
         // Send the exception to Sentry so we can analyze it later, without requiring
