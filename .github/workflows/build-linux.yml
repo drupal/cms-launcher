@@ -32,6 +32,18 @@ jobs:
     runs-on: ${{ matrix.runner }}
     steps:
       - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Check out latest tag
+        if: ${{ github.event_name == 'workflow_dispatch' }}
+        run: |
+          # Trick Electron Builder into "re-publishing" this tag.
+          # @see https://github.com/electron-userland/electron-builder/blob/master/packages/electron-publish/src/publisher.ts#L47
+          GITHUB_REF_NAME=$(git describe --tags --abbrev=0)
+          git checkout $GITHUB_REF_NAME
+          echo "GITHUB_REF_NAME=$GITHUB_REF_NAME" >> $GITHUB_ENV
+          echo "GITHUB_REF_TYPE=tag" >> $GITHUB_ENV
 
       - name: Set up PHP
         uses: shivammathur/setup-php@v2
@@ -88,7 +100,9 @@ jobs:
       - name: Enable publishing for release branch
         if: github.ref_name == 'main'
         run: |
-          echo "PUBLISH=onTagOrDraft" >> $GITHUB_ENV
+          # Configure Electron Builder to publish.
+          echo "PUBLISH=always" >> $GITHUB_ENV
+
           # Electron Builder needs a token to publish releases.
           echo "GH_TOKEN=${{ secrets.GITHUB_TOKEN }}" >> $GITHUB_ENV
 

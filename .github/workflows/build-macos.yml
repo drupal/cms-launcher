@@ -84,6 +84,18 @@ jobs:
       PUBLISH: never
     steps:
       - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Check out latest tag
+        if: ${{ github.event_name == 'workflow_dispatch' }}
+        run: |
+          # Trick Electron Builder into "re-publishing" this tag.
+          # @see https://github.com/electron-userland/electron-builder/blob/master/packages/electron-publish/src/publisher.ts#L47
+          GITHUB_REF_NAME=$(git describe --tags --abbrev=0)
+          git checkout $GITHUB_REF_NAME
+          echo "GITHUB_REF_NAME=$GITHUB_REF_NAME" >> $GITHUB_ENV
+          echo "GGITHUB_REF_TYPE=tag" >> $GITHUB_ENV
 
       - name: Download PHP binaries
         uses: actions/download-artifact@v4
@@ -146,26 +158,35 @@ jobs:
           mkdir -p ~/Library/Developer/Xcode/UserData/Provisioning\ Profiles
           cp $PROVISION_PROFILE_PATH ~/Library/Developer/Xcode/UserData/Provisioning\ Profiles
 
-      # If we're on a PR branch, we don't want Electron Builder to publish the app.
-      - name: Enable notarization and publishing for the release branch
-        if: github.ref_name == 'main'
-        run: |
-          # Set environment variables so Electron Builder will notarize in the next step.
-          echo "APPLE_ID=${{ secrets.APPLE_ID }}" >> $GITHUB_ENV
-          echo "APPLE_APP_SPECIFIC_PASSWORD=${{ secrets.APPLE_APP_SPECIFIC_PASSWORD }}" >> $GITHUB_ENV
-          echo "APPLE_TEAM_ID=${{ secrets.APPLE_TEAM_ID }}" >> $GITHUB_ENV
-          echo "PUBLISH=onTagOrDraft" >> $GITHUB_ENV
-          # Electron Builder needs a token to publish releases.
-          echo "GH_TOKEN=${{ secrets.GITHUB_TOKEN }}" >> $GITHUB_ENV
-
-      - name: Create universal PHP binary and make application
+      - name: Build app
         run: |
           composer run assets --working-dir=build
           # Generate a universal binary of the PHP interpreter.
           lipo -create ./build/php-X64 ./build/php-ARM64 -output ./bin/php
           chmod +x ./bin/php
           npx electron-vite build
-          npx electron-builder --universal --publish=${{ env.PUBLISH }}
+
+      - name: Prepare to publish
+        # If we're on a PR branch, we don't want Electron Builder to publish the app.
+        if: github.ref_name == 'main'
+        run: |
+          # Configure Electron Builder to notarize and publish.
+          echo "APPLE_ID=${{ secrets.APPLE_ID }}" >> $GITHUB_ENV
+          echo "APPLE_APP_SPECIFIC_PASSWORD=${{ secrets.APPLE_APP_SPECIFIC_PASSWORD }}" >> $GITHUB_ENV
+          echo "APPLE_TEAM_ID=${{ secrets.APPLE_TEAM_ID }}" >> $GITHUB_ENV
+          echo "PUBLISH=always" >> $GITHUB_ENV
+
+          # Electron Builder needs a token to publish releases.
+          echo "GH_TOKEN=${{ secrets.GITHUB_TOKEN }}" >> $GITHUB_ENV
+
+          # Pre-build the Drupal site.
+          npx electron . --root=drupal --no-server
+          find drupal -depth -type d -name tests -exec rm -r -f {} ';'
+          tar -c -z -f prebuilt.tar.gz --directory=drupal .
+          rm -r -f drupal
+
+      - name: Make application
+        run: npx electron-builder --universal --publish=${{ env.PUBLISH }}
 
       # For manual testing, upload the final artifact if we're not in a release branch.
       - name: Upload distributable
