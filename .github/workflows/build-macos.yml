@@ -160,6 +160,8 @@ jobs:
           find drupal -depth -type d -name tests -exec rm -r -f {} ';'
           tar -c -z -f prebuilt.tar.gz --directory=drupal .
           rm -r -f drupal
+        env:
+          CI: 'true'
 
       # If we're on a PR branch, we don't want Electron Builder to publish the app.
       - name: Enable notarization and publishing for the release branch

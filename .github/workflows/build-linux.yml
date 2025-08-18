@@ -84,17 +84,6 @@ jobs:
         if: steps.cache.outputs.cache-hit != 'true'
         run: npm install
 
-      - name: Pre-build Drupal site
-        run: |
-          composer run assets --working-dir=build
-          cp -f ./build/buildroot/bin/php ./bin
-          chmod +x ./bin/php
-          npx electron-vite build
-          npx electron . --root=drupal --no-server
-          find drupal -depth -type d -name tests -exec rm -r -f {} ';'
-          tar -c -z -f prebuilt.tar.gz --directory=drupal .
-          rm -r -f drupal
-
       # If we're on a PR branch, we don't want Electron Builder to publish the app.
       - name: Enable publishing for release branch
         if: github.ref_name == 'main'
@@ -104,7 +93,12 @@ jobs:
           echo "GH_TOKEN=${{ secrets.GITHUB_TOKEN }}" >> $GITHUB_ENV
 
       - name: Make application
-        run: npx electron-builder --publish=${{ env.PUBLISH }}
+        run: |
+          composer run assets --working-dir=build
+          cp -f ./build/buildroot/bin/php ./bin
+          chmod +x ./bin/php
+          npx electron-vite build
+          npx electron-builder --publish=${{ env.PUBLISH }}
 
       # For manual testing, upload the final artifact if we're not in a release branch.
       - name: Upload distributable
