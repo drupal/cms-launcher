@@ -29,14 +29,14 @@ jobs:
           fetch-depth: 0
 
       - name: Check out latest tag
-        # if: scheduled
+        if: ${{ github.event_name == 'workflow_dispatch' }}
         run: |
           # Trick Electron Builder into "re-publishing" this tag.
           # @see https://github.com/electron-userland/electron-builder/blob/master/packages/electron-publish/src/publisher.ts#L47
           $GITHUB_REF_NAME = git describe --tags --abbrev=0
           git checkout $GITHUB_REF_NAME
-          "_GITHUB_REF_NAME=$GITHUB_REF_NAME" >> $env:GITHUB_ENV
-          "_GITHUB_REF_TYPE=tag" >> $env:GITHUB_ENV
+          "GITHUB_REF_NAME=$GITHUB_REF_NAME" >> $env:GITHUB_ENV
+          "GITHUB_REF_TYPE=tag" >> $env:GITHUB_ENV
 
       - name: Set up PHP
         uses: shivammathur/setup-php@v2
@@ -102,7 +102,7 @@ jobs:
         if: github.ref_name == 'main'
         run: |
           # Configure Electron Builder to publish.
-          "PUBLISH=onTagOrDraft" >> $env:GITHUB_ENV
+          "PUBLISH=always" >> $env:GITHUB_ENV
 
           # Electron Builder needs a token to publish releases.
           "GH_TOKEN=${{ secrets.GITHUB_TOKEN }}" >> $env:GITHUB_ENV
