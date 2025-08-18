@@ -142,7 +142,7 @@ ipcMain.on(Commands.Start, async ({ sender: win }): Promise<void> => {
     });
 
     try {
-        await drupal.start(argv.server ? argv.url : false, argv.timeout);
+        await drupal.start('', argv.server ? argv.url : false, argv.timeout);
     }
     catch (e) {
         // Send the exception to Sentry so we can analyze it later, without requiring

@@ -46,7 +46,7 @@ test('happy path', async ({}, testInfo) => {
   const url = await window.getByText(/^http:\/\/localhost:/).textContent() as string;
   expect(typeof url).toBe('string')
   await window.goto(url);
-  await expect(window.getByText('It worked!')).toBeVisible();
+  await expect(window.locator('body')).toContainText('It worked! Running PHP via cli-server.');
   await app.close();
 
   // Confirm that launcher-specific Drupal settings are valid PHP.

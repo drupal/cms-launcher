@@ -7,6 +7,7 @@ import { ComposerCommand } from './ComposerCommand';
 import { join } from 'node:path';
 import { access, copyFile, readFile, rm, writeFile } from 'node:fs/promises';
 import { EventEmitter } from 'node:events';
+import { tgz } from 'compressing';
 
 /**
  * Provides methods for installing and serving a Drupal code base.
@@ -57,7 +58,7 @@ export class Drupal extends EventEmitter
         }
     }
 
-    public async start (url?: string | false, timeout: number = 2): Promise<void>
+    public async start (prebuiltArchive?: string, url?: string | false, timeout: number = 2): Promise<void>
     {
         try {
             await access(this.root);
@@ -65,7 +66,7 @@ export class Drupal extends EventEmitter
         catch {
             this.emit(Events.InstallStarted);
             try {
-                await this.install();
+                await this.install(prebuiltArchive);
             }
             catch (e) {
                 await rm(this.root, { force: true, recursive: true, maxRetries: 3 });
@@ -90,8 +91,12 @@ export class Drupal extends EventEmitter
         return join(this.root, 'web');
     }
 
-    private async install (): Promise<void>
+    private async install (prebuiltArchive?: string): Promise<void>
     {
+        if (prebuiltArchive) {
+            return tgz.uncompress(prebuiltArchive, this.root);
+        }
+
         for (const command of this.commands.install) {
             await new ComposerCommand(...command)
                 .inDirectory(this.root)
