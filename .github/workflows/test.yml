@@ -26,18 +26,6 @@ jobs:
     steps:
       - uses: actions/checkout@v4
 
-      - name: Set up PHP
-        uses: shivammathur/setup-php@v2
-        with:
-          php-version: latest
-          tools: composer
-          ini-values: memory_limit=-1
-
-      - name: Set up Node
-        uses: actions/setup-node@v4
-        with:
-          node-version: latest
-
       - name: Cache dependencies
         id: cache
         uses: actions/cache@v4

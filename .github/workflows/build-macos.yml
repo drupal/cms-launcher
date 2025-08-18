@@ -30,16 +30,6 @@ jobs:
     steps:
       - uses: actions/checkout@v4
 
-      - if: steps.cache.outputs.cache-hit != 'true'
-        name: "Set up PHP"
-        uses: shivammathur/setup-php@v2
-        with:
-          # Install PHP with the tools needed to build the interpreter, if necessary.
-          php-version: latest
-          tools: pecl, composer
-          extensions: curl, openssl, mbstring, tokenizer
-          ini-values: memory_limit=-1
-
       # Cache the built binary so we can skip the build steps if there is a cache hit.
       - name: Generate cache key
         run: |
@@ -91,16 +81,6 @@ jobs:
           path: build
           pattern: php-*
           merge-multiple: true
-
-      - name: Set up PHP
-        uses: shivammathur/setup-php@v2
-        with:
-          tools: composer
-
-      - name: Set up Node
-        uses: actions/setup-node@v4
-        with:
-          node-version: latest
 
       - name: Cache dependencies
         id: cache
