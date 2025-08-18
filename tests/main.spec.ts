@@ -1,4 +1,4 @@
-import { test, expect, _electron as electron, type ElectronApplication, type TestInfo } from '@playwright/test';
+import { test, expect, _electron as electron, type ElectronApplication, type Page, type TestInfo } from '@playwright/test';
 import { accessSync } from 'node:fs';
 import { join } from 'node:path';
 import { PhpCommand } from '@/main/PhpCommand';
@@ -25,6 +25,16 @@ async function launchApp(testInfo: TestInfo, ...options: string[]): Promise<[Ele
   return [app, root];
 }
 
+async function visitSite (app: ElectronApplication): Promise<Page>
+{
+  const window = await app.firstWindow();
+  const url = await window.getByText(/^http:\/\/localhost:/).textContent() as string;
+  expect(typeof url).toBe('string')
+  await window.goto(url);
+
+  return window;
+}
+
 test.beforeAll(() => {
   PhpCommand.binary = join(__dirname, '..', 'bin', process.platform == 'win32' ? 'php.exe' : 'php');
 });
@@ -39,14 +49,8 @@ test.afterEach(async ({}, testInfo) => {
 test('happy path', async ({}, testInfo) => {
   const [app, root] = await launchApp(testInfo, '--fixture=basic');
 
-  // Wait for the first BrowserWindow to open and return its Page object, then
-  // wait up to 10 seconds for the success message to appear.
-  const window = await app.firstWindow();
-  // Get the text of the element which starts with a URL.
-  const url = await window.getByText(/^http:\/\/localhost:/).textContent() as string;
-  expect(typeof url).toBe('string')
-  await window.goto(url);
-  await expect(window.locator('body')).toContainText('It worked! Running PHP via cli-server.');
+  const page = await visitSite(app);
+  await expect(page.locator('body')).toContainText('It worked! Running PHP via cli-server.');
   await app.close();
 
   // Confirm that launcher-specific Drupal settings are valid PHP.
@@ -101,4 +105,12 @@ test('server can be disabled', async ({}, testInfo) => {
   finally {
     await app.close();
   }
+});
+
+test('install from a pre-built archive', async ({}, testInfo) => {
+  const [app] = await launchApp(testInfo, `--archive=${join(__dirname, 'fixtures', 'prebuilt.tar.gz')}`);
+
+  const page = await visitSite(app);
+  await expect(page.locator('body')).toContainText('A prebuilt archive worked! Running PHP via cli-server.');
+  await app.close();
 });
