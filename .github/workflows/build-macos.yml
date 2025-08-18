@@ -95,7 +95,7 @@ jobs:
           GITHUB_REF_NAME=$(git describe --tags --abbrev=0)
           git checkout $GITHUB_REF_NAME
           echo "GITHUB_REF_NAME=$GITHUB_REF_NAME" >> $GITHUB_ENV
-          echo "GGITHUB_REF_TYPE=tag" >> $GITHUB_ENV
+          echo "GITHUB_REF_TYPE=tag" >> $GITHUB_ENV
 
       - name: Download PHP binaries
         uses: actions/download-artifact@v4
