@@ -14,9 +14,9 @@ launcher.onInstallStarted((): void => {
     status.innerText = 'This might take a minute.';
 });
 
-launcher.onInstallFinished((): void => {
-    title.innerText = 'Starting web server...'
+launcher.onInstallFinished((withServer: boolean): void => {
     status.innerHTML = '';
+    title.innerText = withServer ? 'Starting web server...' : 'Installation complete!';
 });
 
 launcher.onOutput((line: string): void => {

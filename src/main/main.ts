@@ -121,6 +121,11 @@ ipcMain.on(Commands.Start, async ({ sender: win }): Promise<void> => {
     });
     drupal.on(Events.InstallFinished, (): void => {
         win.send(Events.InstallFinished, argv.server);
+
+        // If we're in CI, we're not checking for updates; there's nothing else to do.
+        if ('CI' in process.env) {
+            app.quit();
+        }
     });
     drupal.on(Events.Started, (url: string, server: ChildProcess): void => {
         // Automatically kill the server on quit.

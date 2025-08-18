@@ -6,7 +6,7 @@ export interface Launcher
 
     onInstallStarted: (callback: () => void) => void;
 
-    onInstallFinished: (callback: () => void) => void;
+    onInstallFinished: (callback: (withServer: boolean) => void) => void;
 
     onOutput: (callback: (line: string) => void) => void;
 
