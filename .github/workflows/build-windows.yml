@@ -25,6 +25,12 @@ jobs:
       PUBLISH: never
     steps:
       - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Check out latest tag
+        # if: scheduled
+        run: git describe --tags --abbrev=0
 
       - name: Set up PHP
         uses: shivammathur/setup-php@v2
@@ -93,14 +99,22 @@ jobs:
 
       # If we're on a PR branch, we don't want Electron Builder to publish the app.
       # On Windows, adding environment variables in PowerShell has a special syntax: see https://github.com/orgs/community/discussions/25713
-      - name: Enable publishing for release branch
+      - name: Prepare to publish
         if: github.ref_name == 'main'
         run: |
+          # Configure Electron Builder to publish.
           "PUBLISH=onTagOrDraft" >> $env:GITHUB_ENV
+
           # Electron Builder needs a token to publish releases.
           "GH_TOKEN=${{ secrets.GITHUB_TOKEN }}" >> $env:GITHUB_ENV
 
-      - name: Package and publish application
+          # Pre-build the Drupal site.
+          npx electron . --root=drupal --no-server
+          Get-ChildItem -Path drupal -Recurse -Directory -Name tests | ForEach-Object { Remove-Item "drupal\$_" -Recurse -Force }
+          tar -c -z -f prebuilt.tar.gz --directory=drupal .
+          Remove-Item -Path drupal -Recurse -Force
+
+      - name: Make application
         run: npx electron-builder --publish=${{ env.PUBLISH }}
         env:
           # Set environment variables for Azure Trusted Signing. Electron Builder will
