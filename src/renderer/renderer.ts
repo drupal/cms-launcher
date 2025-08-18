@@ -15,8 +15,15 @@ launcher.onInstallStarted((): void => {
 });
 
 launcher.onInstallFinished((withServer: boolean): void => {
-    status.innerHTML = '';
-    title.innerText = withServer ? 'Starting web server...' : 'Installation complete!';
+    if (withServer) {
+        title.innerText = 'Starting web server...';
+    }
+    else {
+        loader.remove();
+        status.remove();
+        title.innerText = 'Installation complete!';
+    }
+    cli.innerText = '';
 });
 
 launcher.onOutput((line: string): void => {

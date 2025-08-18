@@ -88,3 +88,17 @@ test("no clean up if server doesn't start", async ({}, testInfo) => {
     await app.close();
   }
 });
+
+test('server can be disabled', async ({}, testInfo) => {
+  const [app, root] = await launchApp(testInfo, '--fixture=basic', '--no-server');
+
+  const window = await app.firstWindow();
+  await expect(window.getByText('Installation complete!')).toBeVisible();
+
+  try {
+    accessSync(root);
+  }
+  finally {
+    await app.close();
+  }
+});
