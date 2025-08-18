@@ -14,23 +14,33 @@ const ipc: Launcher = {
     },
 
     onInstallStarted: (callback: () => void): void => {
-        ipcRenderer.on(Events.InstallStarted, callback);
+        ipcRenderer.on(Events.InstallStarted, (): void => {
+            callback();
+        });
     },
 
-    onInstallFinished: (callback: () => void): void => {
-        ipcRenderer.on(Events.InstallFinished, callback);
+    onInstallFinished: (callback: (withServer: boolean) => void): void => {
+        ipcRenderer.on(Events.InstallFinished, (_: any, withServer: boolean): void => {
+            callback(withServer);
+        });
     },
 
     onOutput: (callback: (line: string) => void): void => {
-        ipcRenderer.on(Events.Output, (undefined, line): void => callback(line));
+        ipcRenderer.on(Events.Output, (_: any, line: string): void => {
+            callback(line);
+        });
     },
 
     onStart: (callback: (url: string) => void): void => {
-        ipcRenderer.on(Events.Started, (undefined, url): void => callback(url));
+        ipcRenderer.on(Events.Started, (_: any, url: string): void => {
+            callback(url);
+        });
     },
 
     onError: (callback: (message: string) => void): void => {
-        ipcRenderer.on(Events.Error, (undefined, message): void => callback(message));
+        ipcRenderer.on(Events.Error, (_: any, message: string): void => {
+            callback(message);
+        });
     },
 
 };

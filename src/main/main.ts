@@ -12,17 +12,6 @@ import { PhpCommand } from './PhpCommand';
 import { ComposerCommand } from './ComposerCommand';
 import { type ChildProcess } from 'node:child_process';
 
-// The shape of our command-line options, to help the type checker deal with yargs.
-interface Options
-{
-    root: string;
-    log: string;
-    composer: string;
-    fixture?: string;
-    url?: string;
-    timeout: number;
-}
-
 // If any uncaught exception happens, send it to Sentry.
 Sentry.init({
     beforeSend: (event, hint) => {
@@ -75,6 +64,11 @@ const commandLine = yargs().options({
         description: 'How long to wait for the web server to start before timing out, in seconds.',
         default: 30,
     },
+    server: {
+        type: 'boolean',
+        description: 'Whether to automatically start the web server once Drupal is installed.',
+        default: true,
+    }
 });
 
 // If in development, allow the Drupal code base to be spun up from a test fixture.
@@ -83,6 +77,18 @@ if (! app.isPackaged) {
         type: 'string',
         description: 'The name of a test fixture from which to create the Drupal project.',
     });
+}
+
+// Define the shape of our command-line options, to help the type checker deal with yargs.
+interface Options
+{
+    root: string;
+    log: string;
+    composer: string;
+    fixture?: string;
+    url?: string;
+    timeout: number;
+    server: boolean;
 }
 
 // Parse the command line and use it to set the path to Composer and the log file.
@@ -114,7 +120,12 @@ ipcMain.on(Commands.Start, async ({ sender: win }): Promise<void> => {
         win.send(Events.Output, line);
     });
     drupal.on(Events.InstallFinished, (): void => {
-        win.send(Events.InstallFinished);
+        win.send(Events.InstallFinished, argv.server);
+
+        // If we're in CI, we're not checking for updates; there's nothing else to do.
+        if ('CI' in process.env) {
+            app.quit();
+        }
     });
     drupal.on(Events.Started, (url: string, server: ChildProcess): void => {
         // Automatically kill the server on quit.
@@ -123,8 +134,15 @@ ipcMain.on(Commands.Start, async ({ sender: win }): Promise<void> => {
         win.send(Events.Started, url);
     });
 
+    // After checking for updates, quit it we're not going to start the web server.
+    autoUpdater.on('update-not-available', (): void => {
+       if (! argv.server) {
+           app.quit();
+       }
+    });
+
     try {
-        await drupal.start(argv.url, argv.timeout);
+        await drupal.start(argv.server ? argv.url : false, argv.timeout);
     }
     catch (e) {
         // Send the exception to Sentry so we can analyze it later, without requiring

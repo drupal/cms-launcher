@@ -57,7 +57,7 @@ export class Drupal extends EventEmitter
         }
     }
 
-    public async start (url?: string, timeout: number = 2): Promise<void>
+    public async start (url?: string | false, timeout: number = 2): Promise<void>
     {
         try {
             await access(this.root);
@@ -80,7 +80,9 @@ export class Drupal extends EventEmitter
             });
             url = `http://localhost:${port}`;
         }
-        await this.serve(url, timeout);
+        if (url) {
+            await this.serve(url, timeout);
+        }
     }
 
     private webRoot (): string
