@@ -108,10 +108,12 @@ test('server can be disabled', async ({}, testInfo) => {
 });
 
 test('install from a pre-built archive', async ({}, testInfo) => {
+  const fixturesDir = join(__dirname, 'fixtures');
+
   const [app] = await launchApp(
       testInfo,
-      `--archive=${join(__dirname, 'fixtures', 'prebuilt.tar.gz')}`,
-      '--composer=composer-always-error.php',
+      `--archive=${join(fixturesDir, 'prebuilt.tar.gz')}`,
+      `--composer=${join(fixturesDir, 'composer-always-error.php')}`,
   );
 
   const page = await visitSite(app);
