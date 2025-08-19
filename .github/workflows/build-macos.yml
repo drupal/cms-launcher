@@ -95,7 +95,7 @@ jobs:
         if: ${{ github.event_name == 'workflow_dispatch' || github.event_name == 'schedule' }}
         run: |
           LATEST_TAG=$(git describe --tags --abbrev=0)
-          git checkout LATEST_TAG
+          git checkout $LATEST_TAG
           echo "LATEST_TAG=$LATEST_TAG" >> $GITHUB_ENV
 
       - name: Download PHP binaries
