@@ -38,12 +38,9 @@ jobs:
       - name: Check out latest tag
         if: ${{ github.event_name == 'workflow_dispatch' }}
         run: |
-          # Trick Electron Builder into "re-publishing" this tag.
-          # @see https://github.com/electron-userland/electron-builder/blob/master/packages/electron-publish/src/publisher.ts#L47
-          GITHUB_REF_NAME=$(git describe --tags --abbrev=0)
-          git checkout $GITHUB_REF_NAME
-          echo "GITHUB_REF_NAME=$GITHUB_REF_NAME" >> $GITHUB_ENV
-          echo "GITHUB_REF_TYPE=tag" >> $GITHUB_ENV
+          LATEST_TAG=$(git describe --tags --abbrev=0)
+          git checkout $LATEST_TAG
+          echo "LATEST_TAG=$LATEST_TAG" >> $GITHUB_ENV
 
       - name: Set up PHP
         uses: shivammathur/setup-php@v2
@@ -101,7 +98,7 @@ jobs:
         if: github.ref_name == 'main'
         run: |
           # Configure Electron Builder to publish.
-          echo "PUBLISH=always" >> $GITHUB_ENV
+          echo "PUBLISH=onTagOrDraft" >> $GITHUB_ENV
 
           # Electron Builder needs a token to publish releases.
           echo "GH_TOKEN=${{ secrets.GITHUB_TOKEN }}" >> $GITHUB_ENV
@@ -122,3 +119,14 @@ jobs:
           name: app-${{ runner.arch }}
           path: dist/*.AppImage
           retention-days: 7
+
+      - name: Update prebuilt Drupal code base
+        if: ${{ env.LATEST_TAG }}
+        uses: softprops/action-gh-release@v2
+        with:
+          files: |
+            dist/Drupal_CMS-Linux-arm64.AppImage
+            dist/Drupal_CMS-Linux-x86_64.AppImage
+            dist/latest-linux.yml
+            dist/latest-linux-arm64.yml
+          tag_name: ${{ env.LATEST_TAG }}
