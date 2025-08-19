@@ -41,7 +41,7 @@ const commandLine = yargs().options({
     root: {
         type: 'string',
         description: 'The absolute path to the Drupal project root.',
-        default: join(app.getPath('documents'), 'drupal'),
+        default: join(app.getPath('appData'), 'drupal'),
     },
     log: {
         type: 'string',
