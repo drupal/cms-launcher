@@ -1,22 +1,19 @@
-import { test, expect, _electron as electron, type ElectronApplication, type TestInfo } from '@playwright/test';
+import { test, expect, _electron as electron, type ElectronApplication, type Page, type TestInfo } from '@playwright/test';
 import { accessSync } from 'node:fs';
 import { join } from 'node:path';
 import { PhpCommand } from '@/main/PhpCommand';
 
-async function launchApp(testInfo: TestInfo, fixture: string, composer?: string): Promise<[ElectronApplication, string]> {
+async function launchApp(testInfo: TestInfo, ...options: string[]): Promise<[ElectronApplication, string]> {
   const root = testInfo.outputPath('drupal');
 
-  const args = [
-      '.',
-      `--root=${root}`,
-      `--fixture=${fixture}`,
-      `--log=${testInfo.outputPath('app.log')}`,
-    ];
-  if (composer) {
-    args.push(`--composer=${composer}`);
-  }
   const app = await electron.launch({
-    args: args,
+    args: [
+        '.',
+        `--root=${root}`,
+        `--log=${testInfo.outputPath('app.log')}`,
+        `--timeout=2`,
+        ...options,
+    ],
     env: {
       // The fixture is located in a path repository, so we want to ensure Composer
       // makes a full copy of it.
@@ -26,6 +23,16 @@ async function launchApp(testInfo: TestInfo, fixture: string, composer?: string)
     },
   });
   return [app, root];
+}
+
+async function visitSite (app: ElectronApplication): Promise<Page>
+{
+  const window = await app.firstWindow();
+  const url = await window.getByText(/^http:\/\/localhost:/).textContent() as string;
+  expect(typeof url).toBe('string')
+  await window.goto(url);
+
+  return window;
 }
 
 test.beforeAll(() => {
@@ -40,16 +47,10 @@ test.afterEach(async ({}, testInfo) => {
 });
 
 test('happy path', async ({}, testInfo) => {
-  const [app, root] = await launchApp(testInfo, 'basic');
+  const [app, root] = await launchApp(testInfo, '--fixture=basic');
 
-  // Wait for the first BrowserWindow to open and return its Page object, then
-  // wait up to 10 seconds for the success message to appear.
-  const window = await app.firstWindow();
-  // Get the text of the element which starts with a URL.
-  const url = await window.getByText(/^http:\/\/localhost:/).textContent() as string;
-  expect(typeof url).toBe('string')
-  await window.goto(url);
-  await expect(window.getByText('It worked!')).toBeVisible();
+  const page = await visitSite(app);
+  await expect(page.locator('body')).toContainText('It worked! Running PHP via cli-server.');
   await app.close();
 
   // Confirm that launcher-specific Drupal settings are valid PHP.
@@ -59,13 +60,63 @@ test('happy path', async ({}, testInfo) => {
       });
 });
 
-test('clean up directory on failed install', async ({}, testInfo) => {
-  const [app, root] = await launchApp(testInfo, 'basic', 'composer-install-error.php');
+test('clean up on failed install', async ({}, testInfo) => {
+  const [app, root] = await launchApp(
+      testInfo,
+      '--fixture=basic',
+      `--composer=${join(__dirname, 'fixtures', 'composer-install-error.php')}`,
+  );
 
   const window = await app.firstWindow();
+  // Confirm that STDERR output (i.e., progress messages) is streamed to the window.
+  await expect(window.getByText('Doing step: create-project')).toBeVisible();
   await expect(window.locator('.error')).toBeVisible();
   // We expect access() to throw a "no such file or directory" error, because the
   // directory has been deleted.
   expect(() => accessSync(root)).toThrow();
+  await app.close();
+});
+
+test("no clean up if server doesn't start", async ({}, testInfo) => {
+  const [app, root] = await launchApp(testInfo, '--fixture=basic', '--url=not-a-valid-host');
+
+  const window = await app.firstWindow();
+  await expect(window.getByText('The web server did not start after 2 seconds.')).toBeVisible();
+
+  // The Drupal root should still exist, because the install succeeded but
+  // the server failed to start.
+  try {
+    accessSync(root);
+  }
+  finally {
+    await app.close();
+  }
+});
+
+test('server can be disabled', async ({}, testInfo) => {
+  const [app, root] = await launchApp(testInfo, '--fixture=basic', '--no-server');
+
+  const window = await app.firstWindow();
+  await expect(window.getByText('Installation complete!')).toBeVisible();
+
+  try {
+    accessSync(root);
+  }
+  finally {
+    await app.close();
+  }
+});
+
+test('install from a pre-built archive', async ({}, testInfo) => {
+  const fixturesDir = join(__dirname, 'fixtures');
+
+  const [app] = await launchApp(
+      testInfo,
+      `--archive=${join(fixturesDir, 'prebuilt.tar.gz')}`,
+      `--composer=${join(fixturesDir, 'composer-always-error.php')}`,
+  );
+
+  const page = await visitSite(app);
+  await expect(page.locator('body')).toContainText('A prebuilt archive worked! Running PHP via cli-server.');
   await app.close();
 });

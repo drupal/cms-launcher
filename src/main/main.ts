@@ -10,15 +10,7 @@ import yargs from 'yargs';
 import { hideBin } from 'yargs/helpers';
 import { PhpCommand } from './PhpCommand';
 import { ComposerCommand } from './ComposerCommand';
-
-// The shape of our command-line options, to help the type checker deal with yargs.
-interface Options
-{
-    root: string;
-    log: string;
-    composer: string;
-    fixture?: string;
-}
+import { type ChildProcess } from 'node:child_process';
 
 // If any uncaught exception happens, send it to Sentry.
 Sentry.init({
@@ -42,16 +34,14 @@ Sentry.init({
 
 logger.initialize();
 
-// Where our binaries are stored, which depends on whether the app has been packaged
-// for release.
-const binDir = join(app.isPackaged ? process.resourcesPath : app.getAppPath(), 'bin');
+const resourceDir = app.isPackaged ? process.resourcesPath : app.getAppPath();
 
 // Define the command-line options we support.
 const commandLine = yargs().options({
     root: {
         type: 'string',
         description: 'The absolute path to the Drupal project root.',
-        default: join(app.getPath('documents'), 'drupal'),
+        default: join(app.getPath('appData'), 'drupal'),
     },
     log: {
         type: 'string',
@@ -61,7 +51,26 @@ const commandLine = yargs().options({
     composer: {
         type: 'string',
         description: "The path of the Composer PHP script. Don't set this unless you know what you're doing.",
-        default: join(binDir, 'composer', 'bin', 'composer'),
+        default: join(resourceDir, 'bin', 'composer', 'bin', 'composer'),
+    },
+    url: {
+        type: 'string',
+        description: "The URL of the Drupal site. Don't set this unless you know what you're doing.",
+    },
+    timeout: {
+        type: 'number',
+        description: 'How long to wait for the web server to start before timing out, in seconds.',
+        default: 30,
+    },
+    server: {
+        type: 'boolean',
+        description: 'Whether to automatically start the web server once Drupal is installed.',
+        default: true,
+    },
+    archive: {
+        type: 'string',
+        description: "The path of a .tar.gz archive that contains the pre-built Drupal code base.",
+        default: join(resourceDir, 'prebuilt.tar.gz'),
     },
 });
 
@@ -73,6 +82,19 @@ if (! app.isPackaged) {
     });
 }
 
+// Define the shape of our command-line options, to help the type checker deal with yargs.
+interface Options
+{
+    root: string;
+    log: string;
+    composer: string;
+    fixture?: string;
+    url?: string;
+    timeout: number;
+    server: boolean;
+    archive: string;
+}
+
 // Parse the command line and use it to set the path to Composer and the log file.
 const argv: Options = commandLine.parseSync(
     hideBin(process.argv),
@@ -80,7 +102,7 @@ const argv: Options = commandLine.parseSync(
 
 // The path to PHP. This cannot be overridden because PHP is an absolute hard requirement
 // of this app.
-PhpCommand.binary = join(binDir, process.platform === 'win32' ? 'php.exe' : 'php');
+PhpCommand.binary = join(resourceDir, 'bin', process.platform === 'win32' ? 'php.exe' : 'php');
 
 // Set the path to the Composer executable. We need to use an unpacked version of Composer
 // because the phar file has a shebang line that breaks us due to environment variables not
@@ -94,24 +116,43 @@ logger.transports.file.resolvePathFn = (): string => argv.log;
 ipcMain.on(Commands.Start, async ({ sender: win }): Promise<void> => {
     const drupal = new Drupal(argv.root, argv.fixture);
 
-    try {
-        await drupal.install(win);
+    drupal.on(Events.InstallStarted, (): void => {
+        win.send(Events.InstallStarted);
+    });
+    drupal.on(Events.Output, (line: string): void => {
+        // Stream Composer's progress messages to the renderer.
+        win.send(Events.Output, line);
+    });
+    drupal.on(Events.InstallFinished, (): void => {
+        win.send(Events.InstallFinished, argv.server);
 
-        // Start the built-in PHP web server and automatically kill it on quit.
-        const [url, server] = await drupal.serve();
+        // If we're in CI, we're not checking for updates; there's nothing else to do.
+        if ('CI' in process.env) {
+            app.quit();
+        }
+    });
+    drupal.on(Events.Started, (url: string, server: ChildProcess): void => {
+        // Automatically kill the server on quit.
         app.on('will-quit', () => server.kill());
-
         // Let the user know we're up and running.
         win.send(Events.Started, url);
+    });
+
+    // After checking for updates, quit it we're not going to start the web server.
+    autoUpdater.on('update-not-available', (): void => {
+       if (! argv.server) {
+           app.quit();
+       }
+    });
+
+    try {
+        await drupal.start(argv.archive, argv.server ? argv.url : false, argv.timeout);
     }
     catch (e) {
         // Send the exception to Sentry so we can analyze it later, without requiring
         // users to file a GitHub issue.
         Sentry.captureException(e);
         win.send(Events.Error, e);
-
-        // Remove unfinished install directory, so installation can be tried again cleanly.
-        await drupal.destroy();
     }
     finally {
         // Set up logging to help with debugging auto-update problems, ensure any

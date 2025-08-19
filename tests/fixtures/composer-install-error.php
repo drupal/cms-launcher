@@ -11,9 +11,14 @@ $arguments = array_filter(
 $arguments = array_values($arguments);
 $arguments = array_slice($arguments, 1);
 
-if ($arguments[0] === 'create-project') {
-  mkdir($arguments[2]);
-}
-else if ($arguments[0] === 'install') {
+if ($arguments[0] === 'install') {
   throw new \Exception('An imaginary error occurred!');
+}
+else {
+  fwrite(STDERR, 'Doing step: '. $arguments[0]);
+
+  if ($arguments[0] === 'create-project') {
+    mkdir($arguments[2]);
+  }
+  usleep(300000);
 }

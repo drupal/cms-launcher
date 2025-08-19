@@ -7,6 +7,10 @@ on:
       # PR branches that alter the build process should be prefixed with `build/`, so
       # that this workflow runs.
       - 'build/**'
+  schedule:
+    # Run this workflow every 6 hours to repackage the pre-built Drupal CMS site
+    # with the latest dependencies.
+    - cron: 0 */6 * * *
   workflow_dispatch:
 
 env:
@@ -32,6 +36,15 @@ jobs:
     runs-on: ${{ matrix.runner }}
     steps:
       - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Check out latest tag
+        if: ${{ github.event_name == 'workflow_dispatch' || github.event_name == 'schedule' }}
+        run: |
+          LATEST_TAG=$(git describe --tags --abbrev=0)
+          git checkout $LATEST_TAG
+          echo "LATEST_TAG=$LATEST_TAG" >> $GITHUB_ENV
 
       - name: Set up PHP
         uses: shivammathur/setup-php@v2
@@ -88,7 +101,9 @@ jobs:
       - name: Enable publishing for release branch
         if: github.ref_name == 'main'
         run: |
+          # Configure Electron Builder to publish.
           echo "PUBLISH=onTagOrDraft" >> $GITHUB_ENV
+
           # Electron Builder needs a token to publish releases.
           echo "GH_TOKEN=${{ secrets.GITHUB_TOKEN }}" >> $GITHUB_ENV
 
@@ -108,3 +123,14 @@ jobs:
           name: app-${{ runner.arch }}
           path: dist/*.AppImage
           retention-days: 7
+
+      - name: Update prebuilt Drupal code base
+        if: ${{ env.LATEST_TAG }}
+        uses: softprops/action-gh-release@v2
+        with:
+          files: |
+            dist/Drupal_CMS-Linux-arm64.AppImage
+            dist/Drupal_CMS-Linux-x86_64.AppImage
+            dist/latest-linux.yml
+            dist/latest-linux-arm64.yml
+          tag_name: ${{ env.LATEST_TAG }}
