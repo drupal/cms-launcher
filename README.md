@@ -39,9 +39,9 @@ We use [static-php-cli](https://static-php.dev/) to compile a copy of PHP 8.3 th
 
 ## Where are the Drupal files and database?
 
-The Drupal files and database are stored outside of the application, in the _drupal_ directory under the user's _Documents_ directory. The site uses a lightweight SQLite database, located at `web/sites/default/files/.ht.sqlite`.
+The Drupal files and database are stored outside of the application, in the _drupal_ directory under the system's application data directory. The site uses a lightweight SQLite database, located at `web/sites/default/files/.ht.sqlite`.
 
-To reset your Drupal CMS instance, close the application, delete the _drupal_ directory from your _Documents_ directory, and launch the application again. It will reinstall Drupal CMS from scratch.
+To reset your Drupal CMS instance, close the application, delete the _drupal_ directory from your system's application data directory, and launch the application again. It will reinstall Drupal CMS from scratch.
 
 ## How to uninstall
 
@@ -52,7 +52,7 @@ To completely uninstall the Drupal CMS Launcher and remove all associated files:
    - On Windows: Delete the application directory you extracted from the ZIP file.
 
 2. **Remove the Drupal files:**
-   - Navigate to your _Documents_ directory.
+   - Navigate to [your system's application data directory](https://www.electronjs.org/docs/latest/api/app#appgetpathname).
    - Delete the _drupal_ directory to remove the site files and SQLite database.
 
 After these steps, the application and all its data will be fully removed from your system.
