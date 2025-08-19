@@ -7,6 +7,10 @@ on:
       # PR branches that alter the build process should be prefixed with `build/`, so
       # that this workflow runs.
       - 'build/**'
+  schedule:
+    # Run this workflow every 6 hours to repackage the pre-built Drupal CMS site
+    # with the latest dependencies.
+    - cron: 0 */6 * * *
   workflow_dispatch:
 
 # Since only the x64 architecture is supported on Windows, there's only one job to
@@ -29,7 +33,7 @@ jobs:
           fetch-depth: 0
 
       - name: Check out latest tag
-        if: ${{ github.event_name == 'workflow_dispatch' }}
+        if: ${{ github.event_name == 'workflow_dispatch' || github.event_name == 'schedule' }}
         run: |
           $LATEST_TAG = git describe --tags --abbrev=0
           git checkout $LATEST_TAG
