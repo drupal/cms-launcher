@@ -81,7 +81,11 @@ test("no clean up if server doesn't start", async ({}, testInfo) => {
   const [app, root] = await launchApp(testInfo, '--fixture=basic', '--url=not-a-valid-host');
 
   const window = await app.firstWindow();
-  await expect(window.getByText('The web server did not start after 2 seconds.')).toBeVisible();
+  await expect(window.getByText('The web server did not start after 2 seconds.')).toBeVisible({
+    // Give an extra-long grace period in case this test is being run on a painfully
+    // slow machine.
+    timeout: 10_000,
+  });
 
   // The Drupal root should still exist, because the install succeeded but
   // the server failed to start.
