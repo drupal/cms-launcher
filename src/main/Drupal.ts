@@ -96,6 +96,16 @@ export class Drupal extends EventEmitter
     {
         if (archive) {
             logger.debug(`Using pre-built archive: ${archive}`);
+            try {
+                await access(archive);
+            }
+            catch {
+                archive = undefined;
+                logger.info('Falling back to Composer because pre-built archive does not exist.');
+            }
+        }
+
+        if (archive) {
             return this.extractArchive(archive);
         }
 
