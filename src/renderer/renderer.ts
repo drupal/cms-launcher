@@ -7,6 +7,7 @@ const status = document.getElementById('status') as HTMLParagraphElement;
 const title = document.getElementById('title') as HTMLHeadingElement;
 const loader = document.getElementById('loader') as HTMLDivElement;
 const cli = document.getElementById('cli-output') as HTMLPreElement;
+let progressBar: HTMLDivElement;
 
 launcher.onInstallStarted((): void => {
     title.innerText = 'Installing...'
@@ -28,6 +29,17 @@ launcher.onInstallFinished((withServer: boolean): void => {
 
 launcher.onOutput((line: string): void => {
     cli.innerText = line;
+});
+
+launcher.onProgress((done: number, total: number): void => {
+    if (typeof progressBar === 'undefined') {
+        progressBar = document.createElement('div');
+        progressBar.classList.add('cms-installer__progress');
+        loader.replaceChildren(progressBar);
+    }
+    const percent = Math.round((done / total) * 100);
+    progressBar.style.width = `${percent}%`;
+    cli.innerText = `Extracting archive (${percent}% done)`;
 });
 
 launcher.onStart((url: string): void => {
