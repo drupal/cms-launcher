@@ -5,9 +5,9 @@ import { app } from 'electron';
 import { Events } from './Events';
 import { ComposerCommand } from './ComposerCommand';
 import { join } from 'node:path';
-import { access, copyFile, readFile, rm, writeFile } from 'node:fs/promises';
+import { access, copyFile, mkdir, readFile, rm, writeFile } from 'node:fs/promises';
 import { EventEmitter } from 'node:events';
-import { tgz } from 'compressing';
+import * as tar from 'tar';
 import logger from 'electron-log';
 
 /**
@@ -99,8 +99,7 @@ export class Drupal extends EventEmitter
 
             try {
                 await access(archive);
-                this.emit(Events.Output, 'Extracting archive...');
-                return tgz.uncompress(archive, this.root);
+                return this.extractArchive(archive);
             }
             catch {
                 logger.info('Falling back to Composer because pre-built archive does not exist.');
@@ -118,6 +117,35 @@ export class Drupal extends EventEmitter
                 });
         }
         await this.prepareSettings();
+    }
+
+    private async extractArchive (file: string): Promise<void>
+    {
+        let total = 0;
+        let done = 0;
+
+        await tar.list({
+            file,
+            onReadEntry: (): void => {
+                total++;
+            },
+        });
+
+        await mkdir(this.root);
+
+        const interval = setInterval((): void => {
+            this.emit(Events.Progress, done, total);
+        }, 500);
+
+        return tar.extract({
+            cwd: this.root,
+            file,
+            onReadEntry: (): void => {
+                done++;
+            },
+        }).finally(() => {
+            clearInterval(interval);
+        });
     }
 
     private async prepareSettings (): Promise<void>

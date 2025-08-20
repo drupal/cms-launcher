@@ -30,6 +30,11 @@ launcher.onOutput((line: string): void => {
     cli.innerText = line;
 });
 
+launcher.onProgress((done: number, total: number): void => {
+    const percent = Math.round((done / total) * 100);
+    cli.innerText = `Extracting archive (${percent}% done)`;
+});
+
 launcher.onStart((url: string): void => {
     title.remove();
     loader.remove();
