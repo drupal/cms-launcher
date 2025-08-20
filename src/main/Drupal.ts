@@ -107,13 +107,19 @@ export class Drupal extends EventEmitter
         }
 
         for (const command of this.commands.install) {
+            let output: string = ''
+
             await new ComposerCommand(...command)
                 .inDirectory(this.root)
                 .run({}, (line: string, type: OutputType): void => {
                     // Progress messages are sent to STDERR; forward them to the render.
                     if (type === OutputType.Error) {
                         this.emit(Events.Output, line);
+                    } else if (type === OutputType.Output) {
+                        output += `${line}\n`;
                     }
+                }).catch(() => {
+                    throw new Error(output);
                 });
         }
         await this.prepareSettings();

@@ -70,7 +70,7 @@ test('clean up on failed install', async ({}, testInfo) => {
   const window = await app.firstWindow();
   // Confirm that STDERR output (i.e., progress messages) is streamed to the window.
   await expect(window.getByText('Doing step: ')).toBeVisible();
-  await expect(window.locator('.error')).toBeVisible();
+  await expect(window.getByText('An imaginary error occurred!')).toBeVisible();
   // We expect access() to throw a "no such file or directory" error, because the
   // directory has been deleted.
   expect(() => accessSync(root)).toThrow();
