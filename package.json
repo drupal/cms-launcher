@@ -21,10 +21,10 @@
   },
   "dependencies": {
     "@sentry/electron": "^6.7.0",
-    "compressing": "^2.0.0",
     "electron-log": "^5.4.1",
     "electron-updater": "^6.6.2",
     "get-port": "^7.1.0",
+    "tar": "^7.4.3",
     "yargs": "^18.0.0"
   }
 }
