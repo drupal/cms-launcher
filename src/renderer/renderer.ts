@@ -10,7 +10,7 @@ const cli = document.getElementById('cli-output') as HTMLPreElement;
 
 launcher.onInstallStarted((): void => {
     title.innerText = 'Installing...'
-    loader.innerHTML = '<div class="cms-installer__loader"></div>';
+    loader.innerHTML = '<div class="cms-installer__loader"></div>'
     status.innerText = 'This might take a minute.';
 });
 
@@ -32,7 +32,6 @@ launcher.onOutput((line: string): void => {
 
 launcher.onProgress((done: number, total: number): void => {
     const percent = Math.round((done / total) * 100);
-    loader.style.width = `${percent}%`;
     cli.innerText = `Extracting archive (${percent}% done)`;
 });
 
