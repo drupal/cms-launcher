@@ -127,7 +127,7 @@ export class Drupal extends EventEmitter
         await mkdir(this.root);
 
         const interval = setInterval((): void => {
-            this.emit('progress', total, done);
+            this.emit(Events.Progress, done, total);
         }, 1000);
 
         return tar.extract({

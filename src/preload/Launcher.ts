@@ -10,6 +10,8 @@ export interface Launcher
 
     onOutput: (callback: (line: string) => void) => void;
 
+    onProgress: (callback: (done: number, total: number) => void) => void;
+
     onStart: (callback: (url: string) => void) => void;
 
     onError: (callback: (message: string) => void) => void;
