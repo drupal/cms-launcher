@@ -31,6 +31,12 @@ const ipc: Launcher = {
         });
     },
 
+    onProgress: (callback: (done: number, total: number) => void): void => {
+        ipcRenderer.on(Events.Progress, (_: any, done: number, total: number): void => {
+            callback(done, total);
+        });
+    },
+
     onStart: (callback: (url: string) => void): void => {
         ipcRenderer.on(Events.Started, (_: any, url: string): void => {
             callback(url);

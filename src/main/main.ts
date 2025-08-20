@@ -123,6 +123,9 @@ ipcMain.on(Commands.Start, async ({ sender: win }): Promise<void> => {
         // Stream Composer's progress messages to the renderer.
         win.send(Events.Output, line);
     });
+    drupal.on(Events.Progress, (done: number, total: number): void => {
+        win.send(Events.Progress, done, total);
+    });
     drupal.on(Events.InstallFinished, (): void => {
         win.send(Events.InstallFinished, argv.server);
 
