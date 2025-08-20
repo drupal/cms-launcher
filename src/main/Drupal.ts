@@ -5,7 +5,7 @@ import { app } from 'electron';
 import { Events } from './Events';
 import { ComposerCommand } from './ComposerCommand';
 import { join } from 'node:path';
-import { access, copyFile, readFile, rm, writeFile } from 'node:fs/promises';
+import { access, copyFile, mkdir, readFile, rm, writeFile } from 'node:fs/promises';
 import { EventEmitter } from 'node:events';
 import * as tar from 'tar';
 import logger from 'electron-log';
@@ -114,12 +114,30 @@ export class Drupal extends EventEmitter
 
     private async extractArchive (file: string): Promise<void>
     {
-        let count = 0;
-        await tar.t({
+        let total = 0;
+        let done = 0;
+
+        await tar.list({
             file,
             onReadEntry: (): void => {
-                count++;
+                total++;
             },
+        });
+
+        await mkdir(this.root);
+
+        const interval = setInterval((): void => {
+            this.emit('progress', total, done);
+        }, 1000);
+
+        return tar.extract({
+            cwd: this.root,
+            file,
+            onReadEntry: (): void => {
+                done++;
+            },
+        }).finally(() => {
+            clearInterval(interval);
         });
     }
 
