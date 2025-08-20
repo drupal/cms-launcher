@@ -7,7 +7,7 @@ import { ComposerCommand } from './ComposerCommand';
 import { join } from 'node:path';
 import { access, copyFile, readFile, rm, writeFile } from 'node:fs/promises';
 import { EventEmitter } from 'node:events';
-import { tgz } from 'compressing';
+import * as tar from 'tar';
 import logger from 'electron-log';
 
 /**
@@ -96,15 +96,7 @@ export class Drupal extends EventEmitter
     {
         if (archive) {
             logger.debug(`Using pre-built archive: ${archive}`);
-
-            try {
-                await access(archive);
-                this.emit(Events.Output, 'Extracting archive...');
-                return tgz.uncompress(archive, this.root);
-            }
-            catch {
-                logger.info('Falling back to Composer because pre-built archive does not exist.');
-            }
+            return this.extractArchive(archive);
         }
 
         for (const command of this.commands.install) {
@@ -118,6 +110,17 @@ export class Drupal extends EventEmitter
                 });
         }
         await this.prepareSettings();
+    }
+
+    private async extractArchive (file: string): Promise<void>
+    {
+        let count = 0;
+        await tar.t({
+            file,
+            onReadEntry: (): void => {
+                count++;
+            },
+        });
     }
 
     private async prepareSettings (): Promise<void>
