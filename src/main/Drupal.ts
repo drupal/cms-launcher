@@ -115,7 +115,7 @@ export class Drupal extends EventEmitter
                     // Progress messages are sent to STDERR; forward them to the render.
                     if (type === OutputType.Error) {
                         this.emit(Events.Output, line);
-                    } else if (type === OutputType.Output) {
+                    } else {
                         output += `${line}\n`;
                     }
                 }).catch(() => {
