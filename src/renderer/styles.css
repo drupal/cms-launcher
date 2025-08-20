@@ -1,7 +1,3 @@
-:root {
-  --drupal-blue: rgb(5, 80, 230);
-}
-
 html {
   display: table;
   width: 100%;
@@ -89,7 +85,7 @@ h1 {
   line-height: 1;
   font-size: 1.125rem;
   color: white;
-  background-color: var(--drupal-blue);
+  background-color: rgb(5, 80, 230);
   padding: 1rem;
   border-radius: .5rem;
   font-weight: 600;
@@ -119,6 +115,7 @@ h2 {
 
 p {
   color: #545560;
+  margin-block-start: 0;
 }
 
 .cms-installer__loader {
@@ -129,19 +126,6 @@ p {
   inline-size: 3rem;
   margin: auto;
   padding-bottom: 2rem;
-}
-
-.cms-installer__progress {
-  height: 8px;
-  border-radius: 6px;
-  background-color: var(--drupal-blue);
-  transition: width 600ms ease;
-  margin: 2rem 0;
-}
-
-#loader {
-  max-width: 60%;
-  margin: 0 auto;
 }
 
 #cli-output {
