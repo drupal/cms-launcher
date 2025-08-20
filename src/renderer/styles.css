@@ -119,7 +119,6 @@ h2 {
 
 p {
   color: #545560;
-  margin-block-start: 0;
 }
 
 .cms-installer__loader {
@@ -136,6 +135,8 @@ p {
   height: 8px;
   border-radius: 6px;
   background-color: var(--drupal-blue);
+  transition: width 600ms ease;
+  margin: 2rem 0;
 }
 
 #loader {
