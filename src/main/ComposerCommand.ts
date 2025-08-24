@@ -44,7 +44,7 @@ export class ComposerCommand extends PhpCommand
             // @see https://getcomposer.org/doc/03-cli.md#composer-no-audit
             COMPOSER_NO_AUDIT: '1',
             // Composer doesn't work without COMPOSER_HOME.
-            COMPOSER_HOME: join(app.getPath('home'), '.composer'),
+            COMPOSER_HOME: process.env.COMPOSER_HOME ?? join(app.getPath('home'), '.composer'),
         });
         // An exceptionally generous timeout. No Composer command should take
         // 10 minutes.

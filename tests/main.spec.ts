@@ -2,6 +2,7 @@ import { test, expect, _electron as electron, type ElectronApplication, type Pag
 import { accessSync } from 'node:fs';
 import { join } from 'node:path';
 import { PhpCommand } from '@/main/PhpCommand';
+import { ComposerCommand } from '@/main/ComposerCommand';
 
 async function launchApp(testInfo: TestInfo, ...options: string[]): Promise<[ElectronApplication, string]> {
   const root = testInfo.outputPath('drupal');
@@ -36,7 +37,9 @@ async function visitSite (app: ElectronApplication): Promise<Page>
 }
 
 test.beforeAll(() => {
+  // Point at correct Php and Composer binaries
   PhpCommand.binary = join(__dirname, '..', 'bin', process.platform == 'win32' ? 'php.exe' : 'php');
+  ComposerCommand.binary = join(__dirname, '..', 'bin', 'composer', 'bin', 'composer');
 });
 
 test.afterEach(async ({}, testInfo) => {
@@ -47,6 +50,7 @@ test.afterEach(async ({}, testInfo) => {
 });
 
 test('happy path', async ({}, testInfo) => {
+  process.env.COMPOSER_HOME = testInfo.outputPath('Composer-home');
   const [app, root] = await launchApp(testInfo, '--fixture=basic');
 
   const page = await visitSite(app);
@@ -58,6 +62,9 @@ test('happy path', async ({}, testInfo) => {
       .run({ cwd: root }, (line: string): void => {
         console.debug(line);
       });
+  const { stdout } = await new ComposerCommand('config', 'extra.drupal-launcher.version')
+    .inDirectory(root).run();
+    expect(stdout).toContain('1');
 });
 
 test('clean up on failed install', async ({}, testInfo) => {
