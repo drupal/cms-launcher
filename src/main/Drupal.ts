@@ -121,8 +121,9 @@ export class Drupal extends EventEmitter
                     } else {
                         output += `${line}\n`;
                     }
-                }).catch(() => {
-                    throw new Error(output);
+                })
+                .catch(() => {
+                    throw Error(output);
                 });
         }
         await this.prepareSettings();
