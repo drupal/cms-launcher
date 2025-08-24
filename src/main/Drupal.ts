@@ -39,6 +39,9 @@ export class Drupal extends EventEmitter
             // Unpack all recipes. This would normally be done during the `create-project` command
             // if dependencies were being installed at that time.
             ['drupal:recipe-unpack'],
+
+            // Record a version number in composer.json
+            ['config', '--merge', '--json', 'extra.drupal-launcher', '{"version": 1}']
         ],
 
     }
@@ -107,13 +110,20 @@ export class Drupal extends EventEmitter
         }
 
         for (const command of this.commands.install) {
+            let output: string = ''
+
             await new ComposerCommand(...command)
                 .inDirectory(this.root)
                 .run({}, (line: string, type: OutputType): void => {
                     // Progress messages are sent to STDERR; forward them to the render.
                     if (type === OutputType.Error) {
                         this.emit(Events.Output, line);
+                    } else {
+                        output += `${line}\n`;
                     }
+                })
+                .catch(() => {
+                    throw Error(output);
                 });
         }
         await this.prepareSettings();
