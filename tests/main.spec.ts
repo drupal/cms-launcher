@@ -2,6 +2,7 @@ import { test, expect, _electron as electron, type ElectronApplication, type Pag
 import { accessSync } from 'node:fs';
 import { join } from 'node:path';
 import { PhpCommand } from '@/main/PhpCommand';
+import { ComposerCommand } from '@/main/ComposerCommand';
 
 async function launchApp(testInfo: TestInfo, ...options: string[]): Promise<[ElectronApplication, string]> {
   const root = testInfo.outputPath('drupal');
@@ -36,7 +37,13 @@ async function visitSite (app: ElectronApplication): Promise<Page>
 }
 
 test.beforeAll(() => {
-  PhpCommand.binary = join(__dirname, '..', 'bin', process.platform == 'win32' ? 'php.exe' : 'php');
+  const binDir = join(__dirname, '..', 'bin');
+  PhpCommand.binary = join(binDir, process.platform == 'win32' ? 'php.exe' : 'php');
+  ComposerCommand.binary = join(binDir, 'composer', 'bin', 'composer');
+});
+
+test.beforeEach(async ({}, testInfo) => {
+  process.env.COMPOSER_HOME = testInfo.outputPath('composer-home');
 });
 
 test.afterEach(async ({}, testInfo) => {
@@ -58,6 +65,12 @@ test('happy path', async ({}, testInfo) => {
       .run({ cwd: root }, (line: string): void => {
         console.debug(line);
       });
+
+  // Confirm that a version number was recorded.
+  const { stdout } = await new ComposerCommand('config', 'extra.drupal-launcher.version')
+      .inDirectory(root)
+      .run();
+  expect(stdout.toString().trim()).toBe('1');
 });
 
 test('clean up on failed install', async ({}, testInfo) => {
