@@ -151,11 +151,13 @@ ipcMain.on(Commands.Start, async ({ sender: win }): Promise<void> => {
     try {
         await drupal.start(argv.archive, argv.server ? argv.url : false, argv.timeout);
     }
-    catch (e) {
+    catch (e: any) {
         // Send the exception to Sentry so we can analyze it later, without requiring
         // users to file a GitHub issue.
         Sentry.captureException(e);
-        win.send(Events.Error, e);
+        // If the error was caused by a failed Composer command, it will have an additional
+        // `stdout` property with Composer's output.
+        win.send(Events.Error, e.stdout || e.toString());
     }
     finally {
         // Set up logging to help with debugging auto-update problems, ensure any
