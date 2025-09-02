@@ -39,6 +39,10 @@ export class Drupal extends EventEmitter
             // Unpack all recipes. This would normally be done during the `create-project` command
             // if dependencies were being installed at that time.
             ['drupal:recipe-unpack'],
+
+            // Record a version number in composer.json so we can update the built project
+            // later if needed.
+            ['config', '--merge', '--json', 'extra.drupal-launcher', '{"version": 1}'],
         ],
 
     }
