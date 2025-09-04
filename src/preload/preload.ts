@@ -1,53 +1,44 @@
-import { Commands } from './Commands';
-import { Events } from '../main/Events';
-import { Launcher } from './Launcher';
+import { Drupal } from './Drupal';
 import { contextBridge, ipcRenderer } from 'electron';
 
-const ipc: Launcher = {
+ipcRenderer.on('will-install-drupal', (): void => {
+    window.dispatchEvent(new CustomEvent('will-install-drupal'));
+});
 
-    start: (): void => {
-        ipcRenderer.send(Commands.Start);
+ipcRenderer.on('did-install-drupal', (_: any, withServer: boolean): void => {
+    window.dispatchEvent(
+        new CustomEvent('did-install-drupal', { detail: withServer }),
+    );
+});
+
+ipcRenderer.on('install-progress', (_: any, message: string): void => {
+    window.dispatchEvent(
+        new CustomEvent('install-progress', { detail: message }),
+    );
+});
+
+ipcRenderer.on('server-did-start', (_: any, url: string): void => {
+    window.dispatchEvent(
+        new CustomEvent('server-did-start', { detail: url }),
+    );
+});
+
+ipcRenderer.on('error', (_: any, message: string): void => {
+    window.dispatchEvent(
+        new CustomEvent('error', { detail: message }),
+    );
+});
+
+contextBridge.exposeInMainWorld('drupal', {
+
+    start (): void
+    {
+        ipcRenderer.send('drupal:start');
     },
 
-    open: (url: string): void => {
-        ipcRenderer.send(Commands.Open, url);
+    open (url: string): void
+    {
+        ipcRenderer.send('drupal:open', url);
     },
 
-    onInstallStarted: (callback: () => void): void => {
-        ipcRenderer.on(Events.InstallStarted, (): void => {
-            callback();
-        });
-    },
-
-    onInstallFinished: (callback: (withServer: boolean) => void): void => {
-        ipcRenderer.on(Events.InstallFinished, (_: any, withServer: boolean): void => {
-            callback(withServer);
-        });
-    },
-
-    onOutput: (callback: (line: string) => void): void => {
-        ipcRenderer.on(Events.Output, (_: any, line: string): void => {
-            callback(line);
-        });
-    },
-
-    onProgress: (callback: (done: number, total: number) => void): void => {
-        ipcRenderer.on(Events.Progress, (_: any, done: number, total: number): void => {
-            callback(done, total);
-        });
-    },
-
-    onStart: (callback: (url: string) => void): void => {
-        ipcRenderer.on(Events.Started, (_: any, url: string): void => {
-            callback(url);
-        });
-    },
-
-    onError: (callback: (message: string) => void): void => {
-        ipcRenderer.on(Events.Error, (_: any, message: string): void => {
-            callback(message);
-        });
-    },
-
-};
-contextBridge.exposeInMainWorld('launcher', ipc);
+} as Drupal);

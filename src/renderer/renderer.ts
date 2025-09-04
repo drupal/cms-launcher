@@ -1,60 +1,63 @@
-import { Launcher } from '../preload/Launcher';
+import { Drupal } from '../preload/Drupal';
 
 // This is exposed by the preload script.
-declare var launcher: Launcher;
+declare var drupal: Drupal;
 
 const status = document.getElementById('status') as HTMLParagraphElement;
 const title = document.getElementById('title') as HTMLHeadingElement;
 const loader = document.getElementById('loader') as HTMLDivElement;
 const cli = document.getElementById('cli-output') as HTMLPreElement;
 
-launcher.onInstallStarted((): void => {
+function hideElements(...elements: HTMLElement[]): void
+{
+    elements.forEach((element: HTMLElement): void => {
+        element.style.display = 'none';
+    });
+}
+
+window.addEventListener('will-install-drupal', (): void => {
     title.innerText = 'Installing...'
     loader.innerHTML = '<div class="cms-installer__loader"></div>'
     status.innerText = 'This might take a minute.';
 });
 
-launcher.onInstallFinished((withServer: boolean): void => {
+window.addEventListener('did-install-drupal', (e: any): void => {
+    const withServer = e.detail;
+
     if (withServer) {
         title.innerText = 'Starting web server...';
     }
     else {
-        loader.remove();
-        status.remove();
+        hideElements(loader, status);
         title.innerText = 'Installation complete!';
     }
     cli.innerText = '';
 });
 
-launcher.onOutput((line: string): void => {
-    cli.innerText = line;
+window.addEventListener('install-progress', (e: any): void => {
+    cli.innerText = e.detail;
 });
 
-launcher.onProgress((done: number, total: number): void => {
-    const percent = Math.round((done / total) * 100);
-    cli.innerText = `Extracting archive (${percent}% done)`;
-});
+window.addEventListener('server-did-start', (e: any): void => {
+    const url = e.detail;
 
-launcher.onStart((url: string): void => {
-    title.remove();
-    loader.remove();
-    cli.remove();
+    hideElements(title, loader, cli);
     status.innerHTML = `<p>Your site is running at<br /><code>${url}</code></p>`;
 
     const wrapper = document.getElementById('open') as HTMLDivElement;
     wrapper.innerHTML = `<button class="button" type="button">Visit site</button>`;
     // There is no way this query could return null, because we just set the innerHTML.
     wrapper.querySelector('button')!.addEventListener('click', () => {
-        launcher.open(url);
+        drupal.open(url);
     });
 });
 
-launcher.onError((message: string): void => {
+window.addEventListener('error', (e: any): void => {
     title.innerText = 'Uh-oh';
     status.innerText = 'An error occurred while starting Drupal CMS. It has been automatically reported to the developers.';
     cli.classList.add('error');
-    cli.innerText = message;
-    loader.remove();
+    cli.innerText = e.detail;
+    hideElements(loader);
 });
 
-window.addEventListener('load', launcher.start);
+window.addEventListener('load', drupal.start);

@@ -2,7 +2,6 @@ import type { ChildProcess } from 'node:child_process';
 import { default as getPort, portNumbers } from 'get-port';
 import { OutputType, PhpCommand } from './PhpCommand';
 import { app } from 'electron';
-import { Events } from './Events';
 import { ComposerCommand } from './ComposerCommand';
 import { join } from 'node:path';
 import { access, copyFile, mkdir, readFile, rm, writeFile } from 'node:fs/promises';
@@ -69,7 +68,7 @@ export class Drupal extends EventEmitter
             await access(this.root);
         }
         catch {
-            this.emit(Events.InstallStarted);
+            this.emit('will-install-drupal');
             try {
                 await this.install(archive);
             }
@@ -78,7 +77,7 @@ export class Drupal extends EventEmitter
                 throw e;
             }
         }
-        this.emit(Events.InstallFinished);
+        this.emit('did-install-drupal');
 
         if (typeof url === 'undefined') {
             const port = await getPort({
@@ -116,7 +115,7 @@ export class Drupal extends EventEmitter
                 .run({}, (line: string, type: OutputType): void => {
                     // Progress messages are sent to STDERR; forward them to the render.
                     if (type === OutputType.Error) {
-                        this.emit(Events.Output, line);
+                        this.emit('install-progress', line);
                     }
                 });
         }
@@ -138,7 +137,8 @@ export class Drupal extends EventEmitter
         await mkdir(this.root);
 
         const interval = setInterval((): void => {
-            this.emit(Events.Progress, done, total);
+            const percent = Math.round((done / total) * 100);
+            this.emit('install-progress', `Extracting archive (${percent}% done)`);
         }, 500);
 
         return tar.extract({
@@ -188,7 +188,7 @@ export class Drupal extends EventEmitter
             const checkForServerStart = (line: string, _: any, server: ChildProcess): void => {
                 if (line.includes(`(${url}) started`)) {
                     clearTimeout(timeoutId);
-                    this.emit(Events.Started, url, server);
+                    this.emit('server-did-start', url, server);
                     resolve();
                 }
             };
