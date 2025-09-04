@@ -1,4 +1,5 @@
 import { Launcher } from '../preload/Launcher';
+import { Events } from '../main/Events';
 
 // This is exposed by the preload script.
 declare var launcher: Launcher;
@@ -8,13 +9,15 @@ const title = document.getElementById('title') as HTMLHeadingElement;
 const loader = document.getElementById('loader') as HTMLDivElement;
 const cli = document.getElementById('cli-output') as HTMLPreElement;
 
-launcher.onInstallStarted((): void => {
+window.addEventListener(Events.InstallStarted, (): void => {
     title.innerText = 'Installing...'
     loader.innerHTML = '<div class="cms-installer__loader"></div>'
     status.innerText = 'This might take a minute.';
 });
 
-launcher.onInstallFinished((withServer: boolean): void => {
+window.addEventListener(Events.InstallFinished, (e: any): void => {
+    const withServer = e.detail;
+
     if (withServer) {
         title.innerText = 'Starting web server...';
     }
@@ -26,16 +29,19 @@ launcher.onInstallFinished((withServer: boolean): void => {
     cli.innerText = '';
 });
 
-launcher.onOutput((line: string): void => {
-    cli.innerText = line;
+window.addEventListener(Events.Output, (e: any): void => {
+   cli.innerText = e.detail;
 });
 
-launcher.onProgress((done: number, total: number): void => {
+window.addEventListener(Events.Progress, (e: any): void => {
+    const [done, total] = e.detail;
     const percent = Math.round((done / total) * 100);
     cli.innerText = `Extracting archive (${percent}% done)`;
 });
 
-launcher.onStart((url: string): void => {
+window.addEventListener(Events.Started, (e: any): void => {
+    const url = e.detail;
+
     title.remove();
     loader.remove();
     cli.remove();
@@ -49,11 +55,11 @@ launcher.onStart((url: string): void => {
     });
 });
 
-launcher.onError((message: string): void => {
+window.addEventListener(Events.Error, (e: any): void => {
     title.innerText = 'Uh-oh';
     status.innerText = 'An error occurred while starting Drupal CMS. It has been automatically reported to the developers.';
     cli.classList.add('error');
-    cli.innerText = message;
+    cli.innerText = e.detail;
     loader.remove();
 });
 

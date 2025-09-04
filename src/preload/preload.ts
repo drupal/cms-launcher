@@ -3,51 +3,50 @@ import { Events } from '../main/Events';
 import { Launcher } from './Launcher';
 import { contextBridge, ipcRenderer } from 'electron';
 
-const ipc: Launcher = {
+ipcRenderer.on(Events.InstallStarted, (): void => {
+    window.dispatchEvent(new CustomEvent(Events.InstallStarted));
+});
 
-    start: (): void => {
+ipcRenderer.on(Events.InstallFinished, (_: any, withServer: boolean): void => {
+    window.dispatchEvent(
+        new CustomEvent(Events.InstallFinished, { detail: withServer }),
+    );
+});
+
+ipcRenderer.on(Events.Output, (_: any, line: string): void => {
+    window.dispatchEvent(
+        new CustomEvent(Events.Output, { detail: line }),
+    );
+});
+
+ipcRenderer.on(Events.Progress, (_: any, done: number, total: number): void => {
+    window.dispatchEvent(
+        new CustomEvent(Events.Progress, { detail: [done, total] }),
+    );
+});
+
+ipcRenderer.on(Events.Started, (_: any, url: string): void => {
+    window.dispatchEvent(
+        new CustomEvent(Events.Started, { detail: url }),
+    );
+});
+
+ipcRenderer.on(Events.Error, (_: any, message: string): void => {
+    window.dispatchEvent(
+        new CustomEvent(Events.Error, { detail: message }),
+    );
+});
+
+contextBridge.exposeInMainWorld('launcher', {
+
+    start (): void
+    {
         ipcRenderer.send(Commands.Start);
     },
 
-    open: (url: string): void => {
+    open (url: string): void
+    {
         ipcRenderer.send(Commands.Open, url);
     },
 
-    onInstallStarted: (callback: () => void): void => {
-        ipcRenderer.on(Events.InstallStarted, (): void => {
-            callback();
-        });
-    },
-
-    onInstallFinished: (callback: (withServer: boolean) => void): void => {
-        ipcRenderer.on(Events.InstallFinished, (_: any, withServer: boolean): void => {
-            callback(withServer);
-        });
-    },
-
-    onOutput: (callback: (line: string) => void): void => {
-        ipcRenderer.on(Events.Output, (_: any, line: string): void => {
-            callback(line);
-        });
-    },
-
-    onProgress: (callback: (done: number, total: number) => void): void => {
-        ipcRenderer.on(Events.Progress, (_: any, done: number, total: number): void => {
-            callback(done, total);
-        });
-    },
-
-    onStart: (callback: (url: string) => void): void => {
-        ipcRenderer.on(Events.Started, (_: any, url: string): void => {
-            callback(url);
-        });
-    },
-
-    onError: (callback: (message: string) => void): void => {
-        ipcRenderer.on(Events.Error, (_: any, message: string): void => {
-            callback(message);
-        });
-    },
-
-};
-contextBridge.exposeInMainWorld('launcher', ipc);
+} as Launcher);
