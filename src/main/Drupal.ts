@@ -68,7 +68,7 @@ export class Drupal extends EventEmitter
             await access(this.root);
         }
         catch {
-            this.emit('will-install');
+            this.emit('will-install-drupal');
             try {
                 await this.install(archive);
             }
@@ -77,7 +77,7 @@ export class Drupal extends EventEmitter
                 throw e;
             }
         }
-        this.emit('did-install');
+        this.emit('did-install-drupal');
 
         if (typeof url === 'undefined') {
             const port = await getPort({
@@ -115,7 +115,7 @@ export class Drupal extends EventEmitter
                 .run({}, (line: string, type: OutputType): void => {
                     // Progress messages are sent to STDERR; forward them to the render.
                     if (type === OutputType.Error) {
-                        this.emit('progress', line);
+                        this.emit('install-progress', line);
                     }
                 });
         }
@@ -138,7 +138,7 @@ export class Drupal extends EventEmitter
 
         const interval = setInterval((): void => {
             const percent = Math.round((done / total) * 100);
-            this.emit('progress', `Extracting archive (${percent}% done)`);
+            this.emit('install-progress', `Extracting archive (${percent}% done)`);
         }, 500);
 
         return tar.extract({
@@ -188,7 +188,7 @@ export class Drupal extends EventEmitter
             const checkForServerStart = (line: string, _: any, server: ChildProcess): void => {
                 if (line.includes(`(${url}) started`)) {
                     clearTimeout(timeoutId);
-                    this.emit('did-start', url, server);
+                    this.emit('server-did-start', url, server);
                     resolve();
                 }
             };

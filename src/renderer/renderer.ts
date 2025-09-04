@@ -15,13 +15,13 @@ function hideElements(...elements: HTMLElement[]): void
     });
 }
 
-window.addEventListener('will-install', (): void => {
+window.addEventListener('will-install-drupal', (): void => {
     title.innerText = 'Installing...'
     loader.innerHTML = '<div class="cms-installer__loader"></div>'
     status.innerText = 'This might take a minute.';
 });
 
-window.addEventListener('did-install', (e: any): void => {
+window.addEventListener('did-install-drupal', (e: any): void => {
     const withServer = e.detail;
 
     if (withServer) {
@@ -34,11 +34,11 @@ window.addEventListener('did-install', (e: any): void => {
     cli.innerText = '';
 });
 
-window.addEventListener('progress', (e: any): void => {
+window.addEventListener('install-progress', (e: any): void => {
     cli.innerText = e.detail;
 });
 
-window.addEventListener('did-start', (e: any): void => {
+window.addEventListener('server-did-start', (e: any): void => {
     const url = e.detail;
 
     hideElements(title, loader, cli);

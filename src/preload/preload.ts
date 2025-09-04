@@ -1,25 +1,25 @@
 import { Drupal } from './Drupal';
 import { contextBridge, ipcRenderer } from 'electron';
 
-ipcRenderer.on('will-install', (): void => {
-    window.dispatchEvent(new CustomEvent('will-install'));
+ipcRenderer.on('will-install-drupal', (): void => {
+    window.dispatchEvent(new CustomEvent('will-install-drupal'));
 });
 
-ipcRenderer.on('did-install', (_: any, withServer: boolean): void => {
+ipcRenderer.on('did-install-drupal', (_: any, withServer: boolean): void => {
     window.dispatchEvent(
-        new CustomEvent('did-install', { detail: withServer }),
+        new CustomEvent('did-install-drupal', { detail: withServer }),
     );
 });
 
-ipcRenderer.on('progress', (_: any, message: string): void => {
+ipcRenderer.on('install-progress', (_: any, message: string): void => {
     window.dispatchEvent(
-        new CustomEvent('progress', { detail: message }),
+        new CustomEvent('install-progress', { detail: message }),
     );
 });
 
-ipcRenderer.on('did-start', (_: any, url: string): void => {
+ipcRenderer.on('server-did-start', (_: any, url: string): void => {
     window.dispatchEvent(
-        new CustomEvent('did-start', { detail: url }),
+        new CustomEvent('server-did-start', { detail: url }),
     );
 });
 
