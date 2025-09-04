@@ -9,13 +9,13 @@ const title = document.getElementById('title') as HTMLHeadingElement;
 const loader = document.getElementById('loader') as HTMLDivElement;
 const cli = document.getElementById('cli-output') as HTMLPreElement;
 
-window.addEventListener(Events.InstallStarted, (): void => {
+window.addEventListener('will-install', (): void => {
     title.innerText = 'Installing...'
     loader.innerHTML = '<div class="cms-installer__loader"></div>'
     status.innerText = 'This might take a minute.';
 });
 
-window.addEventListener(Events.InstallFinished, (e: any): void => {
+window.addEventListener('did-install', (e: any): void => {
     const withServer = e.detail;
 
     if (withServer) {
@@ -39,7 +39,7 @@ window.addEventListener(Events.Progress, (e: any): void => {
     cli.innerText = `Extracting archive (${percent}% done)`;
 });
 
-window.addEventListener(Events.Started, (e: any): void => {
+window.addEventListener('did-start', (e: any): void => {
     const url = e.detail;
 
     title.remove();

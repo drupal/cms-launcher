@@ -69,7 +69,7 @@ export class Drupal extends EventEmitter
             await access(this.root);
         }
         catch {
-            this.emit(Events.InstallStarted);
+            this.emit('will-install');
             try {
                 await this.install(archive);
             }
@@ -78,7 +78,7 @@ export class Drupal extends EventEmitter
                 throw e;
             }
         }
-        this.emit(Events.InstallFinished);
+        this.emit('did-install');
 
         if (typeof url === 'undefined') {
             const port = await getPort({
@@ -188,7 +188,7 @@ export class Drupal extends EventEmitter
             const checkForServerStart = (line: string, _: any, server: ChildProcess): void => {
                 if (line.includes(`(${url}) started`)) {
                     clearTimeout(timeoutId);
-                    this.emit(Events.Started, url, server);
+                    this.emit('did-start', url, server);
                     resolve();
                 }
             };

@@ -115,8 +115,8 @@ logger.transports.file.resolvePathFn = (): string => argv.log;
 ipcMain.on('drupal:start', async ({ sender: win }): Promise<void> => {
     const drupal = new Drupal(argv.root, argv.fixture);
 
-    drupal.on(Events.InstallStarted, (): void => {
-        win.send(Events.InstallStarted);
+    drupal.on('will-install', (): void => {
+        win.send('will-install');
     });
     drupal.on(Events.Output, (line: string): void => {
         // Stream Composer's progress messages to the renderer.
@@ -125,19 +125,19 @@ ipcMain.on('drupal:start', async ({ sender: win }): Promise<void> => {
     drupal.on(Events.Progress, (done: number, total: number): void => {
         win.send(Events.Progress, done, total);
     });
-    drupal.on(Events.InstallFinished, (): void => {
-        win.send(Events.InstallFinished, argv.server);
+    drupal.on('did-install', (): void => {
+        win.send('did-install', argv.server);
 
         // If we're in CI, we're not checking for updates; there's nothing else to do.
         if ('CI' in process.env) {
             app.quit();
         }
     });
-    drupal.on(Events.Started, (url: string, server: ChildProcess): void => {
+    drupal.on('did-start', (url: string, server: ChildProcess): void => {
         // Automatically kill the server on quit.
         app.on('will-quit', () => server.kill());
         // Let the user know we're up and running.
-        win.send(Events.Started, url);
+        win.send('did-start', url);
     });
 
     // After checking for updates, quit it we're not going to start the web server.

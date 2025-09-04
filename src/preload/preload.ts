@@ -2,13 +2,13 @@ import { Events } from '../main/Events';
 import { Drupal } from './Drupal';
 import { contextBridge, ipcRenderer } from 'electron';
 
-ipcRenderer.on(Events.InstallStarted, (): void => {
-    window.dispatchEvent(new CustomEvent(Events.InstallStarted));
+ipcRenderer.on('will-install', (): void => {
+    window.dispatchEvent(new CustomEvent('will-install'));
 });
 
-ipcRenderer.on(Events.InstallFinished, (_: any, withServer: boolean): void => {
+ipcRenderer.on('did-install', (_: any, withServer: boolean): void => {
     window.dispatchEvent(
-        new CustomEvent(Events.InstallFinished, { detail: withServer }),
+        new CustomEvent('did-install', { detail: withServer }),
     );
 });
 
@@ -24,9 +24,9 @@ ipcRenderer.on(Events.Progress, (_: any, done: number, total: number): void => {
     );
 });
 
-ipcRenderer.on(Events.Started, (_: any, url: string): void => {
+ipcRenderer.on('did-start', (_: any, url: string): void => {
     window.dispatchEvent(
-        new CustomEvent(Events.Started, { detail: url }),
+        new CustomEvent('did-start', { detail: url }),
     );
 });
 
