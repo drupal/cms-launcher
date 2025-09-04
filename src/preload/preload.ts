@@ -1,4 +1,3 @@
-import { Commands } from './Commands';
 import { Events } from '../main/Events';
 import { Launcher } from './Launcher';
 import { contextBridge, ipcRenderer } from 'electron';
@@ -41,12 +40,12 @@ contextBridge.exposeInMainWorld('launcher', {
 
     start (): void
     {
-        ipcRenderer.send(Commands.Start);
+        ipcRenderer.send('drupal:start');
     },
 
     open (url: string): void
     {
-        ipcRenderer.send(Commands.Open, url);
+        ipcRenderer.send('drupal:open', url);
     },
 
 } as Launcher);

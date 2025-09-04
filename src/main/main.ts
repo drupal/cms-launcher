@@ -4,7 +4,6 @@ import logger from 'electron-log';
 import { autoUpdater } from 'electron-updater';
 import { basename, join } from 'node:path';
 import * as Sentry from "@sentry/electron/main";
-import { Commands } from '../preload/Commands'
 import { Drupal } from './Drupal';
 import yargs from 'yargs';
 import { hideBin } from 'yargs/helpers';
@@ -113,7 +112,7 @@ ComposerCommand.binary = argv.composer;
 // a function, but that's just how electron-log works.
 logger.transports.file.resolvePathFn = (): string => argv.log;
 
-ipcMain.on(Commands.Start, async ({ sender: win }): Promise<void> => {
+ipcMain.on('drupal:start', async ({ sender: win }): Promise<void> => {
     const drupal = new Drupal(argv.root, argv.fixture);
 
     drupal.on(Events.InstallStarted, (): void => {
@@ -168,7 +167,7 @@ ipcMain.on(Commands.Start, async ({ sender: win }): Promise<void> => {
     }
 });
 
-ipcMain.on(Commands.Open, async (_: any, url: string): Promise<void> => {
+ipcMain.on('drupal:open', async (_: any, url: string): Promise<void> => {
     await shell.openExternal(url);
 });
 
