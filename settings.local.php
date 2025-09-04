@@ -1,7 +1,5 @@
 <?php
 
-use Composer\InstalledVersions;
-
 // Make it easier for Project Browser to install things into the local site.
 $settings['skip_permissions_hardening'] = TRUE;
 
@@ -10,14 +8,6 @@ $settings['package_manager_allow_direct_write'] = TRUE;
 
 // Don't warn about using Package Manager, despite its being experimental.
 $settings['testing_package_manager'] = TRUE;
-
-// Use a copy of Composer that is locally installed in the project.
-try {
-  $config['package_manager.settings']['executables']['composer'] = InstalledVersions::getInstallPath('composer/composer') . '/bin/composer';
-}
-catch (OutOfBoundsException) {
-  // Can't figure out where Composer is, so don't try to configure it here.
-}
 
 // Allow `localhost` as a trusted host pattern to prevent an error on the status
 // report.

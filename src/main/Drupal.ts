@@ -27,9 +27,10 @@ export class Drupal extends EventEmitter
             // which might not be installed.
             ['config', 'extra.drupal-scaffold.gitignore', 'false', '--json'],
 
-            // Require Composer as a dev dependency so that Package Manager can use it
-            // without relying on this app.
-            ['require', '--dev', '--no-update', 'composer/composer'],
+            // Record a version number in composer.json so we can update the built project
+            // later if needed. This must be done before the lock file is created so that
+            // `composer validate --check-lock` will be happy.
+            ['config', '--merge', '--json', 'extra.drupal-launcher', '{"version": 1}'],
 
             // Finally, install dependencies. We suppress the progress bar because it
             // looks lame when streamed to the renderer.
@@ -39,9 +40,6 @@ export class Drupal extends EventEmitter
             // if dependencies were being installed at that time.
             ['drupal:recipe-unpack'],
 
-            // Record a version number in composer.json so we can update the built project
-            // later if needed.
-            ['config', '--merge', '--json', 'extra.drupal-launcher', '{"version": 1}'],
         ],
 
     }

@@ -71,6 +71,12 @@ test('happy path', async ({}, testInfo) => {
       .inDirectory(root)
       .run();
   expect(stdout.toString().trim()).toBe('1');
+
+  // Confirm that the lock file is valid.
+  const { stderr } = await new ComposerCommand('validate', '--check-lock')
+      .inDirectory(root)
+      .run();
+  expect(stderr.toString().trim()).not.toContain('errors');
 });
 
 test('clean up on failed install', async ({}, testInfo) => {
