@@ -1,4 +1,3 @@
-import { Events } from '../main/Events';
 import { Drupal } from './Drupal';
 import { contextBridge, ipcRenderer } from 'electron';
 
@@ -12,15 +11,9 @@ ipcRenderer.on('did-install', (_: any, withServer: boolean): void => {
     );
 });
 
-ipcRenderer.on(Events.Output, (_: any, line: string): void => {
+ipcRenderer.on('progress', (_: any, message: string): void => {
     window.dispatchEvent(
-        new CustomEvent(Events.Output, { detail: line }),
-    );
-});
-
-ipcRenderer.on(Events.Progress, (_: any, done: number, total: number): void => {
-    window.dispatchEvent(
-        new CustomEvent(Events.Progress, { detail: [done, total] }),
+        new CustomEvent('progress', { detail: message }),
     );
 });
 

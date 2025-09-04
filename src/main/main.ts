@@ -1,4 +1,3 @@
-import { Events } from './Events'
 import { app, BrowserWindow, ipcMain, Menu, shell } from 'electron';
 import logger from 'electron-log';
 import { autoUpdater } from 'electron-updater';
@@ -118,12 +117,8 @@ ipcMain.on('drupal:start', async ({ sender: win }): Promise<void> => {
     drupal.on('will-install', (): void => {
         win.send('will-install');
     });
-    drupal.on(Events.Output, (line: string): void => {
-        // Stream Composer's progress messages to the renderer.
-        win.send(Events.Output, line);
-    });
-    drupal.on(Events.Progress, (done: number, total: number): void => {
-        win.send(Events.Progress, done, total);
+    drupal.on('progress', (message: string): void => {
+        win.send('progress', message);
     });
     drupal.on('did-install', (): void => {
         win.send('did-install', argv.server);

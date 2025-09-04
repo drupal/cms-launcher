@@ -1,5 +1,4 @@
 import { Drupal } from '../preload/Drupal';
-import { Events } from '../main/Events';
 
 // This is exposed by the preload script.
 declare var drupal: Drupal;
@@ -29,14 +28,8 @@ window.addEventListener('did-install', (e: any): void => {
     cli.innerText = '';
 });
 
-window.addEventListener(Events.Output, (e: any): void => {
-   cli.innerText = e.detail;
-});
-
-window.addEventListener(Events.Progress, (e: any): void => {
-    const [done, total] = e.detail;
-    const percent = Math.round((done / total) * 100);
-    cli.innerText = `Extracting archive (${percent}% done)`;
+window.addEventListener('progress', (e: any): void => {
+    cli.innerText = e.detail;
 });
 
 window.addEventListener('did-start', (e: any): void => {

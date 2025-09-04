@@ -2,7 +2,6 @@ import type { ChildProcess } from 'node:child_process';
 import { default as getPort, portNumbers } from 'get-port';
 import { OutputType, PhpCommand } from './PhpCommand';
 import { app } from 'electron';
-import { Events } from './Events';
 import { ComposerCommand } from './ComposerCommand';
 import { join } from 'node:path';
 import { access, copyFile, mkdir, readFile, rm, writeFile } from 'node:fs/promises';
@@ -116,7 +115,7 @@ export class Drupal extends EventEmitter
                 .run({}, (line: string, type: OutputType): void => {
                     // Progress messages are sent to STDERR; forward them to the render.
                     if (type === OutputType.Error) {
-                        this.emit(Events.Output, line);
+                        this.emit('progress', line);
                     }
                 });
         }
@@ -138,7 +137,8 @@ export class Drupal extends EventEmitter
         await mkdir(this.root);
 
         const interval = setInterval((): void => {
-            this.emit(Events.Progress, done, total);
+            const percent = Math.round((done / total) * 100);
+            this.emit('progress', `Extracting archive (${percent}% done)`);
         }, 500);
 
         return tar.extract({
