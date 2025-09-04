@@ -1,8 +1,8 @@
-import { Launcher } from '../preload/Launcher';
+import { Drupal } from '../preload/Drupal';
 import { Events } from '../main/Events';
 
 // This is exposed by the preload script.
-declare var launcher: Launcher;
+declare var drupal: Drupal;
 
 const status = document.getElementById('status') as HTMLParagraphElement;
 const title = document.getElementById('title') as HTMLHeadingElement;
@@ -51,7 +51,7 @@ window.addEventListener(Events.Started, (e: any): void => {
     wrapper.innerHTML = `<button class="button" type="button">Visit site</button>`;
     // There is no way this query could return null, because we just set the innerHTML.
     wrapper.querySelector('button')!.addEventListener('click', () => {
-        launcher.open(url);
+        drupal.open(url);
     });
 });
 
@@ -63,4 +63,4 @@ window.addEventListener(Events.Error, (e: any): void => {
     loader.remove();
 });
 
-window.addEventListener('load', launcher.start);
+window.addEventListener('load', drupal.start);

@@ -1,5 +1,5 @@
 import { Events } from '../main/Events';
-import { Launcher } from './Launcher';
+import { Drupal } from './Drupal';
 import { contextBridge, ipcRenderer } from 'electron';
 
 ipcRenderer.on(Events.InstallStarted, (): void => {
@@ -36,7 +36,7 @@ ipcRenderer.on(Events.Error, (_: any, message: string): void => {
     );
 });
 
-contextBridge.exposeInMainWorld('launcher', {
+contextBridge.exposeInMainWorld('drupal', {
 
     start (): void
     {
@@ -48,4 +48,4 @@ contextBridge.exposeInMainWorld('launcher', {
         ipcRenderer.send('drupal:open', url);
     },
 
-} as Launcher);
+} as Drupal);

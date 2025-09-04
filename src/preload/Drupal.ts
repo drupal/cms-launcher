@@ -1,4 +1,4 @@
-export interface Launcher
+export interface Drupal
 {
     start: () => void;
 
