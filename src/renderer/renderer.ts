@@ -8,6 +8,13 @@ const title = document.getElementById('title') as HTMLHeadingElement;
 const loader = document.getElementById('loader') as HTMLDivElement;
 const cli = document.getElementById('cli-output') as HTMLPreElement;
 
+function hideElements(...elements: HTMLElement[]): void
+{
+    elements.forEach((element: HTMLElement): void => {
+        element.style.display = 'none';
+    });
+}
+
 window.addEventListener('will-install', (): void => {
     title.innerText = 'Installing...'
     loader.innerHTML = '<div class="cms-installer__loader"></div>'
@@ -21,8 +28,7 @@ window.addEventListener('did-install', (e: any): void => {
         title.innerText = 'Starting web server...';
     }
     else {
-        loader.remove();
-        status.remove();
+        hideElements(loader, status);
         title.innerText = 'Installation complete!';
     }
     cli.innerText = '';
@@ -35,9 +41,7 @@ window.addEventListener('progress', (e: any): void => {
 window.addEventListener('did-start', (e: any): void => {
     const url = e.detail;
 
-    title.remove();
-    loader.remove();
-    cli.remove();
+    hideElements(title, loader, cli);
     status.innerHTML = `<p>Your site is running at<br /><code>${url}</code></p>`;
 
     const wrapper = document.getElementById('open') as HTMLDivElement;
@@ -53,7 +57,7 @@ window.addEventListener('error', (e: any): void => {
     status.innerText = 'An error occurred while starting Drupal CMS. It has been automatically reported to the developers.';
     cli.classList.add('error');
     cli.innerText = e.detail;
-    loader.remove();
+    hideElements(loader);
 });
 
 window.addEventListener('load', drupal.start);
