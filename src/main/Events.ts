@@ -8,7 +8,4 @@ export enum Events
 
     // Progress has been made while extracting or building the code base.
     Progress = 'progress',
-
-    // An error occurred while creating the code base or starting the server.
-    Error = 'error',
 }

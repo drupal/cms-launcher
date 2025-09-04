@@ -55,7 +55,7 @@ window.addEventListener('did-start', (e: any): void => {
     });
 });
 
-window.addEventListener(Events.Error, (e: any): void => {
+window.addEventListener('error', (e: any): void => {
     title.innerText = 'Uh-oh';
     status.innerText = 'An error occurred while starting Drupal CMS. It has been automatically reported to the developers.';
     cli.classList.add('error');

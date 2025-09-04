@@ -30,9 +30,9 @@ ipcRenderer.on('did-start', (_: any, url: string): void => {
     );
 });
 
-ipcRenderer.on(Events.Error, (_: any, message: string): void => {
+ipcRenderer.on('error', (_: any, message: string): void => {
     window.dispatchEvent(
-        new CustomEvent(Events.Error, { detail: message }),
+        new CustomEvent('error', { detail: message }),
     );
 });
 

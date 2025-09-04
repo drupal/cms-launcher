@@ -156,7 +156,7 @@ ipcMain.on('drupal:start', async ({ sender: win }): Promise<void> => {
         Sentry.captureException(e);
         // If the error was caused by a failed Composer command, it will have an additional
         // `stdout` property with Composer's output.
-        win.send(Events.Error, e.stdout || e.toString());
+        win.send('error', e.stdout || e.toString());
     }
     finally {
         // Set up logging to help with debugging auto-update problems, ensure any
