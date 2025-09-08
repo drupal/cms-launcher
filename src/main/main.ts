@@ -201,7 +201,7 @@ function createWindow (): void
                 ],
             }
         ]);
-        Menu.setApplicationMenu(menu);
+        // Menu.setApplicationMenu(menu);
     }
     else {
         // Disable the default menu on Windows and Linux, since it doesn't make sense
