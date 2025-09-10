@@ -71,7 +71,7 @@ On Windows, the built-in firewall may block the launcher because it needs to sta
 1.  Press the Windows Key, type `Allow an app through Windows Firewall`, and open it.
 2.  Click the **"Change settings"** button. You may need administrator permission.
 3.  Click the **"Allow another app..."** button at the bottom.
-4.  In the new window, click **"Browse..."** and navigate to where you ran the `cms-launcher`. Select the main executable file and click **"Open"**.
+4. In the new window, click **"Browse..."** and navigate to where you installed the launcher (usually at `C:\Users\YOUR_USERNAME\AppData\Local\Programs\drupal-cms-launcher`). Select `Launch Drupal CMS.exe` and click **"Open"**.
 5.  Click the **"Add"** button to add the application to the firewall list.
 6.  You will now see the launcher in the list. Ensure that the checkboxes for **"Private"** and **"Public"** are checked.
 7.  Click **"OK"** to save your changes. The launcher should now be able to connect properly.
