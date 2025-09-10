@@ -62,7 +62,7 @@ After these steps, the application and all its data will be fully removed from y
 
 This section provides solutions to common problems.
 
-### Windows Defender Firewall is Blocking the Application
+### Windows Defender Firewall is blocking the application
 
 On Windows, the built-in firewall may block the launcher because it needs to start a local web server. If the application fails to start or gives a connection error, you may need to manually allow it through the firewall.
 
