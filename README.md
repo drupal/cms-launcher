@@ -17,6 +17,7 @@ This product includes PHP software, freely available from <http://www.php.net/so
 - [How it works](#how-it-works)
 - [Where are the Drupal files and database?](#where-are-the-drupal-files-and-database)
 - [How to uninstall](#how-to-uninstall)
+- [Troubleshooting](#troubleshooting)  <-- ADD THIS LINE
 - [Sponsorship](#sponsorship)
 - [Contributing](#contributing)
 - [Limitations and alternatives](#limitations-and-alternatives)
@@ -56,6 +57,24 @@ To completely uninstall the Drupal CMS Launcher and remove all associated files:
    - Delete the _drupal_ directory to remove the site files and SQLite database.
 
 After these steps, the application and all its data will be fully removed from your system.
+
+## Troubleshooting
+
+This section provides solutions to common problems.
+
+### Windows Defender Firewall is blocking the application
+
+On Windows, the built-in firewall may block the launcher because it needs to start a local web server. If the application fails to start or gives a connection error, you may need to manually allow it through the firewall.
+
+**Solution:**
+
+1.  Press the Windows Key, type `Allow an app through Windows Firewall`, and open it.
+2.  Click the **"Change settings"** button. You may need administrator permission.
+3.  Click the **"Allow another app..."** button at the bottom.
+4. In the new window, click **"Browse..."** and navigate to where you installed the launcher (usually at `C:\Users\YOUR_USERNAME\AppData\Local\Programs\cms-launcher`). Select `Launch Drupal CMS.exe` and click **"Open"**.
+5.  Click the **"Add"** button to add the application to the firewall list.
+6.  You will now see the launcher in the list. Ensure that the checkboxes for **"Private"** and **"Public"** are checked.
+7.  Click **"OK"** to save your changes. The launcher should now be able to connect properly.
 
 ## Sponsorship
 
