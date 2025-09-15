@@ -1,20 +1,22 @@
 import type { ChildProcess } from 'node:child_process';
 import { default as getPort, portNumbers } from 'get-port';
 import { OutputType, PhpCommand } from './PhpCommand';
-import { app } from 'electron';
+import { app, type MessagePortMain, shell } from 'electron';
 import { ComposerCommand } from './ComposerCommand';
 import { join } from 'node:path';
 import { access, copyFile, mkdir, readFile, rm, writeFile } from 'node:fs/promises';
-import { EventEmitter } from 'node:events';
 import * as tar from 'tar';
 import logger from 'electron-log';
+import { Drupal as DrupalInterface } from '../preload/Drupal';
 
 /**
  * Provides methods for installing and serving a Drupal code base.
  */
-export class Drupal extends EventEmitter
+export class Drupal implements DrupalInterface
 {
     private readonly root: string;
+
+    private url: string | null = null;
 
     private readonly commands = {
 
@@ -46,7 +48,6 @@ export class Drupal extends EventEmitter
 
     constructor (root: string, fixture?: string)
     {
-        super();
         this.root = root;
 
         if (fixture) {
@@ -60,47 +61,76 @@ export class Drupal extends EventEmitter
         }
     }
 
-    public async start (archive?: string, url?: string | false, timeout: number = 2): Promise<void>
+    public async start (archive?: string, url?: string | false, timeout: number = 2, port?: MessagePortMain): Promise<void>
     {
         try {
             await access(this.root);
         }
         catch {
-            this.emit('will-install-drupal');
+            // The root directory doesn't exist, so we need to install Drupal.
             try {
-                await this.install(archive);
+                await this.install(archive, port);
             }
             catch (e) {
+                // Courteously try to clean up the broken site before re-throwing.
                 await rm(this.root, { force: true, recursive: true, maxRetries: 3 });
                 throw e;
             }
         }
-        this.emit('did-install-drupal');
 
+        // If no URL was provided, find an open port on localhost.
         if (typeof url === 'undefined') {
-            const port = await getPort({
+            const port: number = await getPort({
                 port: portNumbers(8888, 9999),
             });
             url = `http://localhost:${port}`;
         }
+
         if (url) {
-            await this.serve(url, timeout);
+            port?.postMessage({
+                title: 'Starting web server...',
+                isWorking: true,
+            });
+
+            this.url = await this.serve(url, timeout);
+
+            port?.postMessage({
+                isWorking: false,
+                statusText: `Your site is running at<br /><code>${this.url}</code>`,
+                url,
+            });
+        }
+        else {
+            port?.postMessage({
+                title: 'Installation complete!',
+                isWorking: false,
+            });
+        }
+    }
+
+    public async open (): Promise<void>
+    {
+        if (this.url) {
+            await shell.openExternal(this.url);
+        }
+        else {
+            throw Error('The Drupal site is not running.');
         }
     }
 
     private webRoot (): string
     {
+        // @todo Determine this dynamically.
         return join(this.root, 'web');
     }
 
-    private async install (archive?: string): Promise<void>
+    private async install (archive?: string, port?: MessagePortMain): Promise<void>
     {
         if (archive) {
             logger.debug(`Using pre-built archive: ${archive}`);
-
             try {
                 await access(archive);
-                return this.extractArchive(archive);
+                return this.extractArchive(archive, port);
             }
             catch {
                 logger.info('Falling back to Composer because pre-built archive does not exist.');
@@ -111,20 +141,27 @@ export class Drupal extends EventEmitter
             await new ComposerCommand(...command)
                 .inDirectory(this.root)
                 .run({}, (line: string, type: OutputType): void => {
-                    // Progress messages are sent to STDERR; forward them to the render.
+                    // Progress messages are sent to STDERR; forward them to the renderer.
                     if (type === OutputType.Error) {
-                        this.emit('install-progress', line);
+                        port?.postMessage({
+                            title: 'Installing...',
+                            statusText: 'This might take a minute.',
+                            isWorking: true,
+                            cli: line,
+                        });
                     }
                 });
         }
         await this.prepareSettings();
     }
 
-    private async extractArchive (file: string): Promise<void>
+    private async extractArchive (file: string, port?: MessagePortMain): Promise<void>
     {
-        let total = 0;
-        let done = 0;
+        let total: number = 0;
+        let done: number = 0;
 
+        // Find our how many files are in the archive, so we can provide accurate
+        // progress information.
         await tar.list({
             file,
             onReadEntry: (): void => {
@@ -132,27 +169,38 @@ export class Drupal extends EventEmitter
             },
         });
 
-        await mkdir(this.root);
+        // We need to create the directory where we'll extract the files.
+        await mkdir(this.root, { recursive: true });
 
+        // Send progress information every 500 milliseconds while extracting the
+        // archive.
         const interval = setInterval((): void => {
-            const percent = Math.round((done / total) * 100);
-            this.emit('install-progress', `Extracting archive (${percent}% done)`);
+            const percent: number = Math.round((done / total) * 100);
+
+            port?.postMessage({
+                title: 'Installing...',
+                statusText: 'This might take a minute.',
+                isWorking: true,
+                cli: `Extracting archive (${percent}% done)`,
+            });
         }, 500);
 
+        // Extract the archive and, regardless of success or failure, stop sending progress
+        // information when done.
         return tar.extract({
             cwd: this.root,
             file,
             onReadEntry: (): void => {
                 done++;
             },
-        }).finally(() => {
+        }).finally((): void => {
             clearInterval(interval);
         });
     }
 
     private async prepareSettings (): Promise<void>
     {
-        const siteDir = join(this.webRoot(), 'sites', 'default');
+        const siteDir: string = join(this.webRoot(), 'sites', 'default');
 
         // Copy our settings.local.php, which contains helpful overrides.
         await copyFile(
@@ -164,9 +212,9 @@ export class Drupal extends EventEmitter
         // settings get loaded. It's a little clunky to do this as an array operation,
         // but as this is a one-time change to a not-too-large file, it's an acceptable
         // trade-off.
-        const filePath = join(siteDir, 'default.settings.php');
-        const lines = (await readFile(filePath)).toString().split('\n');
-        const replacements = lines.slice(-4).map((line: string): string => {
+        const filePath: string = join(siteDir, 'default.settings.php');
+        const lines: string[] = (await readFile(filePath)).toString().split('\n');
+        const replacements: string[] = lines.slice(-4).map((line: string): string => {
             return line.startsWith('# ') ? line.substring(2) : line;
         });
         lines.splice(-4, 3, ...replacements);
@@ -174,7 +222,7 @@ export class Drupal extends EventEmitter
         await writeFile(filePath, lines.join('\n'));
     }
 
-    private async serve (url: string, timeout: number): Promise<void>
+    private async serve (url: string, timeout: number): Promise<string>
     {
         // This needs to be returned as a promise so that, if we reach the timeout,
         // the exception will be caught by the calling code.
@@ -186,8 +234,9 @@ export class Drupal extends EventEmitter
             const checkForServerStart = (line: string, _: any, server: ChildProcess): void => {
                 if (line.includes(`(${url}) started`)) {
                     clearTimeout(timeoutId);
-                    this.emit('server-did-start', url, server);
-                    resolve();
+                    // Automatically kill the server on quit.
+                    app.on('will-quit', () => server.kill());
+                    resolve(url);
                 }
             };
 

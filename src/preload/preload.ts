@@ -19,9 +19,9 @@ contextBridge.exposeInMainWorld('drupal', {
         ipcRenderer.send('drupal:start');
     },
 
-    open (url: string): void
+    open (): void
     {
-        ipcRenderer.send('drupal:open', url);
+        ipcRenderer.send('drupal:open');
     },
 
 } as Drupal);
