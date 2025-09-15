@@ -1,19 +1,22 @@
 import type { ChildProcess } from 'node:child_process';
 import { default as getPort, portNumbers } from 'get-port';
 import { OutputType, PhpCommand } from './PhpCommand';
-import { app, type MessagePortMain } from 'electron';
+import { app, type MessagePortMain, shell } from 'electron';
 import { ComposerCommand } from './ComposerCommand';
 import { join } from 'node:path';
 import { access, copyFile, mkdir, readFile, rm, writeFile } from 'node:fs/promises';
 import * as tar from 'tar';
 import logger from 'electron-log';
+import { Drupal as DrupalInterface } from '../preload/Drupal';
 
 /**
  * Provides methods for installing and serving a Drupal code base.
  */
-export class Drupal
+export class Drupal implements DrupalInterface
 {
     private readonly root: string;
+
+    private url: string | null = null;
 
     private readonly commands = {
 
@@ -64,17 +67,20 @@ export class Drupal
             await access(this.root);
         }
         catch {
+            // The root directory doesn't exist, so we need to install Drupal.
             try {
                 await this.install(archive, port);
             }
             catch (e) {
+                // Courteously try to clean up the broken site before re-throwing.
                 await rm(this.root, { force: true, recursive: true, maxRetries: 3 });
                 throw e;
             }
         }
 
+        // If no URL was provided, find an open port on localhost.
         if (typeof url === 'undefined') {
-            const port = await getPort({
+            const port: number = await getPort({
                 port: portNumbers(8888, 9999),
             });
             url = `http://localhost:${port}`;
@@ -86,11 +92,11 @@ export class Drupal
                 isWorking: true,
             });
 
-            await this.serve(url, timeout);
+            this.url = await this.serve(url, timeout);
 
             port?.postMessage({
                 isWorking: false,
-                statusText: `Your site is running at<br /><code>${url}</code>`,
+                statusText: `Your site is running at<br /><code>${this.url}</code>`,
                 url,
             });
         }
@@ -102,8 +108,19 @@ export class Drupal
         }
     }
 
+    public async open (): Promise<void>
+    {
+        if (this.url) {
+            await shell.openExternal(this.url);
+        }
+        else {
+            throw Error('The Drupal site is not running.');
+        }
+    }
+
     private webRoot (): string
     {
+        // @todo Determine this dynamically.
         return join(this.root, 'web');
     }
 
@@ -111,7 +128,6 @@ export class Drupal
     {
         if (archive) {
             logger.debug(`Using pre-built archive: ${archive}`);
-
             try {
                 await access(archive);
                 return this.extractArchive(archive, port);
@@ -141,9 +157,11 @@ export class Drupal
 
     private async extractArchive (file: string, port?: MessagePortMain): Promise<void>
     {
-        let total = 0;
-        let done = 0;
+        let total: number = 0;
+        let done: number = 0;
 
+        // Find our how many files are in the archive, so we can provide accurate
+        // progress information.
         await tar.list({
             file,
             onReadEntry: (): void => {
@@ -151,10 +169,13 @@ export class Drupal
             },
         });
 
-        await mkdir(this.root);
+        // We need to create the directory where we'll extract the files.
+        await mkdir(this.root, { recursive: true });
 
+        // Send progress information every 500 milliseconds while extracting the
+        // archive.
         const interval = setInterval((): void => {
-            const percent = Math.round((done / total) * 100);
+            const percent: number = Math.round((done / total) * 100);
 
             port?.postMessage({
                 title: 'Installing...',
@@ -164,20 +185,22 @@ export class Drupal
             });
         }, 500);
 
+        // Extract the archive and, regardless of success or failure, stop sending progress
+        // information when done.
         return tar.extract({
             cwd: this.root,
             file,
             onReadEntry: (): void => {
                 done++;
             },
-        }).finally(() => {
+        }).finally((): void => {
             clearInterval(interval);
         });
     }
 
     private async prepareSettings (): Promise<void>
     {
-        const siteDir = join(this.webRoot(), 'sites', 'default');
+        const siteDir: string = join(this.webRoot(), 'sites', 'default');
 
         // Copy our settings.local.php, which contains helpful overrides.
         await copyFile(
@@ -189,9 +212,9 @@ export class Drupal
         // settings get loaded. It's a little clunky to do this as an array operation,
         // but as this is a one-time change to a not-too-large file, it's an acceptable
         // trade-off.
-        const filePath = join(siteDir, 'default.settings.php');
-        const lines = (await readFile(filePath)).toString().split('\n');
-        const replacements = lines.slice(-4).map((line: string): string => {
+        const filePath: string = join(siteDir, 'default.settings.php');
+        const lines: string[] = (await readFile(filePath)).toString().split('\n');
+        const replacements: string[] = lines.slice(-4).map((line: string): string => {
             return line.startsWith('# ') ? line.substring(2) : line;
         });
         lines.splice(-4, 3, ...replacements);
@@ -199,7 +222,7 @@ export class Drupal
         await writeFile(filePath, lines.join('\n'));
     }
 
-    private async serve (url: string, timeout: number): Promise<void>
+    private async serve (url: string, timeout: number): Promise<string>
     {
         // This needs to be returned as a promise so that, if we reach the timeout,
         // the exception will be caught by the calling code.
@@ -213,7 +236,7 @@ export class Drupal
                     clearTimeout(timeoutId);
                     // Automatically kill the server on quit.
                     app.on('will-quit', () => server.kill());
-                    resolve();
+                    resolve(url);
                 }
             };
 

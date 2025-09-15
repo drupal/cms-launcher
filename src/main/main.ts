@@ -1,4 +1,12 @@
-import { app, BrowserWindow, ipcMain, Menu, MessageChannelMain, shell } from 'electron';
+import {
+    app,
+    BrowserWindow,
+    ipcMain,
+    Menu,
+    MessageChannelMain,
+    type MessagePortMain,
+    type WebContents,
+} from 'electron';
 import logger from 'electron-log';
 import { autoUpdater } from 'electron-updater';
 import { basename, join } from 'node:path';
@@ -110,23 +118,28 @@ ComposerCommand.binary = argv.composer;
 // a function, but that's just how electron-log works.
 logger.transports.file.resolvePathFn = (): string => argv.log;
 
-ipcMain.on('drupal:start', async ({ sender: win }): Promise<void> => {
-    const drupal = new Drupal(argv.root, argv.fixture);
+const drupal = new Drupal(argv.root, argv.fixture);
 
-    // Set up a direct line to send real-time status updates to the renderer.
+function openPort (win: WebContents): MessagePortMain
+{
     const {
         port1: toRenderer,
-        port2: fromMain,
+        port2: fromHere,
     } = new MessageChannelMain();
 
+    toRenderer.start();
+    win.postMessage('port', null, [fromHere]);
+
+    return toRenderer;
+}
+
+ipcMain.on('drupal:start', async ({ sender: win }): Promise<void> => {
     // Set up logging to help with debugging auto-update problems, and ensure any
     // errors are sent to Sentry.
     autoUpdater.logger = logger;
     autoUpdater.on('error', e => Sentry.captureException(e));
 
-    toRenderer.start();
-    win.postMessage('port', null, [fromMain]);
-
+    const toRenderer = openPort(win);
     try {
         await drupal.start(argv.archive, argv.server ? argv.url : false, argv.timeout, toRenderer);
     }
@@ -155,9 +168,9 @@ ipcMain.on('drupal:start', async ({ sender: win }): Promise<void> => {
     }
 });
 
-ipcMain.on('drupal:open', async (_: any, url: string): Promise<void> => {
-    await shell.openExternal(url);
-});
+ipcMain.on('drupal:open', async (): Promise<void> => {
+    await drupal.open();
+})
 
 // Quit the app when all windows are closed. Normally you'd keep keep the app
 // running on macOS, even with no windows open, since that's the common pattern.
