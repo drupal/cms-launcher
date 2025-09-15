@@ -119,13 +119,6 @@ ipcMain.on('drupal:start', async ({ sender: win }): Promise<void> => {
         port2: fromMain,
     } = new MessageChannelMain();
 
-    drupal.on('will-install-drupal', (): void => {
-        toRenderer.postMessage({
-            title: 'Installing...',
-            statusText: 'This might take a minute.',
-            isWorking: true,
-        });
-    });
     drupal.on('install-progress', (message: string): void => {
         toRenderer.postMessage({
             title: 'Installing...',

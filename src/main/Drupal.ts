@@ -66,7 +66,6 @@ export class Drupal extends EventEmitter
             await access(this.root);
         }
         catch {
-            this.emit('will-install-drupal');
             try {
                 await this.install(archive);
             }
