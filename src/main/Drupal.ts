@@ -5,14 +5,13 @@ import { app, type MessagePortMain } from 'electron';
 import { ComposerCommand } from './ComposerCommand';
 import { join } from 'node:path';
 import { access, copyFile, mkdir, readFile, rm, writeFile } from 'node:fs/promises';
-import { EventEmitter } from 'node:events';
 import * as tar from 'tar';
 import logger from 'electron-log';
 
 /**
  * Provides methods for installing and serving a Drupal code base.
  */
-export class Drupal extends EventEmitter
+export class Drupal
 {
     private readonly root: string;
 
@@ -46,7 +45,6 @@ export class Drupal extends EventEmitter
 
     constructor (root: string, fixture?: string)
     {
-        super();
         this.root = root;
 
         if (fixture) {
