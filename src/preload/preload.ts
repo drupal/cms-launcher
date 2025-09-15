@@ -6,14 +6,10 @@ const windowLoaded = new Promise((resolve): void => {
 });
 
 ipcRenderer.on('port', async (event): Promise<void> => {
-   await windowLoaded;
-   window.postMessage('port', '*', event.ports);
-});
-
-ipcRenderer.on('error', (_: any, message: string): void => {
-    window.dispatchEvent(
-        new CustomEvent('error', { detail: message }),
-    );
+    // Wait for the window to be fully loaded before we send the port to it.
+    // @see https://www.electronjs.org/docs/latest/tutorial/message-ports#communicating-directly-between-the-main-process-and-the-main-world-of-a-context-isolated-page
+    await windowLoaded;
+    window.postMessage('port', '*', event.ports);
 });
 
 contextBridge.exposeInMainWorld('drupal', {

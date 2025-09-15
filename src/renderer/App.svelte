@@ -9,14 +9,6 @@
     let isWorking: boolean = false;
     let error: boolean = false;
 
-    window.addEventListener('error', (e: any): void => {
-        title = 'Uh-oh';
-        statusText = 'An error occurred while starting Drupal CMS. It has been automatically reported to the developers.';
-        error = true;
-        cli = e.detail;
-        isWorking = false;
-    });
-
     function open() {
         drupal.open(url);
     }
@@ -29,6 +21,7 @@
                 url = event.data.url;
                 statusText = event.data.statusText;
                 cli = event.data.cli;
+                error = event.data.error;
             };
         }
     });
