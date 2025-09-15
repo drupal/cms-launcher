@@ -186,7 +186,9 @@ export class Drupal extends EventEmitter
             const checkForServerStart = (line: string, _: any, server: ChildProcess): void => {
                 if (line.includes(`(${url}) started`)) {
                     clearTimeout(timeoutId);
-                    this.emit('server-did-start', url, server);
+                    // Automatically kill the server on quit.
+                    app.on('will-quit', () => server.kill());
+                    this.emit('server-did-start', url);
                     resolve();
                 }
             };

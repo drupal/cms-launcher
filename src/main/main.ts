@@ -8,7 +8,6 @@ import yargs from 'yargs';
 import { hideBin } from 'yargs/helpers';
 import { PhpCommand } from './PhpCommand';
 import { ComposerCommand } from './ComposerCommand';
-import { type ChildProcess } from 'node:child_process';
 
 // If any uncaught exception happens, send it to Sentry.
 Sentry.init({
@@ -141,14 +140,12 @@ ipcMain.on('drupal:start', async ({ sender: win }): Promise<void> => {
             isWorking: argv.server,
         });
     });
-    drupal.on('server-did-start', (url: string, server: ChildProcess): void => {
+    drupal.on('server-did-start', (url: string): void => {
         toRenderer.postMessage({
             isWorking: false,
             statusText: `Your site is running at<br /><code>${url}</code>`,
             url,
         });
-        // Automatically kill the server on quit.
-        app.on('will-quit', () => server.kill());
     });
 
     // Set up logging to help with debugging auto-update problems, and ensure any
