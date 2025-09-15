@@ -1,32 +1,15 @@
 import { Drupal } from './Drupal';
 import { contextBridge, ipcRenderer } from 'electron';
 
-ipcRenderer.on('will-install-drupal', (): void => {
-    window.dispatchEvent(new CustomEvent('will-install-drupal'));
+const windowLoaded = new Promise((resolve): void => {
+    window.onload = resolve;
 });
 
-ipcRenderer.on('did-install-drupal', (_: any, withServer: boolean): void => {
-    window.dispatchEvent(
-        new CustomEvent('did-install-drupal', { detail: withServer }),
-    );
-});
-
-ipcRenderer.on('install-progress', (_: any, message: string): void => {
-    window.dispatchEvent(
-        new CustomEvent('install-progress', { detail: message }),
-    );
-});
-
-ipcRenderer.on('server-did-start', (_: any, url: string): void => {
-    window.dispatchEvent(
-        new CustomEvent('server-did-start', { detail: url }),
-    );
-});
-
-ipcRenderer.on('error', (_: any, message: string): void => {
-    window.dispatchEvent(
-        new CustomEvent('error', { detail: message }),
-    );
+ipcRenderer.on('port', async (event): Promise<void> => {
+    // Wait for the window to be fully loaded before we send the port to it.
+    // @see https://www.electronjs.org/docs/latest/tutorial/message-ports#communicating-directly-between-the-main-process-and-the-main-world-of-a-context-isolated-page
+    await windowLoaded;
+    window.postMessage('port', '*', event.ports);
 });
 
 contextBridge.exposeInMainWorld('drupal', {
