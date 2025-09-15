@@ -115,29 +115,48 @@ ipcMain.on('drupal:start', async ({ sender: win }): Promise<void> => {
     const drupal = new Drupal(argv.root, argv.fixture);
 
     // Set up a direct line to send real-time status updates to the renderer.
-    const { port1, port2 } = new MessageChannelMain();
-    port1.start();
+    const {
+        port1: toRenderer,
+        port2: fromMain,
+    } = new MessageChannelMain();
 
     drupal.on('will-install-drupal', (): void => {
-        win.send('will-install-drupal');
+        toRenderer.postMessage({
+            title: 'Installing...',
+            statusText: 'This might take a minute.',
+            isWorking: true,
+        });
     });
     drupal.on('install-progress', (message: string): void => {
-        win.send('install-progress', message);
+        toRenderer.postMessage({
+            title: 'Installing...',
+            statusText: 'This might take a minute.',
+            isWorking: true,
+            cli: message,
+        })
     });
     drupal.on('did-install-drupal', (): void => {
-        win.send('did-install-drupal', argv.server);
-
+        toRenderer.postMessage({
+            title: argv.server ? 'Starting web server...' : 'Installation complete!',
+            isWorking: argv.server,
+            statusText: '',
+            cli: '',
+        });
         // If we're in CI, we're not checking for updates; there's nothing else to do.
         if ('CI' in process.env) {
             app.quit();
         }
     });
     drupal.on('server-did-start', (url: string, server: ChildProcess): void => {
+        toRenderer.postMessage({
+            isWorking: false,
+            title: '',
+            statusText: `Your site is running at<br /><code>${url}</code>`,
+            cli: '',
+            url,
+        });
         // Automatically kill the server on quit.
         app.on('will-quit', () => server.kill());
-        port1.postMessage('Hi there!');
-        // Let the user know we're up and running.
-        win.send('server-did-start', url);
     });
 
     // After checking for updates, quit it we're not going to start the web server.
@@ -147,7 +166,9 @@ ipcMain.on('drupal:start', async ({ sender: win }): Promise<void> => {
        }
     });
 
-    win.postMessage('port', null, [port2]);
+    toRenderer.start();
+    win.postMessage('port', null, [fromMain]);
+
     try {
         await drupal.start(argv.archive, argv.server ? argv.url : false, argv.timeout);
     }

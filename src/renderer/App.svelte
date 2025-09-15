@@ -9,38 +9,6 @@
     let isWorking: boolean = false;
     let error: boolean = false;
 
-    window.addEventListener('will-install-drupal', (): void => {
-        title = 'Installing...';
-        statusText = 'This might take a minute.';
-        isWorking = true;
-    });
-
-    window.addEventListener('did-install-drupal', (e: any): void => {
-        const withServer = e.detail;
-
-        if (withServer) {
-            title = 'Starting web server...';
-        } else {
-            isWorking = false;
-            title = 'Installation complete!';
-        }
-        statusText = '';
-        cli = '';
-    });
-
-    window.addEventListener('install-progress', (e: any): void => {
-        cli = e.detail;
-    });
-
-    window.addEventListener('server-did-start', (e: any): void => {
-        url = e.detail;
-
-        isWorking = false;
-        title = '';
-        statusText = `Your site is running at<br /><code>${url}</code>`;
-        cli = '';
-    });
-
     window.addEventListener('error', (e: any): void => {
         title = 'Uh-oh';
         statusText = 'An error occurred while starting Drupal CMS. It has been automatically reported to the developers.';
@@ -56,7 +24,11 @@
     window.addEventListener('message', (event): void => {
         if (event.source === window && event.data === 'port') {
             event.ports[0].onmessage = (event): void => {
-                console.log(event.data);
+                title = event.data.title;
+                isWorking = event.data.isWorking;
+                url = event.data.url;
+                statusText = event.data.statusText;
+                cli = event.data.cli;
             };
         }
     });
