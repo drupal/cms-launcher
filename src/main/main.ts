@@ -127,13 +127,6 @@ ipcMain.on('drupal:start', async ({ sender: win }): Promise<void> => {
             cli: message,
         })
     });
-    drupal.on('server-did-start', (url: string): void => {
-        toRenderer.postMessage({
-            isWorking: false,
-            statusText: `Your site is running at<br /><code>${url}</code>`,
-            url,
-        });
-    });
 
     // Set up logging to help with debugging auto-update problems, and ensure any
     // errors are sent to Sentry.

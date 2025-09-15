@@ -87,7 +87,14 @@ export class Drupal extends EventEmitter
                 title: 'Starting web server...',
                 isWorking: true,
             });
+
             await this.serve(url, timeout);
+
+            port?.postMessage({
+                isWorking: false,
+                statusText: `Your site is running at<br /><code>${url}</code>`,
+                url,
+            });
         }
         else {
             port?.postMessage({
@@ -197,7 +204,6 @@ export class Drupal extends EventEmitter
                     clearTimeout(timeoutId);
                     // Automatically kill the server on quit.
                     app.on('will-quit', () => server.kill());
-                    this.emit('server-did-start', url);
                     resolve();
                 }
             };
