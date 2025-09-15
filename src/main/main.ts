@@ -140,10 +140,6 @@ ipcMain.on('drupal:start', async ({ sender: win }): Promise<void> => {
             title: argv.server ? 'Starting web server...' : 'Installation complete!',
             isWorking: argv.server,
         });
-        // If we're in CI, we're not checking for updates; there's nothing else to do.
-        if ('CI' in process.env) {
-            app.quit();
-        }
     });
     drupal.on('server-did-start', (url: string, server: ChildProcess): void => {
         toRenderer.postMessage({
@@ -155,12 +151,10 @@ ipcMain.on('drupal:start', async ({ sender: win }): Promise<void> => {
         app.on('will-quit', () => server.kill());
     });
 
-    // After checking for updates, quit it we're not going to start the web server.
-    autoUpdater.on('update-not-available', (): void => {
-       if (! argv.server) {
-           app.quit();
-       }
-    });
+    // Set up logging to help with debugging auto-update problems, and ensure any
+    // errors are sent to Sentry.
+    autoUpdater.logger = logger;
+    autoUpdater.on('error', e => Sentry.captureException(e));
 
     toRenderer.start();
     win.postMessage('port', null, [fromMain]);
@@ -183,11 +177,13 @@ ipcMain.on('drupal:start', async ({ sender: win }): Promise<void> => {
         Sentry.captureException(e);
     }
     finally {
-        // Set up logging to help with debugging auto-update problems, ensure any
-        // errors are sent to Sentry, and check for updates.
-        autoUpdater.logger = logger;
-        autoUpdater.on('error', e => Sentry.captureException(e));
-        await autoUpdater.checkForUpdatesAndNotify();
+        // If we're in CI, we're not checking for updates; there's nothing else to do.
+        if ('CI' in process.env) {
+            app.quit();
+        }
+        else {
+            await autoUpdater.checkForUpdatesAndNotify();
+        }
     }
 });
 
