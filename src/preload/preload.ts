@@ -1,6 +1,15 @@
 import { Drupal } from './Drupal';
 import { contextBridge, ipcRenderer } from 'electron';
 
+const windowLoaded = new Promise((resolve): void => {
+    window.onload = resolve;
+});
+
+ipcRenderer.on('port', async (event): Promise<void> => {
+   await windowLoaded;
+   window.postMessage('port', '*', event.ports);
+});
+
 ipcRenderer.on('will-install-drupal', (): void => {
     window.dispatchEvent(new CustomEvent('will-install-drupal'));
 });

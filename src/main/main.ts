@@ -1,4 +1,4 @@
-import { app, BrowserWindow, ipcMain, Menu, shell } from 'electron';
+import { app, BrowserWindow, ipcMain, Menu, MessageChannelMain, shell } from 'electron';
 import logger from 'electron-log';
 import { autoUpdater } from 'electron-updater';
 import { basename, join } from 'node:path';
@@ -114,6 +114,10 @@ logger.transports.file.resolvePathFn = (): string => argv.log;
 ipcMain.on('drupal:start', async ({ sender: win }): Promise<void> => {
     const drupal = new Drupal(argv.root, argv.fixture);
 
+    // Set up a direct line to send real-time status updates to the renderer.
+    const { port1, port2 } = new MessageChannelMain();
+    port1.start();
+
     drupal.on('will-install-drupal', (): void => {
         win.send('will-install-drupal');
     });
@@ -131,6 +135,7 @@ ipcMain.on('drupal:start', async ({ sender: win }): Promise<void> => {
     drupal.on('server-did-start', (url: string, server: ChildProcess): void => {
         // Automatically kill the server on quit.
         app.on('will-quit', () => server.kill());
+        port1.postMessage('Hi there!');
         // Let the user know we're up and running.
         win.send('server-did-start', url);
     });
@@ -142,6 +147,7 @@ ipcMain.on('drupal:start', async ({ sender: win }): Promise<void> => {
        }
     });
 
+    win.postMessage('port', null, [port2]);
     try {
         await drupal.start(argv.archive, argv.server ? argv.url : false, argv.timeout);
     }
@@ -201,7 +207,7 @@ function createWindow (): void
                 ],
             }
         ]);
-        Menu.setApplicationMenu(menu);
+        // Menu.setApplicationMenu(menu);
     }
     else {
         // Disable the default menu on Windows and Linux, since it doesn't make sense

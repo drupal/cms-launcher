@@ -53,6 +53,14 @@
         drupal.open(url);
     }
 
+    window.addEventListener('message', (event): void => {
+        if (event.source === window && event.data === 'port') {
+            event.ports[0].onmessage = (event): void => {
+                console.log(event.data);
+            };
+        }
+    });
+
     onMount((): void => {
         drupal.start();
     });
