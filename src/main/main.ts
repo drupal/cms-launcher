@@ -127,12 +127,6 @@ ipcMain.on('drupal:start', async ({ sender: win }): Promise<void> => {
             cli: message,
         })
     });
-    drupal.on('did-install-drupal', (): void => {
-        toRenderer.postMessage({
-            title: argv.server ? 'Starting web server...' : 'Installation complete!',
-            isWorking: argv.server,
-        });
-    });
     drupal.on('server-did-start', (url: string): void => {
         toRenderer.postMessage({
             isWorking: false,
@@ -150,7 +144,7 @@ ipcMain.on('drupal:start', async ({ sender: win }): Promise<void> => {
     win.postMessage('port', null, [fromMain]);
 
     try {
-        await drupal.start(argv.archive, argv.server ? argv.url : false, argv.timeout);
+        await drupal.start(argv.archive, argv.server ? argv.url : false, argv.timeout, toRenderer);
     }
     catch (e: any) {
         toRenderer.postMessage({

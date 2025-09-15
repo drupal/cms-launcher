@@ -1,7 +1,7 @@
 import type { ChildProcess } from 'node:child_process';
 import { default as getPort, portNumbers } from 'get-port';
 import { OutputType, PhpCommand } from './PhpCommand';
-import { app } from 'electron';
+import { app, type MessagePortMain } from 'electron';
 import { ComposerCommand } from './ComposerCommand';
 import { join } from 'node:path';
 import { access, copyFile, mkdir, readFile, rm, writeFile } from 'node:fs/promises';
@@ -60,7 +60,7 @@ export class Drupal extends EventEmitter
         }
     }
 
-    public async start (archive?: string, url?: string | false, timeout: number = 2): Promise<void>
+    public async start (archive?: string, url?: string | false, timeout: number = 2, port?: MessagePortMain): Promise<void>
     {
         try {
             await access(this.root);
@@ -74,7 +74,6 @@ export class Drupal extends EventEmitter
                 throw e;
             }
         }
-        this.emit('did-install-drupal');
 
         if (typeof url === 'undefined') {
             const port = await getPort({
@@ -82,8 +81,19 @@ export class Drupal extends EventEmitter
             });
             url = `http://localhost:${port}`;
         }
+
         if (url) {
+            port?.postMessage({
+                title: 'Starting web server...',
+                isWorking: true,
+            });
             await this.serve(url, timeout);
+        }
+        else {
+            port?.postMessage({
+                title: 'Installation complete!',
+                isWorking: false,
+            });
         }
     }
 
