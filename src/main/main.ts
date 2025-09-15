@@ -119,15 +119,6 @@ ipcMain.on('drupal:start', async ({ sender: win }): Promise<void> => {
         port2: fromMain,
     } = new MessageChannelMain();
 
-    drupal.on('install-progress', (message: string): void => {
-        toRenderer.postMessage({
-            title: 'Installing...',
-            statusText: 'This might take a minute.',
-            isWorking: true,
-            cli: message,
-        })
-    });
-
     // Set up logging to help with debugging auto-update problems, and ensure any
     // errors are sent to Sentry.
     autoUpdater.logger = logger;

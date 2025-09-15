@@ -67,7 +67,7 @@ export class Drupal extends EventEmitter
         }
         catch {
             try {
-                await this.install(archive);
+                await this.install(archive, port);
             }
             catch (e) {
                 await rm(this.root, { force: true, recursive: true, maxRetries: 3 });
@@ -109,14 +109,14 @@ export class Drupal extends EventEmitter
         return join(this.root, 'web');
     }
 
-    private async install (archive?: string): Promise<void>
+    private async install (archive?: string, port?: MessagePortMain): Promise<void>
     {
         if (archive) {
             logger.debug(`Using pre-built archive: ${archive}`);
 
             try {
                 await access(archive);
-                return this.extractArchive(archive);
+                return this.extractArchive(archive, port);
             }
             catch {
                 logger.info('Falling back to Composer because pre-built archive does not exist.');
@@ -127,16 +127,21 @@ export class Drupal extends EventEmitter
             await new ComposerCommand(...command)
                 .inDirectory(this.root)
                 .run({}, (line: string, type: OutputType): void => {
-                    // Progress messages are sent to STDERR; forward them to the render.
+                    // Progress messages are sent to STDERR; forward them to the renderer.
                     if (type === OutputType.Error) {
-                        this.emit('install-progress', line);
+                        port?.postMessage({
+                            title: 'Installing...',
+                            statusText: 'This might take a minute.',
+                            isWorking: true,
+                            cli: line,
+                        });
                     }
                 });
         }
         await this.prepareSettings();
     }
 
-    private async extractArchive (file: string): Promise<void>
+    private async extractArchive (file: string, port?: MessagePortMain): Promise<void>
     {
         let total = 0;
         let done = 0;
@@ -152,7 +157,13 @@ export class Drupal extends EventEmitter
 
         const interval = setInterval((): void => {
             const percent = Math.round((done / total) * 100);
-            this.emit('install-progress', `Extracting archive (${percent}% done)`);
+
+            port?.postMessage({
+                title: 'Installing...',
+                statusText: 'This might take a minute.',
+                isWorking: true,
+                cli: `Extracting archive (${percent}% done)`,
+            });
         }, 500);
 
         return tar.extract({
