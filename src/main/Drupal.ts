@@ -75,7 +75,7 @@ export class Drupal implements DrupalInterface
             }
             catch (e) {
                 // Courteously try to clean up the broken site before re-throwing.
-                await this.destroy(port);
+                await this.destroy();
                 throw e;
             }
         }
