@@ -172,6 +172,10 @@ ipcMain.on('drupal:open', async (): Promise<void> => {
     await drupal.open();
 });
 
+ipcMain.on('drupal:visit', async (): Promise<void> => {
+    await drupal.visit();
+});
+
 ipcMain.on('drupal:destroy', async ({ sender: win }): Promise<void> => {
     const toRenderer = openPort(win);
     await drupal.destroy(toRenderer);

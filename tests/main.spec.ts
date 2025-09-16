@@ -154,13 +154,15 @@ test('install from a pre-built archive', async ({}, testInfo) => {
 test('reset site', async ({}, testInfo) => {
   const [app, root] = await launchApp(testInfo, '--fixture=basic');
 
-  // If the site started up successfully, we should have a Delete button for it.
+  // If the site started up successfully, we should have a button to delete it, and
+  // a button to open it in the file explorer.
   const window = await app.firstWindow();
   await expect(window.getByText('Visit Site')).toBeVisible();
+  await expect(window.getByTitle('Open Drupal directory')).toBeVisible();
   const deleteButton = window.getByTitle('Delete site');
   await expect(deleteButton).toBeVisible();
 
-  // Clicking that button should put up a confirmation dialog.
+  // Clicking the Delete button should put up a confirmation dialog.
   window.on('dialog', async (dialog) => {
     expect(dialog.type()).toBe('confirm');
     expect(dialog.message()).toBe("Your site and content will be permanently deleted. You can't undo this. Are you sure?");
@@ -173,6 +175,7 @@ test('reset site', async ({}, testInfo) => {
   await expect(window.getByText('Reinstall Drupal CMS')).toBeVisible();
   const startButton = window.getByTitle('Start site');
   await expect(startButton).toBeVisible();
+  await expect(window.getByText('Reinstall Drupal CMS')).toBeVisible();
   expect(() => accessSync(root)).toThrow();
 
   // Clicking that button should get us back up and running.
