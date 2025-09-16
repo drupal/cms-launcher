@@ -8,60 +8,31 @@
     let state: string = '';
     let detail: string = '';
 
-    let title: string = '';
-    let statusText: string = '';
-
-    const isWorking: boolean = ['install', 'start', 'destroy'].includes(state);
-
-    switch (state) {
-        // An error of some kind happened, obviously.
-        case 'error':
-            title = 'Uh-oh';
-            statusText = 'An error occurred while starting Drupal CMS. It has been automatically reported to the developers.';
-            break;
-
-        // Drupal CMS is installed and the server is starting.
-        case 'start':
-            title = 'Starting web server...';
-            statusText = '';
-            break;
-
-        // Fully up and running.
-        case 'on':
-            title = '';
-            statusText = `Your site is running at<br /><code>${detail}</code>`;
-            break;
-
-        // Drupal CMS is installed but the server is not running.
-        case 'off':
-            title = 'Installation complete!';
-            statusText = '';
-            break;
-
-        // The Drupal code base is being deleted.
-        case 'destroy':
-            title = 'Deleting site...';
-            statusText = '';
-            break;
-
-        // The Drupal code base has been deleted.
-        case 'clean':
-            title = 'Reinstall Drupal CMS';
-            statusText = '';
-            break;
-
-        // The Drupal code base is being created.
-        case 'install':
-            title = 'Installing...';
-            statusText = 'This might take a minute.';
-            break;
-    }
+    const titleText: any = {
+        error: 'Uh-oh',
+        start: 'Starting web server...',
+        off: 'Installation complete!',
+        destroy: 'Deleting site...',
+        clean: 'Reinstall Drupal CMS',
+        install: 'Installing...',
+    };
+    const statusText: any = {
+        error: 'An error occurred while starting Drupal CMS. It has been automatically reported to the developers.',
+        install: 'This might take a minute.',
+    };
+    const isWorking = ['install', 'start', 'destroy'];
 
     window.addEventListener('message', (event): void => {
         if (event.source === window && event.data === 'port') {
             event.ports[0].onmessage = (event): void => {
                 state = event.data.state;
-                detail = event.data.detail;
+
+                if (state === 'on') {
+                    statusText[state] = `Your site is running at<br /><code>${event.data.detail}</code>`;
+                }
+                else {
+                    detail = event.data.detail;
+                }
             };
         }
     });
@@ -95,8 +66,8 @@
 
   <main>
     <div class="cms-installer__main">
-      <h2>{title}</h2>
-      {#if isWorking}
+      <h2>{titleText[state] || ''}</h2>
+      {#if isWorking.includes(state)}
         <div id="loader">
           <svg xmlns="http://www.w3.org/2000/svg" display="block" preserveAspectRatio="xMidYMid" width="48" height="48" style="shape-rendering: auto; display: block;" viewBox="0 0 100 100">
             <g fill="rgb(0, 156, 222)">
@@ -128,7 +99,7 @@
           </svg>
         </div>
       {/if}
-      <p id="status">{@html statusText}</p>
+      <p id="status">{@html statusText[state]}</p>
       {#if state === 'on'}
         <div>
           <button class="button" type="button" onclick={drupal.visit}>
