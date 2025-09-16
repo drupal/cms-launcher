@@ -143,7 +143,11 @@ export class Drupal implements DrupalInterface
         this.server?.kill();
         this.server = null;
         await rm(this.root, { force: true, recursive: true, maxRetries: 3 });
-        port?.postMessage({ isWorking: false });
+
+        port?.postMessage({
+            title: 'Reinstall Drupal CMS',
+            isWorking: false,
+        });
     }
 
     private webRoot (): string
