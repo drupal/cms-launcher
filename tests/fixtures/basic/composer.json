@@ -15,5 +15,8 @@
     },
     "scripts-descriptions": {
         "drupal:recipe-unpack": "A mocked drupal:recipe-unpack command that does nothing."
+    },
+    "replace": {
+        "drupal/drupal_association_extras": "*"
     }
 }
