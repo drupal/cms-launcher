@@ -191,11 +191,10 @@ export class Drupal implements DrupalInterface
         // Send progress information every 500 milliseconds while extracting the
         // archive.
         const interval = setInterval((): void => {
-            const percent: number = Math.round((done / total) * 100);
-
             port?.postMessage({
                 state: 'install',
-                detail: `Extracting archive (${percent}% done)`,
+                detail: `Extracting archive (% done)`,
+                progress: [done, total],
             });
         }, 500);
 
