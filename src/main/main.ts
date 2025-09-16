@@ -145,13 +145,10 @@ ipcMain.on('drupal:start', async ({ sender: win }): Promise<void> => {
     }
     catch (e: any) {
         toRenderer.postMessage({
-            title: 'Uh-oh',
-            statusText: 'An error occurred while starting Drupal CMS. It has been automatically reported to the developers.',
-            error: true,
-            isWorking: false,
+            state: 'error',
             // If the error was caused by a failed Composer command, it will have an additional
             // `stdout` property with Composer's output.
-            cli: e.stdout || e.toString(),
+            detail: e.stdout || e.toString(),
         });
         // Send the exception to Sentry so we can analyze it later, without requiring
         // users to file a GitHub issue.

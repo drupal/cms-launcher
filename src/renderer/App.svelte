@@ -5,22 +5,63 @@
     import ReinstallIcon from '@phosphor-icons/core/regular/arrow-clockwise.svg?component';
     import FolderIcon from '@phosphor-icons/core/regular/folder-open.svg?component';
 
+    let state: string = '';
+    let detail: string = '';
+
     let title: string = '';
     let statusText: string = '';
-    let cli: string = '';
-    let url: string = '';
-    let isWorking: boolean = false;
-    let error: boolean = false;
+
+    const isWorking: boolean = ['install', 'start', 'destroy'].includes(state);
+
+    switch (state) {
+        // An error of some kind happened, obviously.
+        case 'error':
+            title = 'Uh-oh';
+            statusText = 'An error occurred while starting Drupal CMS. It has been automatically reported to the developers.';
+            break;
+
+        // Drupal CMS is installed and the server is starting.
+        case 'start':
+            title = 'Starting web server...';
+            statusText = '';
+            break;
+
+        // Fully up and running.
+        case 'on':
+            title = '';
+            statusText = `Your site is running at<br /><code>${detail}</code>`;
+            break;
+
+        // Drupal CMS is installed but the server is not running.
+        case 'off':
+            title = 'Installation complete!';
+            statusText = '';
+            break;
+
+        // The Drupal code base is being deleted.
+        case 'destroy':
+            title = 'Deleting site...';
+            statusText = '';
+            break;
+
+        // The Drupal code base has been deleted.
+        case 'clean':
+            title = 'Reinstall Drupal CMS';
+            statusText = '';
+            break;
+
+        // The Drupal code base is being created.
+        case 'install':
+            title = 'Installing...';
+            statusText = 'This might take a minute.';
+            break;
+    }
 
     window.addEventListener('message', (event): void => {
         if (event.source === window && event.data === 'port') {
             event.ports[0].onmessage = (event): void => {
-                title = event.data.title;
-                isWorking = event.data.isWorking;
-                url = event.data.url;
-                statusText = event.data.statusText;
-                cli = event.data.cli;
-                error = event.data.error;
+                state = event.data.state;
+                detail = event.data.detail;
             };
         }
     });
@@ -88,7 +129,7 @@
         </div>
       {/if}
       <p id="status">{@html statusText}</p>
-      {#if url}
+      {#if state === 'on'}
         <div>
           <button class="button" type="button" onclick={drupal.visit}>
             Visit site&nbsp;
@@ -98,16 +139,16 @@
           </button>
         </div>
       {/if}
-      <div id="cli-output" class:error={error}>{cli}</div>
+      <div id="cli-output" class:error={state === 'error'}>{detail}</div>
       <footer>
-        {#if url}
+        {#if state === 'on'}
           <button title="Open Drupal directory" onclick={drupal.open}>
             <FolderIcon width="32" />
           </button>
           <button title="Delete site" onclick={confirmDestroy}>
             <TrashIcon width="32" />
           </button>
-        {:else if ! isWorking && ! error}
+        {:else if state === 'clean'}
           <button title="Start site" onclick={drupal.start}>
             <ReinstallIcon width="48" />
           </button>
