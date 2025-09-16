@@ -8,6 +8,7 @@ import { access, copyFile, mkdir, readFile, rm, writeFile } from 'node:fs/promis
 import * as tar from 'tar';
 import logger from 'electron-log';
 import { Drupal as DrupalInterface } from '../preload/Drupal';
+import { parse as fromYAML, stringify as toYAML } from 'yaml';
 
 /**
  * Provides methods for installing and serving a Drupal code base.
@@ -36,8 +37,8 @@ export class Drupal implements DrupalInterface
             // `composer validate --check-lock` will be happy.
             ['config', '--merge', '--json', 'extra.drupal-launcher', '{"version": 1}'],
 
-            // Require the Drupal Association Extras module and inject it into the install
-            // profile.
+            // Require the Drupal Association Extras module, which will be injected into
+            // the install profile by prepareSettings().
             ['require', 'drupal/drupal_association_extras:@dev', '--no-update'],
 
             // Finally, install dependencies. We suppress the progress bar because it
@@ -231,14 +232,20 @@ export class Drupal implements DrupalInterface
         // settings get loaded. It's a little clunky to do this as an array operation,
         // but as this is a one-time change to a not-too-large file, it's an acceptable
         // trade-off.
-        const filePath: string = join(siteDir, 'default.settings.php');
-        const lines: string[] = (await readFile(filePath)).toString().split('\n');
+        const settingsFilePath: string = join(siteDir, 'default.settings.php');
+        const lines: string[] = (await readFile(settingsFilePath)).toString().split('\n');
         const replacements: string[] = lines.slice(-4).map((line: string): string => {
             return line.startsWith('# ') ? line.substring(2) : line;
         });
         lines.splice(-4, 3, ...replacements);
+        await writeFile(settingsFilePath, lines.join('\n'));
 
-        await writeFile(filePath, lines.join('\n'));
+        // Add the drupal_association_extras module to the install profile.
+        const installProfileInfoPath = join(this.webRoot(), 'profiles', 'drupal_cms_installer', 'drupal_cms_installer.info.yml');
+        let installProfileInfo = fromYAML((await readFile(installProfileInfoPath)).toString());
+        installProfileInfo.install ??= [];
+        installProfileInfo.install.push('drupal_association_extras');
+        await writeFile(installProfileInfoPath, toYAML(installProfileInfo));
     }
 
     private async serve (url: string, timeout: number): Promise<[string, ChildProcess]>
