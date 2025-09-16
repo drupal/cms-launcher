@@ -26,7 +26,7 @@
 
     function confirmDestroy (): void
     {
-        if (confirm(`Your Drupal site will be lost. You can't undo this. Are you sure?`)) {
+        if (confirm("Your Drupal site will be lost. You can't undo this. Are you sure?")) {
             drupal.destroy();
         }
     }
@@ -100,11 +100,11 @@
       <div id="cli-output" class:error={error}>{cli}</div>
       <footer>
         {#if url}
-          <button onclick={confirmDestroy}>
+          <button title="Delete site" onclick={confirmDestroy}>
             <Trash width="32" />
           </button>
-        {:else if ! isWorking}
-          <button onclick={drupal.start}>
+        {:else if ! isWorking && ! error}
+          <button title="Start site" onclick={drupal.start}>
             <Start width="32" />
           </button>
         {/if}

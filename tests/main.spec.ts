@@ -94,6 +94,9 @@ test('clean up on failed install', async ({}, testInfo) => {
   await expect(errorElement).toBeVisible();
   await expect(errorElement).toContainText('An imaginary error occurred!');
 
+  // The "Start" button should not be visible when there is an error.
+  await expect(window.getByTitle('Start site')).not.toBeVisible();
+
   // We expect access() to throw a "no such file or directory" error, because the
   // directory has been deleted.
   expect(() => accessSync(root)).toThrow();
@@ -145,5 +148,36 @@ test('install from a pre-built archive', async ({}, testInfo) => {
 
   const page = await visitSite(app);
   await expect(page.locator('body')).toContainText('A prebuilt archive worked! Running PHP via cli-server.');
+  await app.close();
+});
+
+test('reset site', async ({}, testInfo) => {
+  const [app, root] = await launchApp(testInfo, '--fixture=basic');
+
+  // If the site started up successfully, we should have a Delete button for it.
+  const window = await app.firstWindow();
+  await expect(window.getByText('Visit Site')).toBeVisible();
+  const deleteButton = window.getByTitle('Delete site');
+  await expect(deleteButton).toBeVisible();
+
+  // Clicking that button should put up a confirmation dialog.
+  window.on('dialog', async (dialog) => {
+    expect(dialog.type()).toBe('confirm');
+    expect(dialog.message()).toBe("Your Drupal site will be lost. You can't undo this. Are you sure?");
+    await dialog.accept();
+  });
+  await deleteButton.click();
+
+  // Once the delete is done, the Drupal directory should be gone and we should have
+  // a button to start (i.e., reinstall) the site again.
+  const startButton = window.getByTitle('Start site');
+  await expect(startButton).toBeVisible();
+  expect(() => accessSync(root)).toThrow();
+
+  // Clicking that button should get us back up and running.
+  await startButton.click();
+  await expect(window.getByText('Installing...')).toBeVisible();
+  await expect(window.getByText('Visit Site')).toBeVisible();
+
   await app.close();
 });
