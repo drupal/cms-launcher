@@ -163,13 +163,14 @@ test('reset site', async ({}, testInfo) => {
   // Clicking that button should put up a confirmation dialog.
   window.on('dialog', async (dialog) => {
     expect(dialog.type()).toBe('confirm');
-    expect(dialog.message()).toBe("Your Drupal site will be lost. You can't undo this. Are you sure?");
+    expect(dialog.message()).toBe("Your site and content will be permanently deleted. You can't undo this. Are you sure?");
     await dialog.accept();
   });
   await deleteButton.click();
 
   // Once the delete is done, the Drupal directory should be gone and we should have
   // a button to start (i.e., reinstall) the site again.
+  await expect(window.getByText('Reinstall Drupal CMS')).toBeVisible();
   const startButton = window.getByTitle('Start site');
   await expect(startButton).toBeVisible();
   expect(() => accessSync(root)).toThrow();
