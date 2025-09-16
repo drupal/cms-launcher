@@ -11,6 +11,7 @@
   "license": "MIT",
   "devDependencies": {
     "@playwright/test": "^1.54.1",
+    "@poppanator/sveltekit-svg": "^6.0.0",
     "@sveltejs/vite-plugin-svelte": "^6.1.4",
     "@types/node": "^24.0.0",
     "@types/yargs": "^17.0.33",
@@ -21,6 +22,7 @@
     "vite": "^6.3.5"
   },
   "dependencies": {
+    "@phosphor-icons/core": "^2.1.1",
     "@sentry/electron": "^6.7.0",
     "electron-log": "^5.4.1",
     "electron-updater": "^6.6.2",

@@ -1,6 +1,8 @@
 <script lang="ts">
 
     import { onMount } from 'svelte';
+    import Trash from '@phosphor-icons/core/regular/trash.svg?component';
+    import Start from '@phosphor-icons/core/regular/play-circle.svg?component';
 
     let title: string = '';
     let statusText: string = '';
@@ -93,10 +95,20 @@
               <path fill="#fff" d="m13.03 6.53-4.5 4.5a.751.751 0 1 1-1.062-1.062l3.22-3.218H1.5a.75.75 0 0 1 0-1.5h9.188L7.469 2.03A.751.751 0 0 1 8.532.967l4.5 4.5a.75.75 0 0 1-.001 1.063Z"/>
             </svg>
           </button>
-          <button onclick={confirmDestroy}>Delete Site</button>
         </div>
       {/if}
       <div id="cli-output" class:error={error}>{cli}</div>
+      <footer>
+        {#if url}
+          <button onclick={confirmDestroy}>
+            <Trash width="32" />
+          </button>
+        {:else if ! isWorking}
+          <button onclick={drupal.start}>
+            <Start width="32" />
+          </button>
+        {/if}
+      </footer>
     </div>
   </main>
 </div>
@@ -228,6 +240,21 @@
     &.error {
       opacity: 1;
       color: #b00;
+    }
+  }
+
+  footer {
+    margin-top: 2rem;
+  }
+
+  footer button {
+    background-color: transparent;
+    border: none;
+    opacity: .3;
+    transition: opacity .3s;
+
+    &:hover {
+      opacity: 1;
     }
   }
 

@@ -130,7 +130,7 @@ export class Drupal implements DrupalInterface
         this.server?.kill();
         this.server = null;
         await rm(this.root, { force: true, recursive: true, maxRetries: 3 });
-        app.quit();
+        port?.postMessage({ isWorking: false });
     }
 
     private webRoot (): string
