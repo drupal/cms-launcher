@@ -4,10 +4,11 @@ import { OutputType, PhpCommand } from './PhpCommand';
 import { app, type MessagePortMain, shell } from 'electron';
 import { ComposerCommand } from './ComposerCommand';
 import { join } from 'node:path';
-import { access, copyFile, mkdir, readFile, rm, writeFile } from 'node:fs/promises';
+import { access, copyFile, glob, mkdir, readFile, rm, writeFile } from 'node:fs/promises';
 import * as tar from 'tar';
 import logger from 'electron-log';
 import { Drupal as DrupalInterface } from '../preload/Drupal';
+import { parse as fromYAML, stringify as toYAML } from 'yaml';
 
 /**
  * Provides methods for installing and serving a Drupal code base.
@@ -35,6 +36,10 @@ export class Drupal implements DrupalInterface
             // later if needed. This must be done before the lock file is created so that
             // `composer validate --check-lock` will be happy.
             ['config', '--merge', '--json', 'extra.drupal-launcher', '{"version": 1}'],
+
+            // Require the Drupal Association Extras module, which will be injected into
+            // the install profile by prepareSettings().
+            ['require', 'drupal/drupal_association_extras:@dev', '--no-update'],
 
             // Finally, install dependencies. We suppress the progress bar because it
             // looks lame when streamed to the renderer.
@@ -227,14 +232,25 @@ export class Drupal implements DrupalInterface
         // settings get loaded. It's a little clunky to do this as an array operation,
         // but as this is a one-time change to a not-too-large file, it's an acceptable
         // trade-off.
-        const filePath: string = join(siteDir, 'default.settings.php');
-        const lines: string[] = (await readFile(filePath)).toString().split('\n');
+        const settingsPath: string = join(siteDir, 'default.settings.php');
+        const lines: string[] = (await readFile(settingsPath)).toString().split('\n');
         const replacements: string[] = lines.slice(-4).map((line: string): string => {
             return line.startsWith('# ') ? line.substring(2) : line;
         });
         lines.splice(-4, 3, ...replacements);
+        await writeFile(settingsPath, lines.join('\n'));
 
-        await writeFile(filePath, lines.join('\n'));
+        // Add the drupal_association_extras module to every install profile. We don't want to
+        // hard-code the name or path of the info file, in case Drupal CMS changes it.
+        const finder = glob(
+            join(this.webRoot(), 'profiles', '*', '*.info.yml'),
+        );
+        for await (const infoPath of finder) {
+            const info = fromYAML((await readFile(infoPath)).toString());
+            info.install ??= [];
+            info.install.push('drupal_association_extras');
+            await writeFile(infoPath, toYAML(info));
+        }
     }
 
     private async serve (url: string, timeout: number): Promise<[string, ChildProcess]>
