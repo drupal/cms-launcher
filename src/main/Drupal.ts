@@ -9,6 +9,7 @@ import * as tar from 'tar';
 import logger from 'electron-log';
 import { Drupal as DrupalInterface } from '../preload/Drupal';
 import { parse as fromYAML, stringify as toYAML } from 'yaml';
+import {command} from "yargs";
 
 /**
  * Provides methods for installing and serving a Drupal code base.
@@ -32,11 +33,6 @@ export class Drupal implements DrupalInterface
             // which might not be installed.
             ['config', 'extra.drupal-scaffold.gitignore', 'false', '--json'],
 
-            // Record a version number in composer.json so we can update the built project
-            // later if needed. This must be done before the lock file is created so that
-            // `composer validate --check-lock` will be happy.
-            ['config', '--merge', '--json', 'extra.drupal-launcher', '{"version": 1}'],
-
             // Require the Drupal Association Extras module, which will be injected into
             // the install profile by prepareSettings().
             ['require', 'drupal/drupal_association_extras:@dev', '--no-update'],
@@ -51,11 +47,23 @@ export class Drupal implements DrupalInterface
 
         ],
 
+        update: [],
+
     }
 
     constructor (root: string, fixture?: string)
     {
         this.root = root;
+
+        // Record a version number in composer.json so we can update the built project
+        // later if needed. This must be done before the lock file is created (i.e.,
+        // before dependencies are installed) so that `composer validate --check-lock`
+        // will be happy.
+        this.commands.install.splice(
+            this.commands.install.findIndex(command => command[0] === 'install'),
+            0,
+            ['config', '--merge', '--json', 'extra.drupal-launcher', `{"version": ${this.commands.update.length + 1}}`]
+        );
 
         if (fixture) {
             const repository = JSON.stringify({
