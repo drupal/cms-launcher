@@ -147,6 +147,11 @@ export class Drupal implements DrupalInterface
 
     private async install (archive?: string, port?: MessagePortMain): Promise<void>
     {
+        port?.postMessage({
+            state: 'install',
+            detail: 'Initializing...',
+        });
+
         if (archive) {
             logger.debug(`Using pre-built archive: ${archive}`);
             try {
