@@ -4,7 +4,7 @@ import { OutputType, PhpCommand } from './PhpCommand';
 import { app, type MessagePortMain, shell } from 'electron';
 import { ComposerCommand } from './ComposerCommand';
 import { join } from 'node:path';
-import { access, copyFile, mkdir, readFile, rm, writeFile } from 'node:fs/promises';
+import { access, copyFile, glob, mkdir, readFile, rm, writeFile } from 'node:fs/promises';
 import * as tar from 'tar';
 import logger from 'electron-log';
 import { Drupal as DrupalInterface } from '../preload/Drupal';
@@ -232,20 +232,25 @@ export class Drupal implements DrupalInterface
         // settings get loaded. It's a little clunky to do this as an array operation,
         // but as this is a one-time change to a not-too-large file, it's an acceptable
         // trade-off.
-        const settingsFilePath: string = join(siteDir, 'default.settings.php');
-        const lines: string[] = (await readFile(settingsFilePath)).toString().split('\n');
+        const settingsPath: string = join(siteDir, 'default.settings.php');
+        const lines: string[] = (await readFile(settingsPath)).toString().split('\n');
         const replacements: string[] = lines.slice(-4).map((line: string): string => {
             return line.startsWith('# ') ? line.substring(2) : line;
         });
         lines.splice(-4, 3, ...replacements);
-        await writeFile(settingsFilePath, lines.join('\n'));
+        await writeFile(settingsPath, lines.join('\n'));
 
-        // Add the drupal_association_extras module to the install profile.
-        const installProfileInfoPath = join(this.webRoot(), 'profiles', 'drupal_cms_installer', 'drupal_cms_installer.info.yml');
-        let installProfileInfo = fromYAML((await readFile(installProfileInfoPath)).toString());
-        installProfileInfo.install ??= [];
-        installProfileInfo.install.push('drupal_association_extras');
-        await writeFile(installProfileInfoPath, toYAML(installProfileInfo));
+        // Add the drupal_association_extras module to every install profile. We don't want to
+        // hard-code the name or path of the info file, in case Drupal CMS changes it.
+        const finder = glob(
+            join(this.webRoot(), 'profiles', '*', '*.info.yml'),
+        );
+        for await (const infoPath of finder) {
+            const info = fromYAML((await readFile(infoPath)).toString());
+            info.install ??= [];
+            info.install.push('drupal_association_extras');
+            await writeFile(infoPath, toYAML(info));
+        }
     }
 
     private async serve (url: string, timeout: number): Promise<[string, ChildProcess]>

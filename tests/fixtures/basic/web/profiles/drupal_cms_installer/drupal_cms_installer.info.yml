@@ -1,4 +1,0 @@
-description: 'Simulates the Drupal CMS install profile, to which the launcher unconditionally adds drupal_association_extras.'
-core_version_requirement: '*'
-type: profile
-name: Test
