@@ -195,7 +195,8 @@ export class Drupal implements DrupalInterface
 
             port?.postMessage({
                 state: 'install',
-                detail: `Extracting archive (${percent}% done)`,
+                detail: `Extracting archive (% done)`,
+                progress: [done, total],
             });
         }, 500);
 

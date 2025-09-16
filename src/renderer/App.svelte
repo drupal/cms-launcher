@@ -7,6 +7,7 @@
 
     let state: string = '';
     let detail: string = '';
+    let progress: [number, number] | null = null;
 
     const titleText: any = {
         error: 'Uh-oh',
@@ -26,12 +27,15 @@
         if (event.source === window && event.data === 'port') {
             event.ports[0].onmessage = (event): void => {
                 state = event.data.state;
+                progress = event.data.progress;
 
                 if (state === 'on') {
                     statusText[state] = `Your site is running at<br /><code>${event.data.detail}</code>`;
                 }
                 else {
-                    detail = event.data.detail;
+                    detail = progress
+                      ? event.data.detail.replace('%', Math.round((progress[0] / progress[1]) * 100).toString().concat('%'))
+                      : event.data.detail;
                 }
             };
         }
@@ -111,6 +115,11 @@
         </div>
       {/if}
       <div id="cli-output" class:error={state === 'error'}>{detail}</div>
+      {#if progress}
+        <div>
+          <progress value={progress[0]} max={progress[1]}></progress>
+        </div>
+      {/if}
       <footer>
         {#if state === 'on'}
           <button title="Open Drupal directory" onclick={drupal.open}>
