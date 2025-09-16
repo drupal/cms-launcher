@@ -4,5 +4,7 @@ export interface Drupal
 
     open: () => void;
 
+    visit: () => void;
+
     destroy: () => void;
 }

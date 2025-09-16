@@ -123,7 +123,7 @@ export class Drupal implements DrupalInterface
         }
     }
 
-    public async open (): Promise<void>
+    public async visit (): Promise<void>
     {
         if (this.url) {
             await shell.openExternal(this.url);
@@ -131,6 +131,12 @@ export class Drupal implements DrupalInterface
         else {
             throw Error('The Drupal site is not running.');
         }
+    }
+
+    public async open (): Promise<void>
+    {
+        await access(this.root);
+        await shell.openPath(this.root);
     }
 
     public async destroy (port?: MessagePortMain): Promise<void>

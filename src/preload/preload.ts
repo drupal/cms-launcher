@@ -24,6 +24,11 @@ contextBridge.exposeInMainWorld('drupal', {
         ipcRenderer.send('drupal:open');
     },
 
+    visit (): void
+    {
+        ipcRenderer.send('drupal:visit');
+    },
+
     destroy (): void
     {
         ipcRenderer.send('drupal:destroy');

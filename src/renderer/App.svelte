@@ -3,6 +3,7 @@
     import { onMount } from 'svelte';
     import Trash from '@phosphor-icons/core/regular/trash.svg?component';
     import Start from '@phosphor-icons/core/regular/play-circle.svg?component';
+    import Wrench from '@phosphor-icons/core/regular/wrench.svg?component';
 
     let title: string = '';
     let statusText: string = '';
@@ -89,7 +90,7 @@
       <p id="status">{@html statusText}</p>
       {#if url}
         <div>
-          <button class="button" type="button" onclick={drupal.open}>
+          <button class="button" type="button" onclick={drupal.visit}>
             Visit site&nbsp;
             <svg xmlns="http://www.w3.org/2000/svg" width="14" height="12" fill="none">
               <path fill="#fff" d="m13.03 6.53-4.5 4.5a.751.751 0 1 1-1.062-1.062l3.22-3.218H1.5a.75.75 0 0 1 0-1.5h9.188L7.469 2.03A.751.751 0 0 1 8.532.967l4.5 4.5a.75.75 0 0 1-.001 1.063Z"/>
@@ -100,6 +101,9 @@
       <div id="cli-output" class:error={error}>{cli}</div>
       <footer>
         {#if url}
+          <button title="Open Drupal directory" onclick={drupal.open}>
+            <Wrench width="32" />
+          </button>
           <button title="Delete site" onclick={confirmDestroy}>
             <Trash width="32" />
           </button>
