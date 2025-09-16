@@ -8,8 +8,7 @@ import { access, copyFile, glob, mkdir, readFile, rm, writeFile } from 'node:fs/
 import * as tar from 'tar';
 import logger from 'electron-log';
 import { Drupal as DrupalInterface } from '../preload/Drupal';
-import { parse as fromYAML, stringify as toYAML } from 'yaml';
-import {command} from "yargs";
+import * as YAML from 'yaml';
 
 /**
  * Provides methods for installing and serving a Drupal code base.
@@ -35,7 +34,9 @@ export class Drupal implements DrupalInterface
 
             // Require the Drupal Association Extras module, which will be injected into
             // the install profile by prepareSettings().
-            ['require', 'drupal/drupal_association_extras:@dev', '--no-update'],
+            // @todo Restore this line when drupal_association_extras has a tagged release.
+            //   Also remove the early return from prepareSettings().
+            // ['require', 'drupal/drupal_association_extras:@dev', '--no-update'],
 
             // Finally, install dependencies. We suppress the progress bar because it
             // looks lame when streamed to the renderer.
@@ -258,16 +259,18 @@ export class Drupal implements DrupalInterface
         lines.splice(-4, 3, ...replacements);
         await writeFile(settingsPath, lines.join('\n'));
 
+        // @todo Remove this line when drupal_association_extras has a tagged release.
+        return;
         // Add the drupal_association_extras module to every install profile. We don't want to
         // hard-code the name or path of the info file, in case Drupal CMS changes it.
         const finder = glob(
             join(this.webRoot(), 'profiles', '*', '*.info.yml'),
         );
         for await (const infoPath of finder) {
-            const info = fromYAML((await readFile(infoPath)).toString());
+            const info = YAML.parse((await readFile(infoPath)).toString());
             info.install ??= [];
             info.install.push('drupal_association_extras');
-            await writeFile(infoPath, toYAML(info));
+            await writeFile(infoPath, YAML.stringify(info));
         }
     }
 

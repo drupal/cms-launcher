@@ -2,7 +2,7 @@
 
     import { onMount } from 'svelte';
     import TrashIcon from '@phosphor-icons/core/regular/trash.svg?component';
-    import RestartIcon from '@phosphor-icons/core/regular/arrow-clockwise.svg?component';
+    import ReinstallIcon from '@phosphor-icons/core/regular/arrow-clockwise.svg?component';
     import FolderIcon from '@phosphor-icons/core/regular/folder-open.svg?component';
 
     let title: string = '';
@@ -109,7 +109,7 @@
           </button>
         {:else if ! isWorking && ! error}
           <button title="Start site" onclick={drupal.start}>
-            <RestartIcon width="48" />
+            <ReinstallIcon width="48" />
           </button>
         {/if}
       </footer>
@@ -258,8 +258,8 @@
     transition: opacity .3s;
 
     &:hover {
-      opacity: 1;
       cursor: pointer;
+      opacity: 1;
     }
   }
 

@@ -154,8 +154,8 @@ test('install from a pre-built archive', async ({}, testInfo) => {
 test('reset site', async ({}, testInfo) => {
   const [app, root] = await launchApp(testInfo, '--fixture=basic');
 
-  // If the site started up successfully, we should have a Delete button for it, and a
-  // button to open it in the file explorer.
+  // If the site started up successfully, we should have a button to delete it, and
+  // a button to open it in the file explorer.
   const window = await app.firstWindow();
   await expect(window.getByText('Visit Site')).toBeVisible();
   await expect(window.getByTitle('Open Drupal directory')).toBeVisible();
@@ -172,6 +172,7 @@ test('reset site', async ({}, testInfo) => {
 
   // Once the delete is done, the Drupal directory should be gone and we should have
   // a button to start (i.e., reinstall) the site again.
+  await expect(window.getByText('Reinstall Drupal CMS')).toBeVisible();
   const startButton = window.getByTitle('Start site');
   await expect(startButton).toBeVisible();
   await expect(window.getByText('Reinstall Drupal CMS')).toBeVisible();
