@@ -170,7 +170,12 @@ ipcMain.on('drupal:start', async ({ sender: win }): Promise<void> => {
 
 ipcMain.on('drupal:open', async (): Promise<void> => {
     await drupal.open();
-})
+});
+
+ipcMain.on('drupal:destroy', async ({ sender: win }): Promise<void> => {
+    const toRenderer = openPort(win);
+    await drupal.destroy(toRenderer);
+});
 
 // Quit the app when all windows are closed. Normally you'd keep keep the app
 // running on macOS, even with no windows open, since that's the common pattern.

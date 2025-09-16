@@ -24,4 +24,9 @@ contextBridge.exposeInMainWorld('drupal', {
         ipcRenderer.send('drupal:open');
     },
 
+    destroy (): void
+    {
+        ipcRenderer.send('drupal:destroy');
+    }
+
 } as Drupal);

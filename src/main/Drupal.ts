@@ -18,6 +18,8 @@ export class Drupal implements DrupalInterface
 
     private url: string | null = null;
 
+    private server: ChildProcess | null = null;
+
     private readonly commands = {
 
         install: [
@@ -73,7 +75,7 @@ export class Drupal implements DrupalInterface
             }
             catch (e) {
                 // Courteously try to clean up the broken site before re-throwing.
-                await rm(this.root, { force: true, recursive: true, maxRetries: 3 });
+                await this.destroy(port);
                 throw e;
             }
         }
@@ -92,7 +94,7 @@ export class Drupal implements DrupalInterface
                 isWorking: true,
             });
 
-            this.url = await this.serve(url, timeout);
+            [this.url, this.server] = await this.serve(url, timeout);
 
             port?.postMessage({
                 isWorking: false,
@@ -116,6 +118,19 @@ export class Drupal implements DrupalInterface
         else {
             throw Error('The Drupal site is not running.');
         }
+    }
+
+    public async destroy (port?: MessagePortMain): Promise<void>
+    {
+        port?.postMessage({
+            title: 'Deleting site...',
+            isWorking: true,
+        });
+
+        this.server?.kill();
+        this.server = null;
+        await rm(this.root, { force: true, recursive: true, maxRetries: 3 });
+        app.quit();
     }
 
     private webRoot (): string
@@ -222,7 +237,7 @@ export class Drupal implements DrupalInterface
         await writeFile(filePath, lines.join('\n'));
     }
 
-    private async serve (url: string, timeout: number): Promise<string>
+    private async serve (url: string, timeout: number): Promise<[string, ChildProcess]>
     {
         // This needs to be returned as a promise so that, if we reach the timeout,
         // the exception will be caught by the calling code.
@@ -236,7 +251,7 @@ export class Drupal implements DrupalInterface
                     clearTimeout(timeoutId);
                     // Automatically kill the server on quit.
                     app.on('will-quit', () => server.kill());
-                    resolve(url);
+                    resolve([url, server]);
                 }
             };
 

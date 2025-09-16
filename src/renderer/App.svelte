@@ -22,6 +22,13 @@
         }
     });
 
+    function confirmDestroy (): void
+    {
+        if (confirm(`Your Drupal site will be lost. You can't undo this. Are you sure?`)) {
+            drupal.destroy();
+        }
+    }
+
     onMount((): void => {
         drupal.start();
     });
@@ -86,6 +93,7 @@
               <path fill="#fff" d="m13.03 6.53-4.5 4.5a.751.751 0 1 1-1.062-1.062l3.22-3.218H1.5a.75.75 0 0 1 0-1.5h9.188L7.469 2.03A.751.751 0 0 1 8.532.967l4.5 4.5a.75.75 0 0 1-.001 1.063Z"/>
             </svg>
           </button>
+          <button onclick={confirmDestroy}>Delete Site</button>
         </div>
       {/if}
       <div id="cli-output" class:error={error}>{cli}</div>
