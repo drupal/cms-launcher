@@ -1,9 +1,9 @@
 <script lang="ts">
 
     import { onMount } from 'svelte';
-    import Trash from '@phosphor-icons/core/regular/trash.svg?component';
-    import Start from '@phosphor-icons/core/regular/play-circle.svg?component';
-    import Wrench from '@phosphor-icons/core/regular/wrench.svg?component';
+    import TrashIcon from '@phosphor-icons/core/regular/trash.svg?component';
+    import RestartIcon from '@phosphor-icons/core/regular/arrow-clockwise.svg?component';
+    import FolderIcon from '@phosphor-icons/core/regular/folder-open.svg?component';
 
     let title: string = '';
     let statusText: string = '';
@@ -27,7 +27,7 @@
 
     function confirmDestroy (): void
     {
-        if (confirm("Your Drupal site will be lost. You can't undo this. Are you sure?")) {
+        if (confirm("Your site and content will be permanently deleted. You can't undo this. Are you sure?")) {
             drupal.destroy();
         }
     }
@@ -102,14 +102,14 @@
       <footer>
         {#if url}
           <button title="Open Drupal directory" onclick={drupal.open}>
-            <Wrench width="32" />
+            <FolderIcon width="32" />
           </button>
           <button title="Delete site" onclick={confirmDestroy}>
-            <Trash width="32" />
+            <TrashIcon width="32" />
           </button>
         {:else if ! isWorking && ! error}
           <button title="Start site" onclick={drupal.start}>
-            <Start width="32" />
+            <RestartIcon width="48" />
           </button>
         {/if}
       </footer>
@@ -259,6 +259,7 @@
 
     &:hover {
       opacity: 1;
+      cursor: pointer;
     }
   }
 
