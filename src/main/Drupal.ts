@@ -103,24 +103,12 @@ export class Drupal implements DrupalInterface
         }
 
         if (url) {
-            port?.postMessage({
-                title: 'Starting web server...',
-                isWorking: true,
-            });
-
+            port?.postMessage({ state: 'start' });
             [this.url, this.server] = await this.serve(url, timeout);
-
-            port?.postMessage({
-                isWorking: false,
-                statusText: `Your site is running at<br /><code>${this.url}</code>`,
-                url,
-            });
+            port?.postMessage({ state: 'on', detail: this.url });
         }
         else {
-            port?.postMessage({
-                title: 'Installation complete!',
-                isWorking: false,
-            });
+            port?.postMessage({ state: 'off' });
         }
     }
 
@@ -142,19 +130,13 @@ export class Drupal implements DrupalInterface
 
     public async destroy (port?: MessagePortMain): Promise<void>
     {
-        port?.postMessage({
-            title: 'Deleting site...',
-            isWorking: true,
-        });
+        port?.postMessage({ state: 'destroy' });
 
         this.server?.kill();
         this.server = null;
         await rm(this.root, { force: true, recursive: true, maxRetries: 3 });
 
-        port?.postMessage({
-            title: 'Reinstall Drupal CMS',
-            isWorking: false,
-        });
+        port?.postMessage({ state: 'clean' });
     }
 
     private webRoot (): string
@@ -182,12 +164,7 @@ export class Drupal implements DrupalInterface
                 .run({}, (line: string, type: OutputType): void => {
                     // Progress messages are sent to STDERR; forward them to the renderer.
                     if (type === OutputType.Error) {
-                        port?.postMessage({
-                            title: 'Installing...',
-                            statusText: 'This might take a minute.',
-                            isWorking: true,
-                            cli: line,
-                        });
+                        port?.postMessage({ state: 'install', detail: line });
                     }
                 });
         }
@@ -217,10 +194,8 @@ export class Drupal implements DrupalInterface
             const percent: number = Math.round((done / total) * 100);
 
             port?.postMessage({
-                title: 'Installing...',
-                statusText: 'This might take a minute.',
-                isWorking: true,
-                cli: `Extracting archive (${percent}% done)`,
+                state: 'install',
+                detail: `Extracting archive (${percent}% done)`,
             });
         }, 500);
 

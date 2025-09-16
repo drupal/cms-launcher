@@ -5,22 +5,34 @@
     import ReinstallIcon from '@phosphor-icons/core/regular/arrow-clockwise.svg?component';
     import FolderIcon from '@phosphor-icons/core/regular/folder-open.svg?component';
 
-    let title: string = '';
-    let statusText: string = '';
-    let cli: string = '';
-    let url: string = '';
-    let isWorking: boolean = false;
-    let error: boolean = false;
+    let state: string = '';
+    let detail: string = '';
+
+    const titleText: any = {
+        error: 'Uh-oh',
+        start: 'Starting web server...',
+        off: 'Installation complete!',
+        destroy: 'Deleting site...',
+        clean: 'Reinstall Drupal CMS',
+        install: 'Installing...',
+    };
+    const statusText: any = {
+        error: 'An error occurred while starting Drupal CMS. It has been automatically reported to the developers.',
+        install: 'This might take a minute.',
+    };
+    const isWorking = ['install', 'start', 'destroy'];
 
     window.addEventListener('message', (event): void => {
         if (event.source === window && event.data === 'port') {
             event.ports[0].onmessage = (event): void => {
-                title = event.data.title;
-                isWorking = event.data.isWorking;
-                url = event.data.url;
-                statusText = event.data.statusText;
-                cli = event.data.cli;
-                error = event.data.error;
+                state = event.data.state;
+
+                if (state === 'on') {
+                    statusText[state] = `Your site is running at<br /><code>${event.data.detail}</code>`;
+                }
+                else {
+                    detail = event.data.detail;
+                }
             };
         }
     });
@@ -54,8 +66,8 @@
 
   <main>
     <div class="cms-installer__main">
-      <h2>{title}</h2>
-      {#if isWorking}
+      <h2>{titleText[state] || ''}</h2>
+      {#if isWorking.includes(state)}
         <div id="loader">
           <svg xmlns="http://www.w3.org/2000/svg" display="block" preserveAspectRatio="xMidYMid" width="48" height="48" style="shape-rendering: auto; display: block;" viewBox="0 0 100 100">
             <g fill="rgb(0, 156, 222)">
@@ -87,8 +99,8 @@
           </svg>
         </div>
       {/if}
-      <p id="status">{@html statusText}</p>
-      {#if url}
+      <p id="status">{@html statusText[state]}</p>
+      {#if state === 'on'}
         <div>
           <button class="button" type="button" onclick={drupal.visit}>
             Visit site&nbsp;
@@ -98,16 +110,16 @@
           </button>
         </div>
       {/if}
-      <div id="cli-output" class:error={error}>{cli}</div>
+      <div id="cli-output" class:error={state === 'error'}>{detail}</div>
       <footer>
-        {#if url}
+        {#if state === 'on'}
           <button title="Open Drupal directory" onclick={drupal.open}>
             <FolderIcon width="32" />
           </button>
           <button title="Delete site" onclick={confirmDestroy}>
             <TrashIcon width="32" />
           </button>
-        {:else if ! isWorking && ! error}
+        {:else if state === 'clean'}
           <button title="Start site" onclick={drupal.start}>
             <ReinstallIcon width="48" />
           </button>
