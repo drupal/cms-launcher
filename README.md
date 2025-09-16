@@ -86,7 +86,7 @@ Found a bug or want to suggest a feature? [Open an issue](https://github.com/dru
 
 ### Prerequisites
 
-* Node.js (the JavaScript runtime—not the Drupal module 😉) and Yarn 2 or later
+* Node.js (the JavaScript runtime—not the Drupal module 😉)
 * PHP 8.3 or later, globally installed
 * Composer, globally installed
 
