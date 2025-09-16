@@ -36,6 +36,10 @@ export class Drupal implements DrupalInterface
             // `composer validate --check-lock` will be happy.
             ['config', '--merge', '--json', 'extra.drupal-launcher', '{"version": 1}'],
 
+            // Require the Drupal Association Extras module and inject it into the install
+            // profile.
+            ['require', 'drupal/drupal_association_extras:@dev', '--no-update'],
+
             // Finally, install dependencies. We suppress the progress bar because it
             // looks lame when streamed to the renderer.
             ['install', '--no-progress'],
