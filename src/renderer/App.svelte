@@ -1,6 +1,8 @@
 <script lang="ts">
 
     import { onMount } from 'svelte';
+    import Trash from '@phosphor-icons/core/regular/trash.svg?component';
+    import Start from '@phosphor-icons/core/regular/play-circle.svg?component';
 
     let title: string = '';
     let statusText: string = '';
@@ -21,6 +23,13 @@
             };
         }
     });
+
+    function confirmDestroy (): void
+    {
+        if (confirm("Your Drupal site will be lost. You can't undo this. Are you sure?")) {
+            drupal.destroy();
+        }
+    }
 
     onMount((): void => {
         drupal.start();
@@ -89,6 +98,17 @@
         </div>
       {/if}
       <div id="cli-output" class:error={error}>{cli}</div>
+      <footer>
+        {#if url}
+          <button title="Delete site" onclick={confirmDestroy}>
+            <Trash width="32" />
+          </button>
+        {:else if ! isWorking && ! error}
+          <button title="Start site" onclick={drupal.start}>
+            <Start width="32" />
+          </button>
+        {/if}
+      </footer>
     </div>
   </main>
 </div>
@@ -220,6 +240,21 @@
     &.error {
       opacity: 1;
       color: #b00;
+    }
+  }
+
+  footer {
+    margin-top: 2rem;
+  }
+
+  footer button {
+    background-color: transparent;
+    border: none;
+    opacity: .3;
+    transition: opacity .3s;
+
+    &:hover {
+      opacity: 1;
     }
   }
 
