@@ -1,13 +1,13 @@
-import type {ChildProcess} from 'node:child_process';
-import {default as getPort, portNumbers} from 'get-port';
-import {OutputType, PhpCommand} from './PhpCommand';
-import {app, type MessagePortMain, shell} from 'electron';
-import {ComposerCommand} from './ComposerCommand';
-import {join} from 'node:path';
-import {access, copyFile, glob, mkdir, readFile, rm, writeFile} from 'node:fs/promises';
+import type { ChildProcess } from 'node:child_process';
+import { default as getPort, portNumbers } from 'get-port';
+import { OutputType, PhpCommand } from './PhpCommand';
+import { app, type MessagePortMain, shell } from 'electron';
+import { ComposerCommand } from './ComposerCommand';
+import { join } from 'node:path';
+import { access, copyFile, glob, mkdir, readFile, rm, writeFile } from 'node:fs/promises';
 import * as tar from 'tar';
 import logger from 'electron-log';
-import {Drupal as DrupalInterface} from '../preload/Drupal';
+import { Drupal as DrupalInterface } from '../preload/Drupal';
 import * as YAML from 'yaml';
 
 /**
