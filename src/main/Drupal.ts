@@ -1,13 +1,13 @@
-import type { ChildProcess } from 'node:child_process';
-import { default as getPort, portNumbers } from 'get-port';
-import { OutputType, PhpCommand } from './PhpCommand';
-import { app, type MessagePortMain, shell } from 'electron';
-import { ComposerCommand } from './ComposerCommand';
-import { join } from 'node:path';
-import { access, copyFile, glob, mkdir, readFile, rm, writeFile } from 'node:fs/promises';
+import type {ChildProcess} from 'node:child_process';
+import {default as getPort, portNumbers} from 'get-port';
+import {OutputType, PhpCommand} from './PhpCommand';
+import {app, type MessagePortMain, shell} from 'electron';
+import {ComposerCommand} from './ComposerCommand';
+import {join} from 'node:path';
+import {access, copyFile, glob, mkdir, readFile, rm, writeFile} from 'node:fs/promises';
 import * as tar from 'tar';
 import logger from 'electron-log';
-import { Drupal as DrupalInterface } from '../preload/Drupal';
+import {Drupal as DrupalInterface} from '../preload/Drupal';
 import * as YAML from 'yaml';
 
 /**
@@ -163,14 +163,29 @@ export class Drupal implements DrupalInterface
             }
         }
 
+        // We'll try to parse Composer's output to provide progress information.
+        let progress: [number, number] | null = null;
+
         for (const command of this.commands.install) {
             await new ComposerCommand(...command)
                 .inDirectory(this.root)
                 .run({}, (line: string, type: OutputType): void => {
-                    // Progress messages are sent to STDERR; forward them to the renderer.
-                    if (type === OutputType.Error) {
-                        port?.postMessage({ state: 'install', detail: line });
+                    // Progress messages are sent to STDERR, not STDOUT.
+                    if (type === OutputType.Output) {
+                        return;
                     }
+                    // When Composer reports the number of operations it intends to do,
+                    // initialize the progress information.
+                    const matches = line.match(/^Package operations: ([0-9]+) installs?,\s*/);
+                    if (matches) {
+                        const total = parseInt(matches[1]);
+                        progress = [0, total];
+                    }
+                    else if (progress && line.includes('- Installing ')) {
+                        progress[0]++;
+                    }
+                    // Send the output line and progress information to the renderer.
+                    port?.postMessage({ state: 'install', detail: line, progress });
                 });
         }
         await this.prepareSettings();
