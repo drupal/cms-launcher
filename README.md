@@ -105,6 +105,7 @@ To run tests, run `npm test`. To test the full app bundle, run `npx electron-bui
 This launcher is meant to get Drupal CMS up and running with no fuss, but it can't replace a full-featured development environment. Specifically, this launcher:
 
 * Does not support deploying to hosting services (yet).
+* Only supports one Drupal CMS site at a time.
 * Only supports SQLite databases, since SQLite is compiled into the PHP interpreter and has no additional dependencies.
 * Uses [the web server built into the PHP interpreter](https://www.php.net/manual/en/features.commandline.webserver.php), which is meant for testing and is not as powerful as Apache or nginx.
 * Might not be able to send email, since it relies on whatever mail transfer program is (or isn't) on your system.
