@@ -17,7 +17,7 @@ This product includes PHP software, freely available from <http://www.php.net/so
 - [How it works](#how-it-works)
 - [Where are the Drupal files and database?](#where-are-the-drupal-files-and-database)
 - [How to uninstall](#how-to-uninstall)
-- [Troubleshooting](#troubleshooting)  <-- ADD THIS LINE
+- [Troubleshooting](#troubleshooting)
 - [Sponsorship](#sponsorship)
 - [Contributing](#contributing)
 - [Limitations and alternatives](#limitations-and-alternatives)
