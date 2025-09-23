@@ -34,9 +34,7 @@ export class Drupal implements DrupalInterface
 
             // Require the Drupal Association Extras module, which will be injected into
             // the install profile by prepareSettings().
-            // @todo Restore this line when drupal_association_extras has a tagged release.
-            //   Also remove the early return from prepareSettings().
-            // ['require', 'drupal/drupal_association_extras:@dev', '--no-update'],
+            ['require', 'drupal/drupal_association_extras:@alpha', '--no-update'],
 
             // Finally, install dependencies. We suppress the progress bar because it
             // looks lame when streamed to the renderer.
@@ -253,8 +251,6 @@ export class Drupal implements DrupalInterface
         lines.splice(-4, 3, ...replacements);
         await writeFile(settingsPath, lines.join('\n'));
 
-        // @todo Remove this line when drupal_association_extras has a tagged release.
-        return;
         // Add the drupal_association_extras module to every install profile. We don't want to
         // hard-code the name or path of the info file, in case Drupal CMS changes it.
         const finder = glob(
