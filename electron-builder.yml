@@ -56,4 +56,4 @@ win:
     codeSigningAccountName: da-trusted-signing-001
     endpoint: 'https://wus2.codesigning.azure.net/'
     # Best guess.
-    publisherName: 'DrupalCon, Inc.'
+    publisherName: 'Drupal Association'
