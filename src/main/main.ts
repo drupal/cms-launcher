@@ -225,10 +225,6 @@ function createWindow (): void
 }
 
 app.whenReady().then((): void => {
-    // For automatic updates to work, the app needs to be in `/Applications` on macOS.
-    if (process.platform === 'darwin' && app.isPackaged && ! app.isInApplicationsFolder()) {
-        app.moveToApplicationsFolder();
-    }
     createWindow();
 
     app.on('activate', () => {
