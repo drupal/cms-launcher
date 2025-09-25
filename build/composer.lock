@@ -4,20 +4,20 @@
         "Read more about it at https://getcomposer.org/doc/01-basic-usage.md#installing-dependencies",
         "This file is @generated automatically"
     ],
-    "content-hash": "8bba4e4dfd4c2820f9f42d5536a9c834",
+    "content-hash": "74c2044459970fa5cda458651bed8792",
     "packages": [
         {
             "name": "crazywhalecc/static-php-cli",
-            "version": "2.7.3",
+            "version": "2.7.4",
             "source": {
                 "type": "git",
                 "url": "https://github.com/crazywhalecc/static-php-cli.git",
-                "reference": "8d303348d98d86b376515e23ee3b08dfec9ecffd"
+                "reference": "79ab6490fd5091d37674f5b597e9e41759df525f"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/crazywhalecc/static-php-cli/zipball/8d303348d98d86b376515e23ee3b08dfec9ecffd",
-                "reference": "8d303348d98d86b376515e23ee3b08dfec9ecffd",
+                "url": "https://api.github.com/repos/crazywhalecc/static-php-cli/zipball/79ab6490fd5091d37674f5b597e9e41759df525f",
+                "reference": "79ab6490fd5091d37674f5b597e9e41759df525f",
                 "shasum": ""
             },
             "require": {
@@ -64,7 +64,7 @@
             "description": "Build single static PHP binary, with PHP project together, with popular extensions included.",
             "support": {
                 "issues": "https://github.com/crazywhalecc/static-php-cli/issues",
-                "source": "https://github.com/crazywhalecc/static-php-cli/tree/2.7.3"
+                "source": "https://github.com/crazywhalecc/static-php-cli/tree/2.7.4"
             },
             "funding": [
                 {
@@ -72,7 +72,7 @@
                     "type": "other"
                 }
             ],
-            "time": "2025-09-05T09:52:26+00:00"
+            "time": "2025-09-18T11:37:26+00:00"
         },
         {
             "name": "illuminate/collections",

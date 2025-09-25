@@ -1,6 +1,6 @@
 {
     "require": {
-        "crazywhalecc/static-php-cli": "^2.7.3"
+        "crazywhalecc/static-php-cli": "^2.7.4"
     },
     "autoload": {
         "classmap": ["scripts.php"]
