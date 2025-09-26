@@ -8,9 +8,9 @@ on:
       # that this workflow runs.
       - 'build/**'
   schedule:
-    # Run this workflow every 6 hours to repackage the pre-built Drupal CMS site
+    # Run this workflow every 8 hours to repackage the pre-built Drupal CMS site
     # with the latest dependencies.
-    - cron: 0 */6 * * *
+    - cron: 0 */8 * * *
   workflow_dispatch:
 
 env:
