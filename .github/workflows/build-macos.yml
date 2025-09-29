@@ -34,16 +34,6 @@ jobs:
     steps:
       - uses: actions/checkout@v4
 
-      - if: steps.cache.outputs.cache-hit != 'true'
-        name: "Set up PHP"
-        uses: shivammathur/setup-php@v2
-        with:
-          # Install PHP with the tools needed to build the interpreter, if necessary.
-          php-version: latest
-          tools: pecl, composer
-          extensions: curl, openssl, mbstring, tokenizer
-          ini-values: memory_limit=-1
-
       # Cache the built binary so we can skip the build steps if there is a cache hit.
       - name: Generate cache key
         run: |
@@ -56,6 +46,16 @@ jobs:
         with:
           path: build/php-${{ runner.arch }}
           key: php-${{ env.CACHE_KEY }}
+
+      - if: steps.cache.outputs.cache-hit != 'true'
+        name: "Set up PHP"
+        uses: shivammathur/setup-php@v2
+        with:
+          # Install PHP with the tools needed to build the interpreter, if necessary.
+          php-version: latest
+          tools: pecl, composer
+          extensions: curl, openssl, mbstring, tokenizer
+          ini-values: memory_limit=-1
 
       - if: steps.cache.outputs.cache-hit != 'true'
         name: Install dependencies and build PHP
