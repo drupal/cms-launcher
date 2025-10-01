@@ -17,7 +17,6 @@ This product includes PHP software, freely available from <http://www.php.net/so
 - [How it works](#how-it-works)
 - [Where are the Drupal files and database?](#where-are-the-drupal-files-and-database)
 - [How to uninstall](#how-to-uninstall)
-- [Select correct version](#select-correct-version)
 - [Troubleshooting](#troubleshooting)
 - [Sponsorship](#sponsorship)
 - [Contributing](#contributing)
@@ -27,9 +26,8 @@ This product includes PHP software, freely available from <http://www.php.net/so
 
 * **Windows**: [Download the latest release](https://github.com/drupal/cms-launcher/releases/latest/download/Drupal_CMS-Windows.exe) and double-click to install and run.
 * **macOS**: [Download the latest release](https://github.com/drupal/cms-launcher/releases/latest/download/Drupal_CMS-macOS.zip), unzip it, and move the app to your _Applications_ folder. Then double-click it to run.
-* **Linux**: Install [AppImageLauncher](https://github.com/TheAssassin/AppImageLauncher), then [download the latest release](https://github.com/drupal/cms-launcher/releases/latest) of the Drupal CMS Launcher appropriate for your system, right-click file and select "Executable as Program", and double-click it.
-
-For Linux and macOS users not sure which version to download, see [Select correct version](#select-correct-version) below.
+* **Linux**: Install [AppImageLauncher](https://github.com/TheAssassin/AppImageLauncher), then [download the latest release](https://github.com/drupal/cms-launcher/releases/latest) of the Drupal CMS Launcher appropriate for your system, right-click file and select "Executable as Program", and double-click it.  
+    **Tip**: Use the `arch` or `dpkg --print-architecture` command to check what kind of system you have. If you get `x86_64` or `amd64`, use the `x64` version. If you get `aarch64`, use the `arm64` version.
 
 This app is actively developed, so if you encounter buggy behavior, [please report it](https://github.com/drupal/cms-launcher/issues)!
 
@@ -79,16 +77,6 @@ On Windows, the built-in firewall may block the launcher because it needs to sta
 5.  Click the **"Add"** button to add the application to the firewall list.
 6.  You will now see the launcher in the list. Ensure that the checkboxes for **"Private"** and **"Public"** are checked.
 7.  Click **"OK"** to save your changes. The launcher should now be able to connect properly.
-
-## Select correct version
-
-**Q**: As a macOS user, should I download `silicon` or `Intel` version?
-
-**A**: TO DO: Add a method, as for Linux below .
-
-**Q**: As a Linux user, should I download `x64` or `arm64`?
-
-**A**: Most likely `x64`. `arm64` is for Rapberry Pi, embedded systems, and laptops such as Chromebooks, which use ARM processors. Use the `arch` or `dpkg --print-architecture` command to check, resulting in feedback such as `x86_64` and `amd64`, which work with `x64`. See [ARM or AMD](https://www.reddit.com/r/linux4noobs/comments/m6aywk/arm_or_amd/).
 
 ## Sponsorship
 
