@@ -26,7 +26,7 @@ This product includes PHP software, freely available from <http://www.php.net/so
 
 * **Windows**: [Download the latest release](https://github.com/drupal/cms-launcher/releases/latest/download/Drupal_CMS-Windows.exe) and double-click to install and run.
 * **macOS**: [Download the latest release](https://github.com/drupal/cms-launcher/releases/latest/download/Drupal_CMS-macOS.zip), unzip it, and move the app to your _Applications_ folder. Then double-click it to run.
-* **Linux**: Install [AppImageLauncher](https://github.com/TheAssassin/AppImageLauncher), then [download the latest release](github.com/drupal/cms-launcher/releases/latest) of the Drupal CMS Launcher appropriate for your system and double-click it.
+* **Linux**: Install [AppImageLauncher](https://github.com/TheAssassin/AppImageLauncher), then [download the latest release](https://github.com/drupal/cms-launcher/releases/latest) of the Drupal CMS Launcher appropriate for your system and double-click it.
 
 This app is actively developed, so if you encounter buggy behavior, [please report it](https://github.com/drupal/cms-launcher/issues)!
 
