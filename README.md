@@ -24,39 +24,40 @@ This product includes PHP software, freely available from <http://www.php.net/so
 
 ## How to try it
 
-[Download the latest release](https://github.com/drupal/cms-launcher/releases) for your operating system.
+* **Windows**: [Download the latest release](https://github.com/drupal/cms-launcher/releases/latest/download/Drupal_CMS-Windows.exe) and double-click to install and run.
+* **macOS**: [Download the latest release](https://github.com/drupal/cms-launcher/releases/latest/download/Drupal_CMS-macOS.zip), unzip it, and move the app to your _Applications_ folder. Then double-click it to run.
+* **Linux**: Install [AppImageLauncher](https://github.com/TheAssassin/AppImageLauncher), then [download the latest release](github.com/drupal/cms-launcher/releases/latest) of the Drupal CMS Launcher appropriate for your system and double-click it.
 
-This app is under development and should not be considered stable. If you encounter buggy behavior, [please report it](https://github.com/drupal/cms-launcher/issues)!
+This app is actively developed, so if you encounter buggy behavior, [please report it](https://github.com/drupal/cms-launcher/issues)!
 
 ## What this app is for
 
 This launcher is designed to help you **test out and build a site with Drupal CMS**. It's ideal for site builders, themers, and evaluators who want to explore Drupal CMS quickly. 
 
-It is **not intended for contributing to or developing Drupal CMS itself**. If your goal is to work on Drupal CMS core or the upstream project, you should use the [Drupal CMS project on Drupal.org](https://www.drupal.org/project/drupal_cms).
+It is **not intended for contributing to or developing Drupal CMS itself**. If your goal is to contribute code to Drupal CMS upstream, visit the [Drupal CMS project on Drupal.org](https://www.drupal.org/project/drupal_cms).
 
 ## How it works
 
-We use [static-php-cli](https://static-php.dev/) to compile a copy of PHP 8.3 that includes everything needed to run Drupal CMS. We bundle that with the [Composer](https://getcomposer.org/) dependency manager, and use those two tools to install and serve Drupal CMS. The app itself is a very simple front-end to PHP and Composer, written in TypeScript using the [Electron](https://www.electronjs.org/) framework.
+We use [static-php-cli](https://static-php.dev/) to compile a copy of PHP 8.3 that includes everything needed to run Drupal CMS. We bundle that with the [Composer](https://getcomposer.org/) dependency manager, and use those two tools to install and serve Drupal CMS. The app itself is a very simple wrapper around PHP and Composer, written in TypeScript using the [Electron](https://www.electronjs.org/) framework.
 
 ## Where are the Drupal files and database?
 
 The Drupal files and database are stored outside of the application, in the _drupal_ directory under the system's application data directory. The site uses a lightweight SQLite database, located at `web/sites/default/files/.ht.sqlite`.
 
-To reset your Drupal CMS instance, close the application, delete the _drupal_ directory from your system's application data directory, and launch the application again. It will reinstall Drupal CMS from scratch.
+To reset your Drupal CMS instance, press the trash icon to delete the _drupal_ directory from your system's application data directory. You will then be able to reinstall Drupal CMS from scratch.
 
 ## How to uninstall
 
 To completely uninstall the Drupal CMS Launcher and remove all associated files:
 
-1. **Delete the application:**
+1. **Remove the Drupal files:**
+   - Run the app and press the trash icon to delete the Drupal directory.
+   - Quit the app.
+
+2. **Delete the application:**
    - On macOS: Move the app from your _Applications_ directory to the Trash.
-   - On Windows: Delete the application directory you extracted from the ZIP file.
-
-2. **Remove the Drupal files:**
-   - Navigate to [your system's application data directory](https://www.electronjs.org/docs/latest/api/app#appgetpathname).
-   - Delete the _drupal_ directory to remove the site files and SQLite database.
-
-After these steps, the application and all its data will be fully removed from your system.
+   - On Windows: Uninstall the app via the control panel, the same way you would uninstall any other app.
+   - On Linux: Delete the AppImage file you downloaded.
 
 ## Troubleshooting
 
