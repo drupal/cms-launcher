@@ -7,15 +7,12 @@ import { ComposerCommand } from '@/main/ComposerCommand';
 async function launchApp(testInfo: TestInfo, ...options: string[]): Promise<[ElectronApplication, string]> {
   const root = testInfo.outputPath('drupal');
 
-  console.log(process.env.DISPLAY);
-
   const app = await electron.launch({
     args: [
         '.',
         `--root=${root}`,
         `--log=${testInfo.outputPath('app.log')}`,
         `--timeout=2`,
-        '--ozone-platform=x11',
         ...options,
     ],
     env: {
@@ -24,7 +21,7 @@ async function launchApp(testInfo: TestInfo, ...options: string[]): Promise<[Ele
       COMPOSER_MIRROR_PATH_REPOS: '1',
       // Disable the network so we don't inadvertently test the internet.
       COMPOSER_DISABLE_NETWORK: '1',
-      DISPLAY: process.env.DISPLAY || '',
+      DISPLAY: ':99',
     },
   });
   return [app, root];

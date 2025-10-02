@@ -17,6 +17,8 @@ import { hideBin } from 'yargs/helpers';
 import { PhpCommand } from './PhpCommand';
 import { ComposerCommand } from './ComposerCommand';
 
+app.commandLine.appendSwitch('ozone-platform', 'x11');
+
 // If any uncaught exception happens, send it to Sentry.
 Sentry.init({
     beforeSend: (event, hint) => {
