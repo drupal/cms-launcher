@@ -19,8 +19,7 @@ jobs:
       matrix:
         os:
           - macos-latest
-          # Testing on Linux is temporarily disabled until we can figure out the SUID sandboxing issue.
-          # - ubuntu-latest
+          - ubuntu-latest
           - windows-latest
     runs-on: ${{ matrix.os }}
     steps:
@@ -49,10 +48,21 @@ jobs:
         if: steps.cache.outputs.cache-hit != 'true'
         run: npm install
 
+      - name: Linux workarounds
+        if: runner.os == 'Linux'
+        run: |
+          sudo chown root:root $SANDBOX_BIN
+          sudo chmod 4755 $SANDBOX_BIN
+          Xvfb :99 &
+        env:
+          SANDBOX_BIN: ./node_modules/electron/dist/chrome-sandbox
+
       - name: Run tests
         run: |
           composer run assets --working-dir=build
           npm run test
+        env:
+          DISPLAY: :99
 
       - uses: actions/upload-artifact@v4
         if: ${{ !cancelled() }}

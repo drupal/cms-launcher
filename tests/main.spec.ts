@@ -21,6 +21,8 @@ async function launchApp(testInfo: TestInfo, ...options: string[]): Promise<[Ele
       COMPOSER_MIRROR_PATH_REPOS: '1',
       // Disable the network so we don't inadvertently test the internet.
       COMPOSER_DISABLE_NETWORK: '1',
+      // For xvfb on Linux.
+      DISPLAY: process.env.DISPLAY || '',
     },
   });
   return [app, root];
