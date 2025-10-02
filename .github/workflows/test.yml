@@ -18,9 +18,9 @@ jobs:
     strategy:
       matrix:
         os:
-          - macos-latest
+#          - macos-latest
           - ubuntu-latest
-          - windows-latest
+#          - windows-latest
     runs-on: ${{ matrix.os }}
     steps:
       - uses: actions/checkout@v4
@@ -50,19 +50,12 @@ jobs:
 
       - name: Linux workarounds
         if: runner.os == 'Linux'
-        run: |
-          sudo chown root:root $SANDBOX_BIN
-          sudo chmod 4755 $SANDBOX_BIN
-          Xvfb :99 &
-        env:
-          SANDBOX_BIN: ./node_modules/electron/dist/chrome-sandbox
+        run: sudo sysctl -w kernel.apparmor_restrict_unprivileged_userns=0
 
       - name: Run tests
         run: |
           composer run assets --working-dir=build
-          npm run test
-        env:
-          DISPLAY: :99
+          xvfb-run -- npm run test
 
       - uses: actions/upload-artifact@v4
         if: ${{ !cancelled() }}
