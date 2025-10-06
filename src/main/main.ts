@@ -17,25 +17,27 @@ import { hideBin } from 'yargs/helpers';
 import { PhpCommand } from './PhpCommand';
 import { ComposerCommand } from './ComposerCommand';
 
-// If any uncaught exception happens, send it to Sentry.
-Sentry.init({
-    beforeSend: (event, hint) => {
-        logger.transports.file.readAllLogs().forEach((log) => {
-            hint.attachments ??= [];
+// If the app is packaged, send any uncaught exceptions to Sentry.
+if (app.isPackaged) {
+    Sentry.init({
+        beforeSend: (event, hint) => {
+            logger.transports.file.readAllLogs().forEach((log) => {
+                hint.attachments ??= [];
 
-            hint.attachments = [{
-                filename: basename(log.path),
-                data: log.lines.join('\n'),
-                contentType: 'text/plain',
-            }];
-        });
-        return event;
-    },
-    dsn: "https://12eb563e258a6344878c10f16bbde85e@o4509476487233536.ingest.de.sentry.io/4509476503683152",
-    // We don't need to send any PII at all, so explicitly disable it. It's disabled
-    // by default, but we don't want it changing unexpectedly.
-    sendDefaultPii: false,
-});
+                hint.attachments = [{
+                    filename: basename(log.path),
+                    data: log.lines.join('\n'),
+                    contentType: 'text/plain',
+                }];
+            });
+            return event;
+        },
+        dsn: "https://12eb563e258a6344878c10f16bbde85e@o4509476487233536.ingest.de.sentry.io/4509476503683152",
+        // We don't need to send any PII at all, so explicitly disable it. It's disabled
+        // by default, but we don't want it changing unexpectedly.
+        sendDefaultPii: false,
+    });
+}
 
 logger.initialize();
 
