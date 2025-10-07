@@ -161,6 +161,12 @@ ipcMain.on('drupal:start', async ({ sender: win }): Promise<void> => {
         if ('CI' in process.env) {
             app.quit();
         }
+        // On newer versions of macOS, the app cannot be auto-updated if it's not in
+        // the Applications folder, and will cause an error. In that situation, don't
+        // even bother to check for updates.
+        else if (process.platform === 'darwin' && ! app.isInApplicationsFolder()) {
+            logger.debug('macOS: Skipping update check because app is not in the Applications folder.');
+        }
         else {
             await autoUpdater.checkForUpdatesAndNotify();
         }
