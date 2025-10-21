@@ -282,7 +282,7 @@ export class Drupal implements DrupalInterface
                 }
             };
 
-            await new PhpCommand('-S', url.substring(7), '.ht.router.php')
+            await new PhpCommand('-d max_execution_time=300', '-S', url.substring(7), '.ht.router.php')
                 .start({ cwd: this.webRoot() }, checkForServerStart);
         });
     }
