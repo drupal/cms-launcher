@@ -2,6 +2,7 @@ import { app } from 'electron';
 import logger from 'electron-log';
 import { type ExecFileOptions } from 'node:child_process';
 import { join } from 'node:path';
+import { readFile } from 'node:fs/promises';
 import { OutputHandler, PhpCommand } from './PhpCommand';
 
 /**
@@ -57,5 +58,17 @@ export class ComposerCommand extends PhpCommand
                 callback(line, ...rest);
             }
         });
+    }
+    // getVersion() method that reads a composer.json file and returns the version field
+    async getVersion (composerJsonPath: string): Promise<string | null>
+    {
+        try {
+            const content = await readFile(composerJsonPath, 'utf-8');
+            const data = JSON.parse(content);
+            return data.version ?? null;
+        } catch (error) {
+            logger.error(Error reading version from ${composerJsonPath}:, error);
+            return null;
+        }
     }
 }
