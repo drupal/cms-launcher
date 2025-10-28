@@ -1,6 +1,12 @@
 # This is a global constant, don't change it.
 appId: 'org.drupal.cms-launcher'
 
+# Disable sandboxing on Linux if the system is not configured correctly. This is
+# kind of a sledgehammer workaround for the problem documented at
+# https://docs.appimage.org/user-guide/troubleshooting/electron-sandboxing.html,
+# which affects some (but not all) people using this app on Linux.
+afterPack: 'electron-builder-sandbox-fix'
+
 # These fuses are largely adapted from Electron Forge's boilerplate.
 electronFuses:
   runAsNode: false
