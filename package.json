@@ -1,6 +1,6 @@
 {
   "name": "cms-launcher",
-  "version": "1.0.2",
+  "version": "1.0.3",
   "description": "A quick-start launcher for Drupal CMS.",
   "main": "./out/main/main.js",
   "scripts": {
@@ -15,8 +15,9 @@
     "@sveltejs/vite-plugin-svelte": "^6.1.4",
     "@types/node": "^24.0.0",
     "@types/yargs": "^17.0.33",
-    "electron": "^38.1.0",
-    "electron-builder": "^26.0.20",
+    "electron": "^39.0.0",
+    "electron-builder": "^26.1.0",
+    "electron-builder-sandbox-fix": "^1.1.1",
     "electron-vite": "^4.0.0",
     "typescript": "^5.8.3",
     "vite": "^7.1.5"
