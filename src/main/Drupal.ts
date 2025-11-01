@@ -286,4 +286,13 @@ export class Drupal implements DrupalInterface
                 .start({ cwd: this.webRoot() }, checkForServerStart);
         });
     }
+
+    private async getVersion (): Promise<number | null>
+    {
+        const { stdout } = await new ComposerCommand('config', 'extra.drupal-launcher.version')
+            .inDirectory(this.root)
+            .run();
+        const version = parseInt(stdout.toString().trim());
+        return Number.isNaN(version) ? null : version;
+    }
 }
