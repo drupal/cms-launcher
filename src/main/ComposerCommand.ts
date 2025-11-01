@@ -2,6 +2,7 @@ import { app } from 'electron';
 import logger from 'electron-log';
 import { type ExecFileOptions } from 'node:child_process';
 import { join } from 'node:path';
+import { readFile } from 'node:fs/promises';
 import { OutputHandler, PhpCommand } from './PhpCommand';
 
 /**
@@ -58,4 +59,19 @@ export class ComposerCommand extends PhpCommand
             }
         });
     }
+   private async getVersion(): Promise<number | null> {
+  try {
+    const result= await this.run(['config','extra.drupal-launcher.version']);
+    const output= String(stdout).trim();
+    if(!output){
+        return null;
+    }
+    const parseVer= Number.parseInt(output,10);
+    return Number.isNaN(parseVer) ? null:parseVer;
+  } 
+  catch(err) {
+    logger.error('Error reading composer extra.drupal-launcher.version:',err);
+    return null;
+  }
+}
 }
