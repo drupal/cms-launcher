@@ -46,7 +46,7 @@ jobs:
           php-version: latest
           # Composer 2.9.x is currently broken on Windows, so stick to 2.8.x for now.
           # @see https://github.com/drupal/cms-launcher/actions/runs/19337936548/job/55318143930#step:12:44
-          tools: pecl, composer:2.8.x
+          tools: pecl, composer:2.8
           extensions: curl, openssl, mbstring, tokenizer
           ini-values: memory_limit=-1
 
