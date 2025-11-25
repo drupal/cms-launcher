@@ -14,15 +14,18 @@ on:
   workflow_dispatch:
 
 jobs:
-  # The PHP interpreter needs to have its own job so it can be built in parallel for both
-  # x64 and arm64 architectures, before being merged into a universal binary while building
+  # The PHP interpreter needs to have its own job so it can be built in parallel for all
+  # supported architectures, before being merged into a universal binary while building
   # the app itself.
   php:
     name: PHP on ${{ matrix.os }}
     strategy:
       matrix:
         os:
-          - macos-13 # x64
+          # x64, supported until 2027, at which point GitHub Actions will drop support for
+          # macOS on Intel.
+          # @see https://github.com/actions/runner-images/issues/13046
+          - macos-15-intel
           - macos-latest # arm64
     runs-on: ${{ matrix.os }}
     env:
