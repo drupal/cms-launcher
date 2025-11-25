@@ -4,20 +4,20 @@
         "Read more about it at https://getcomposer.org/doc/01-basic-usage.md#installing-dependencies",
         "This file is @generated automatically"
     ],
-    "content-hash": "74c2044459970fa5cda458651bed8792",
+    "content-hash": "fe486744e6e08b5efab3af1f63ae98fa",
     "packages": [
         {
             "name": "crazywhalecc/static-php-cli",
-            "version": "2.7.5",
+            "version": "2.7.7",
             "source": {
                 "type": "git",
                 "url": "https://github.com/crazywhalecc/static-php-cli.git",
-                "reference": "c5ae719b9c7bdb811d8f94eff42b3827e5cde1fc"
+                "reference": "90981e3877ac4cffe2a148cff95729f02ed6572b"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/crazywhalecc/static-php-cli/zipball/c5ae719b9c7bdb811d8f94eff42b3827e5cde1fc",
-                "reference": "c5ae719b9c7bdb811d8f94eff42b3827e5cde1fc",
+                "url": "https://api.github.com/repos/crazywhalecc/static-php-cli/zipball/90981e3877ac4cffe2a148cff95729f02ed6572b",
+                "reference": "90981e3877ac4cffe2a148cff95729f02ed6572b",
                 "shasum": ""
             },
             "require": {
@@ -64,7 +64,7 @@
             "description": "Build single static PHP binary, with PHP project together, with popular extensions included.",
             "support": {
                 "issues": "https://github.com/crazywhalecc/static-php-cli/issues",
-                "source": "https://github.com/crazywhalecc/static-php-cli/tree/2.7.5"
+                "source": "https://github.com/crazywhalecc/static-php-cli/tree/2.7.7"
             },
             "funding": [
                 {
@@ -72,7 +72,7 @@
                     "type": "other"
                 }
             ],
-            "time": "2025-10-13T16:08:40+00:00"
+            "time": "2025-11-17T03:53:30+00:00"
         },
         {
             "name": "illuminate/collections",
@@ -1374,5 +1374,5 @@
     "prefer-lowest": false,
     "platform": {},
     "platform-dev": {},
-    "plugin-api-version": "2.6.0"
+    "plugin-api-version": "2.9.0"
 }
