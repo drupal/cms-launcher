@@ -39,7 +39,7 @@ It is **not intended for contributing to or developing Drupal CMS itself**. If y
 
 ## How it works
 
-We use [static-php-cli](https://static-php.dev/) to compile a copy of PHP 8.3 that includes everything needed to run Drupal CMS. We bundle that with the [Composer](https://getcomposer.org/) dependency manager, and use those two tools to install and serve Drupal CMS. The app itself is a very simple wrapper around PHP and Composer, written in TypeScript using the [Electron](https://www.electronjs.org/) framework.
+We use [static-php-cli](https://static-php.dev/) to compile a copy of PHP that includes everything needed to run Drupal CMS. We bundle that with the [Composer](https://getcomposer.org/) dependency manager, and use those two tools to install and serve Drupal CMS. The app itself is a very simple wrapper around PHP and Composer, written in TypeScript using the [Electron](https://www.electronjs.org/) framework.
 
 ## Where are the Drupal files and database?
 
@@ -89,7 +89,7 @@ Found a bug or want to suggest a feature? [Open an issue](https://github.com/dru
 ### Prerequisites
 
 * Node.js (the JavaScript runtime—not the Drupal module 😉)
-* PHP 8.3 or later, globally installed
+* PHP 8.4 or later, globally installed
 * Composer, globally installed
 
 Clone this repository, then `cd` into it and run:
@@ -111,7 +111,7 @@ This launcher is meant to get Drupal CMS up and running with no fuss, but it can
 * Only supports SQLite databases, since SQLite is compiled into the PHP interpreter and has no additional dependencies.
 * Uses [the web server built into the PHP interpreter](https://www.php.net/manual/en/features.commandline.webserver.php), which is meant for testing, does _not_ support HTTPS, and generally isn't as powerful as Apache or nginx.
 * Might not be able to send email, since it relies on whatever mail transfer program is (or isn't) on your system.
-* Uses PHP 8.3—the minimum required by Drupal 11—for maximum compatibility and performance.
+* Uses PHP 8.4—the minimum recommended for Drupal 11—for maximum compatibility and performance.
 
 If these limitations don’t meet your needs, consider the following alternatives:
 
