@@ -24,7 +24,7 @@ jobs:
       # use them to generate a cache key.
       # @see https://static-php.dev/en/guide/cli-generator.html
       PHP_EXTENSIONS: bz2,ctype,curl,dom,filter,gd,iconv,mbstring,opcache,openssl,pdo,pdo_sqlite,phar,session,simplexml,sqlite3,tokenizer,xml,xmlwriter,yaml,zip,zlib
-      PHP_VERSION: 8.3
+      PHP_VERSION: 8.4
       # Don't publish by default. This is overridden for the release branch, below.
       PUBLISH: never
     steps:
@@ -44,9 +44,7 @@ jobs:
         with:
           # Install PHP with the tools needed to build the interpreter, if necessary.
           php-version: latest
-          # Composer 2.9.x is currently broken on Windows, so stick to 2.8.x for now.
-          # @see https://github.com/drupal/cms-launcher/actions/runs/19337936548/job/55318143930#step:12:44
-          tools: pecl, composer:2.8
+          tools: pecl, composer
           extensions: curl, openssl, mbstring, tokenizer
           ini-values: memory_limit=-1
 

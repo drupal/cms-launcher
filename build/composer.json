@@ -1,6 +1,6 @@
 {
     "require": {
-        "crazywhalecc/static-php-cli": "^2.7.7"
+        "crazywhalecc/static-php-cli": "^2.7.10"
     },
     "autoload": {
         "classmap": ["scripts.php"]
@@ -13,5 +13,6 @@
     },
     "script-descriptions": {
         "assets": "Prepare app assets (extract Composer executable and download CA certificate bundle)."
-    }
+    },
+    "type": "project"
 }

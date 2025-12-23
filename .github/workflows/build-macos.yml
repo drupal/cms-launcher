@@ -33,7 +33,7 @@ jobs:
       # use them to generate a cache key.
       # @see https://static-php.dev/en/guide/cli-generator.html
       PHP_EXTENSIONS: bz2,ctype,curl,dom,filter,gd,iconv,mbstring,opcache,openssl,pcntl,pdo,pdo_sqlite,phar,posix,session,simplexml,sodium,sqlite3,tokenizer,xml,xmlwriter,yaml,zip,zlib
-      PHP_VERSION: 8.3
+      PHP_VERSION: 8.4
     steps:
       - uses: actions/checkout@v4
 
