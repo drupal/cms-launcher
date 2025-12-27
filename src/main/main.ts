@@ -201,34 +201,36 @@ function createWindow (): void
         },
     });
 
-    // On macOS, totally redefine the menu.
-    if (process.platform === 'darwin') {
-        const menu: Menu = Menu.buildFromTemplate([
-            {
-                label: app.getName(),
-                submenu: [
-                    {
-                        label: 'About',
-                        role: 'about',
-                    },
-                    {
-                        label: 'Quit',
-                        accelerator: 'Command+Q',
-                        click () {
-                            app.quit();
+    // If running in development, leave the menu as-is so we can access dev tools.
+    if (app.isPackaged) {
+        // On macOS, totally redefine the menu.
+        if (process.platform === 'darwin') {
+            const menu: Menu = Menu.buildFromTemplate([
+                {
+                    label: app.getName(),
+                    submenu: [
+                        {
+                            label: 'About',
+                            role: 'about',
                         },
-                    },
-                ],
-            }
-        ]);
-        Menu.setApplicationMenu(menu);
+                        {
+                            label: 'Quit',
+                            accelerator: 'Command+Q',
+                            click () {
+                                app.quit();
+                            },
+                        },
+                    ],
+                }
+            ]);
+            Menu.setApplicationMenu(menu);
+        }
+        else {
+            // Disable the default menu on Windows and Linux, since it doesn't make sense
+            // for this app.
+            Menu.setApplicationMenu(null);
+        }
     }
-    else {
-        // Disable the default menu on Windows and Linux, since it doesn't make sense
-        // for this app.
-        Menu.setApplicationMenu(null);
-    }
-
     win.loadFile(join(__dirname, '..', 'renderer', 'index.html'));
 }
 
