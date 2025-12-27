@@ -88,7 +88,7 @@ Found a bug or want to suggest a feature? [Open an issue](https://github.com/dru
 
 ### Prerequisites
 
-* Node.js (the JavaScript runtime—not the Drupal module 😉)
+* Node.js 22 or later
 * PHP 8.4 or later, globally installed
 * Composer, globally installed
 
