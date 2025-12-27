@@ -1,5 +1,5 @@
 import type { ChildProcess } from 'node:child_process';
-import { default as getPort, portNumbers } from 'get-port';
+import getPort, { portNumbers } from 'get-port';
 import { OutputType, PhpCommand } from './PhpCommand';
 import { app, type MessagePortMain, shell } from 'electron';
 import { ComposerCommand } from './ComposerCommand';
