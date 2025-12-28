@@ -28,7 +28,6 @@
     "electron-updater": "^6.6.2",
     "get-port": "^7.1.0",
     "i18next": "^25.7.3",
-    "i18next-fs-backend": "^2.6.1",
     "tar": "^7.4.3",
     "yaml": "^2.8.1",
     "yargs": "^18.0.0"

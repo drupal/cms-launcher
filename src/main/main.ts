@@ -17,7 +17,6 @@ import { hideBin } from 'yargs/helpers';
 import { PhpCommand } from './PhpCommand';
 import { ComposerCommand } from './ComposerCommand';
 import i18next from "i18next";
-import Backend from "i18next-fs-backend";
 
 // If the app is packaged, send any uncaught exceptions to Sentry.
 if (app.isPackaged) {
@@ -179,12 +178,38 @@ function createWindow (): void
 }
 
 app.whenReady().then(async (): Promise<void> => {
-    await i18next.use(Backend).init({
+    await i18next.init({
+        resources: {
+            en: {
+                translation: {
+                    options: {
+                      root: "The absolute path to the Drupal project root.",
+                      log: "Path of the log file.",
+                      composer: "The path of the Composer PHP script. Don't set this unless you know what you're doing.",
+                      url: "The URL of the Drupal site. Don't set this unless you know what you're doing.",
+                      timeout: "How long to wait for the web server to start before timing out, in seconds.",
+                      server: "Whether to automatically start the web server once Drupal is installed.",
+                      archive: "The path of a .tar.gz archive that contains the pre-built Drupal code base.",
+                      fixture: "The name of a test fixture from which to create the Drupal project."
+                  },
+                    menu: {
+                      about: "About",
+                      quit: "Quit",
+                  },
+                    drupal: {
+                        install: {
+                            init: "Initializing...",
+                            extract: "Extracting archive (% done)",
+                        },
+                        error: {
+                            timeout: "The web server did not start after {{timeout}} seconds.",
+                        },
+                    },
+                },
+            },
+        },
         lng: app.getLocale(),
         fallbackLng: 'en',
-        backend: {
-            loadPath: join(resourceDir, 'translations', '{{lng}}.json'),
-        },
     });
 
     const commandLine = yargs().options({
