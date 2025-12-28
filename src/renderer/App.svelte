@@ -4,23 +4,45 @@
     import TrashIcon from '@phosphor-icons/core/regular/trash.svg?component';
     import ReinstallIcon from '@phosphor-icons/core/regular/arrow-clockwise.svg?component';
     import FolderIcon from '@phosphor-icons/core/regular/folder-open.svg?component';
+    import i18next from "i18next";
+    import { createI18nStore } from "svelte-i18next";
+
+    i18next.init({
+        resources: {
+            en: {
+                translation: {
+                    title: {
+                        error: 'Uh-oh',
+                        start: 'Starting web server...',
+                        off: 'Installation complete!',
+                        destroy: 'Deleting site...',
+                        clean: 'Reinstall Drupal CMS',
+                        install: 'Installing...',
+                    },
+                    status: {
+                        error: 'An error occurred while starting Drupal CMS. It has been automatically reported to the developers.',
+                        install: 'This might take a minute.',
+                        on: 'Your site is running at<br /><code>{{detail}}</code>',
+                    },
+                    button: {
+                        open: 'Open Drupal directory',
+                        delete: 'Delete site',
+                        start: 'Start site',
+                        visit: 'Visit site',
+                    },
+                    'confirm-destroy': "Your site and content will be permanently deleted. You can't undo this. Are you sure?",
+                },
+            },
+        },
+        lng: navigator.language,
+        fallbackLng: 'en',
+    });
+    const i18n = createI18nStore(i18next);
 
     let state: string = '';
     let detail: string = '';
     let progress: [number, number] | null = null;
 
-    const titleText: any = {
-        error: 'Uh-oh',
-        start: 'Starting web server...',
-        off: 'Installation complete!',
-        destroy: 'Deleting site...',
-        clean: 'Reinstall Drupal CMS',
-        install: 'Installing...',
-    };
-    const statusText: any = {
-        error: 'An error occurred while starting Drupal CMS. It has been automatically reported to the developers.',
-        install: 'This might take a minute.',
-    };
     const isWorking = ['install', 'start', 'destroy'];
 
     window.addEventListener('message', (event): void => {
@@ -28,22 +50,16 @@
             event.ports[0].onmessage = (event): void => {
                 state = event.data.state;
                 progress = event.data.progress;
-
-                if (state === 'on') {
-                    statusText[state] = `Your site is running at<br /><code>${event.data.detail}</code>`;
-                }
-                else {
-                    detail = progress
-                      ? event.data.detail.replace('%', Math.round((progress[0] / progress[1]) * 100).toString().concat('%'))
-                      : event.data.detail;
-                }
+                detail = progress
+                    ? event.data.detail.replace('%', Math.round((progress[0] / progress[1]) * 100).toString().concat('%'))
+                    : event.data.detail;
             };
         }
     });
 
     function confirmDestroy (): void
     {
-        if (confirm("Your site and content will be permanently deleted. You can't undo this. Are you sure?")) {
+        if (confirm($i18n.t('confirm-destroy'))) {
             drupal.destroy();
         }
     }
@@ -70,7 +86,9 @@
 
   <main>
     <div class="cms-installer__main">
-      <h2>{titleText[state] || ''}</h2>
+      <h2>
+        {$i18n.t(`title.${state}`, { defaultValue: '' })}
+      </h2>
       {#if isWorking.includes(state)}
         <div id="loader">
           <svg xmlns="http://www.w3.org/2000/svg" display="block" preserveAspectRatio="xMidYMid" width="48" height="48" style="shape-rendering: auto; display: block;" viewBox="0 0 100 100">
@@ -103,18 +121,23 @@
           </svg>
         </div>
       {/if}
-      <p id="status">{@html statusText[state]}</p>
+      <p id="status">
+        {@html $i18n.t(`status.${state}`, { defaultValue: '', detail })}
+      </p>
+
       {#if state === 'on'}
         <div>
           <button class="button" type="button" onclick={drupal.visit}>
-            Visit site&nbsp;
+            {$i18n.t('button.visit')}&nbsp;
             <svg xmlns="http://www.w3.org/2000/svg" width="14" height="12" fill="none">
               <path fill="#fff" d="m13.03 6.53-4.5 4.5a.751.751 0 1 1-1.062-1.062l3.22-3.218H1.5a.75.75 0 0 1 0-1.5h9.188L7.469 2.03A.751.751 0 0 1 8.532.967l4.5 4.5a.75.75 0 0 1-.001 1.063Z"/>
             </svg>
           </button>
         </div>
+      {:else}
+        <div id="cli-output" class:error={state === 'error'}>{detail}</div>
       {/if}
-      <div id="cli-output" class:error={state === 'error'}>{detail}</div>
+
       {#if progress}
         <div>
           <progress value={progress[0]} max={progress[1]}></progress>
@@ -122,14 +145,14 @@
       {/if}
       <footer>
         {#if state === 'on'}
-          <button title="Open Drupal directory" onclick={drupal.open}>
+          <button title={$i18n.t('button.open')} onclick={drupal.open}>
             <FolderIcon width="32" />
           </button>
-          <button title="Delete site" onclick={confirmDestroy}>
+          <button title={$i18n.t('button.delete')} onclick={confirmDestroy}>
             <TrashIcon width="32" />
           </button>
         {:else if state === 'clean'}
-          <button title="Start site" onclick={drupal.start}>
+          <button title={$i18n.t('button.start')} onclick={drupal.start}>
             <ReinstallIcon width="48" />
           </button>
         {/if}
@@ -139,7 +162,6 @@
 </div>
 
 <style>
-
   :global {
     html {
       display: table;
@@ -283,5 +305,4 @@
       opacity: 1;
     }
   }
-
 </style>
