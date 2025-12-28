@@ -9,6 +9,7 @@ import * as tar from 'tar';
 import logger from 'electron-log';
 import { Drupal as DrupalInterface } from '../preload/Drupal';
 import * as YAML from 'yaml';
+import i18next from "i18next";
 
 /**
  * Provides methods for installing and serving a Drupal code base.
@@ -50,7 +51,7 @@ export class Drupal implements DrupalInterface
 
     }
 
-    constructor (root: string, fixture?: string)
+    constructor (root: string, fixture?: string | null)
     {
         this.root = root;
 
@@ -65,10 +66,7 @@ export class Drupal implements DrupalInterface
         );
 
         if (fixture) {
-            const repository = JSON.stringify({
-                type: 'path',
-                url: join(__dirname, '..', '..', 'tests', 'fixtures', fixture),
-            });
+            const repository = JSON.stringify({ type: 'path', url: fixture });
             // The option does not need to be escaped or quoted, because Composer is not being
             // executed through a shell.
             this.commands.install[0].push(`--repository=${repository}`);
@@ -147,7 +145,7 @@ export class Drupal implements DrupalInterface
     {
         port?.postMessage({
             state: 'install',
-            detail: 'Initializing...',
+            detail: i18next.t('drupal.install.init'),
         });
 
         if (archive) {
@@ -211,7 +209,7 @@ export class Drupal implements DrupalInterface
         const interval = setInterval((): void => {
             port?.postMessage({
                 state: 'install',
-                detail: `Extracting archive (% done)`,
+                detail: i18next.t('drupal.install.extract'),
                 progress: [done, total],
             });
         }, 500);
@@ -270,7 +268,9 @@ export class Drupal implements DrupalInterface
         // the exception will be caught by the calling code.
         return new Promise(async (resolve, reject): Promise<void> => {
             const timeoutId = setTimeout((): void => {
-               reject(`The web server did not start after ${timeout} seconds.`);
+               reject(
+                   i18next.t('drupal.error.timeout', { timeout }),
+               );
             }, timeout * 1000);
 
             const checkForServerStart = (line: string, _: any, server: ChildProcess): void => {
