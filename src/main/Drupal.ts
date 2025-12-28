@@ -50,7 +50,7 @@ export class Drupal implements DrupalInterface
 
     }
 
-    constructor (root: string, fixture?: string)
+    constructor (root: string, fixture?: string | null)
     {
         this.root = root;
 
@@ -65,10 +65,7 @@ export class Drupal implements DrupalInterface
         );
 
         if (fixture) {
-            const repository = JSON.stringify({
-                type: 'path',
-                url: join(__dirname, '..', '..', 'tests', 'fixtures', fixture),
-            });
+            const repository = JSON.stringify({ type: 'path', url: fixture });
             // The option does not need to be escaped or quoted, because Composer is not being
             // executed through a shell.
             this.commands.install[0].push(`--repository=${repository}`);

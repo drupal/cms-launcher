@@ -43,54 +43,12 @@ logger.initialize();
 
 const resourceDir = app.isPackaged ? process.resourcesPath : app.getAppPath();
 
-// Define the command-line options we support.
-const commandLine = yargs().options({
-    root: {
-        type: 'string',
-        description: 'The absolute path to the Drupal project root.',
-        default: join(app.getPath('appData'), 'drupal'),
-    },
-    log: {
-        type: 'string',
-        description: "Path of the log file.",
-        default: logger.transports.file.getFile().path,
-    },
-    composer: {
-        type: 'string',
-        description: "The path of the Composer PHP script. Don't set this unless you know what you're doing.",
-        default: join(resourceDir, 'bin', 'composer', 'bin', 'composer'),
-    },
-    url: {
-        type: 'string',
-        description: "The URL of the Drupal site. Don't set this unless you know what you're doing.",
-    },
-    timeout: {
-        type: 'number',
-        description: 'How long to wait for the web server to start before timing out, in seconds.',
-        default: 30,
-    },
-    server: {
-        type: 'boolean',
-        description: 'Whether to automatically start the web server once Drupal is installed.',
-        default: true,
-    },
-    archive: {
-        type: 'string',
-        description: "The path of a .tar.gz archive that contains the pre-built Drupal code base.",
-        default: join(resourceDir, 'prebuilt.tar.gz'),
-    },
-});
+// These are initialized by the app.whenReady() callback.
+let argv: CommandLineOptions;
+let drupal: Drupal;
 
-// If in development, allow the Drupal code base to be spun up from a test fixture.
-if (! app.isPackaged) {
-    commandLine.option('fixture', {
-        type: 'string',
-        description: 'The name of a test fixture from which to create the Drupal project.',
-    });
-}
-
-// Define the shape of our command-line options, to help the type checker deal with yargs.
-interface Options
+// The shape of our command-line options, to help the type checker deal with yargs.
+interface CommandLineOptions
 {
     root: string;
     log: string;
@@ -102,25 +60,9 @@ interface Options
     archive: string;
 }
 
-// Parse the command line and use it to set the path to Composer and the log file.
-const argv: Options = commandLine.parseSync(
-    hideBin(process.argv),
-);
-
 // The path to PHP. This cannot be overridden because PHP is an absolute hard requirement
 // of this app.
 PhpCommand.binary = join(resourceDir, 'bin', process.platform === 'win32' ? 'php.exe' : 'php');
-
-// Set the path to the Composer executable. We need to use an unpacked version of Composer
-// because the phar file has a shebang line that breaks us due to environment variables not
-// being inherited when this app is launched from the UI.
-ComposerCommand.binary = argv.composer;
-
-// Set the path to the log file. It's a little awkward that this needs to be done by setting
-// a function, but that's just how electron-log works.
-logger.transports.file.resolvePathFn = (): string => argv.log;
-
-const drupal = new Drupal(argv.root, argv.fixture);
 
 function openPort (win: WebContents): MessagePortMain
 {
@@ -234,7 +176,69 @@ function createWindow (): void
     win.loadFile(join(__dirname, '..', 'renderer', 'index.html'));
 }
 
-app.whenReady().then((): void => {
+app.whenReady().then(async (): Promise<void> => {
+    const commandLine = yargs().options({
+        root: {
+            type: 'string',
+            description: 'The absolute path to the Drupal project root.',
+            default: join(app.getPath('appData'), 'drupal'),
+        },
+        log: {
+            type: 'string',
+            description: "Path of the log file.",
+            default: logger.transports.file.getFile().path,
+        },
+        composer: {
+            type: 'string',
+            description: "The path of the Composer PHP script. Don't set this unless you know what you're doing.",
+            default: join(resourceDir, 'bin', 'composer', 'bin', 'composer'),
+        },
+        url: {
+            type: 'string',
+            description: "The URL of the Drupal site. Don't set this unless you know what you're doing.",
+        },
+        timeout: {
+            type: 'number',
+            description: 'How long to wait for the web server to start before timing out, in seconds.',
+            default: 30,
+        },
+        server: {
+            type: 'boolean',
+            description: 'Whether to automatically start the web server once Drupal is installed.',
+            default: true,
+        },
+        archive: {
+            type: 'string',
+            description: "The path of a .tar.gz archive that contains the pre-built Drupal code base.",
+            default: join(resourceDir, 'prebuilt.tar.gz'),
+        },
+    });
+    // If in development, allow the Drupal code base to be spun up from a test fixture.
+    if (! app.isPackaged) {
+        commandLine.option('fixture', {
+            type: 'string',
+            description: 'The name of a test fixture from which to create the Drupal project.',
+        });
+    }
+    argv = await commandLine.parse(
+        hideBin(process.argv),
+    );
+
+    // Set the path to the Composer executable. We need to use an unpacked version of Composer
+    // because the phar file has a shebang line that breaks us due to environment variables not
+    // being inherited when this app is launched from the UI.
+    ComposerCommand.binary = argv.composer;
+
+    // Set the path to the log file. It's a little awkward that this needs to be done by setting
+    // a function, but that's just how electron-log works.
+    logger.transports.file.resolvePathFn = (): string => argv.log;
+
+    // Initialize the object that manages the Drupal site.
+    drupal = new Drupal(
+        argv.root,
+        argv.fixture ? join(__dirname, '..', '..', 'tests', 'fixtures', argv.fixture) : null,
+    );
+
     createWindow();
 
     app.on('activate', () => {
