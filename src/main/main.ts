@@ -183,19 +183,19 @@ app.whenReady().then(async (): Promise<void> => {
             en: {
                 translation: {
                     options: {
-                      root: "The absolute path to the Drupal project root.",
-                      log: "Path of the log file.",
-                      composer: "The path of the Composer PHP script. Don't set this unless you know what you're doing.",
-                      url: "The URL of the Drupal site. Don't set this unless you know what you're doing.",
-                      timeout: "How long to wait for the web server to start before timing out, in seconds.",
-                      server: "Whether to automatically start the web server once Drupal is installed.",
-                      archive: "The path of a .tar.gz archive that contains the pre-built Drupal code base.",
-                      fixture: "The name of a test fixture from which to create the Drupal project."
-                  },
+                        root: "The absolute path to the Drupal project root.",
+                        log: "Path of the log file.",
+                        composer: "The path of the Composer PHP script. Don't set this unless you know what you're doing.",
+                        url: "The URL of the Drupal site. Don't set this unless you know what you're doing.",
+                        timeout: "How long to wait for the web server to start before timing out, in seconds.",
+                        server: "Whether to automatically start the web server once Drupal is installed.",
+                        archive: "The path of a .tar.gz archive that contains the pre-built Drupal code base.",
+                        fixture: "The name of a test fixture from which to create the Drupal project."
+                    },
                     menu: {
-                      about: "About",
-                      quit: "Quit",
-                  },
+                        about: "About",
+                        quit: "Quit",
+                    },
                     drupal: {
                         install: {
                             init: "Initializing...",
