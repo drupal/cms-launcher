@@ -185,10 +185,6 @@ app.whenReady().then(async (): Promise<void> => {
         backend: {
             loadPath: join(resourceDir, 'translations', '{{lng}}.json'),
         },
-        interpolation: {
-            // We accept no user input so there's no risk of XSS here.
-            escapeValue: false,
-        },
     });
 
     const commandLine = yargs().options({
