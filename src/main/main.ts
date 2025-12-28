@@ -145,7 +145,7 @@ function createWindow (): void
     });
 
     // If running in development, leave the menu as-is so we can access dev tools.
-    if (!app.isPackaged) {
+    if (app.isPackaged) {
         // On macOS, totally redefine the menu.
         if (process.platform === 'darwin') {
             const menu: Menu = Menu.buildFromTemplate([
