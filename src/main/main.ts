@@ -16,6 +16,8 @@ import yargs from 'yargs';
 import { hideBin } from 'yargs/helpers';
 import { PhpCommand } from './PhpCommand';
 import { ComposerCommand } from './ComposerCommand';
+import i18next from "i18next";
+import Backend from "i18next-fs-backend";
 
 // If the app is packaged, send any uncaught exceptions to Sentry.
 if (app.isPackaged) {
@@ -144,7 +146,7 @@ function createWindow (): void
     });
 
     // If running in development, leave the menu as-is so we can access dev tools.
-    if (app.isPackaged) {
+    if (!app.isPackaged) {
         // On macOS, totally redefine the menu.
         if (process.platform === 'darwin') {
             const menu: Menu = Menu.buildFromTemplate([
@@ -152,11 +154,11 @@ function createWindow (): void
                     label: app.getName(),
                     submenu: [
                         {
-                            label: 'About',
+                            label: i18next.t('menu.about'),
                             role: 'about',
                         },
                         {
-                            label: 'Quit',
+                            label: i18next.t('menu.quit'),
                             accelerator: 'Command+Q',
                             click () {
                                 app.quit();
@@ -177,39 +179,51 @@ function createWindow (): void
 }
 
 app.whenReady().then(async (): Promise<void> => {
+    await i18next.use(Backend).init({
+        lng: app.getLocale(),
+        fallbackLng: 'en',
+        backend: {
+            loadPath: join(resourceDir, 'translations', '{{lng}}.json'),
+        },
+        interpolation: {
+            // We accept no user input so there's no risk of XSS here.
+            escapeValue: false,
+        },
+    });
+
     const commandLine = yargs().options({
         root: {
             type: 'string',
-            description: 'The absolute path to the Drupal project root.',
+            description: i18next.t('options.root'),
             default: join(app.getPath('appData'), 'drupal'),
         },
         log: {
             type: 'string',
-            description: "Path of the log file.",
+            description: i18next.t('options.log'),
             default: logger.transports.file.getFile().path,
         },
         composer: {
             type: 'string',
-            description: "The path of the Composer PHP script. Don't set this unless you know what you're doing.",
+            description: i18next.t('options.composer'),
             default: join(resourceDir, 'bin', 'composer', 'bin', 'composer'),
         },
         url: {
             type: 'string',
-            description: "The URL of the Drupal site. Don't set this unless you know what you're doing.",
+            description: i18next.t('options.url'),
         },
         timeout: {
             type: 'number',
-            description: 'How long to wait for the web server to start before timing out, in seconds.',
+            description: i18next.t('options.timeout'),
             default: 30,
         },
         server: {
             type: 'boolean',
-            description: 'Whether to automatically start the web server once Drupal is installed.',
+            description: i18next.t('options.server'),
             default: true,
         },
         archive: {
             type: 'string',
-            description: "The path of a .tar.gz archive that contains the pre-built Drupal code base.",
+            description: i18next.t('options.archive'),
             default: join(resourceDir, 'prebuilt.tar.gz'),
         },
     });
@@ -217,7 +231,7 @@ app.whenReady().then(async (): Promise<void> => {
     if (! app.isPackaged) {
         commandLine.option('fixture', {
             type: 'string',
-            description: 'The name of a test fixture from which to create the Drupal project.',
+            description: i18next.t('options.fixture'),
         });
     }
     argv = await commandLine.parse(
