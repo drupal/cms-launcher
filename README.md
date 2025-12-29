@@ -37,6 +37,10 @@ This launcher is designed to help you **test out and build a site with Drupal CM
 
 It is **not intended for contributing to or developing Drupal CMS itself**. If your goal is to contribute code to Drupal CMS upstream, visit the [Drupal CMS project on Drupal.org](https://www.drupal.org/project/drupal_cms).
 
+This launcher does not manage or update the Drupal CMS codebase after initial setup. Updating the launcher will not update Drupal core, modules, or themes.
+
+Drupal CMS itself includes the [Automatic Updates](https://www.drupal.org/project/automatic_updates) module, which provides a built-in way to keep Drupal core, modules, and themes up to date.
+
 ## How it works
 
 We use [static-php-cli](https://static-php.dev/) to compile a copy of PHP that includes everything needed to run Drupal CMS. We bundle that with the [Composer](https://getcomposer.org/) dependency manager, and use those two tools to install and serve Drupal CMS. The app itself is a very simple wrapper around PHP and Composer, written in TypeScript using the [Electron](https://www.electronjs.org/) framework.
@@ -112,7 +116,6 @@ This launcher is meant to get Drupal CMS up and running with no fuss, but it can
 * Uses [the web server built into the PHP interpreter](https://www.php.net/manual/en/features.commandline.webserver.php), which is meant for testing, does _not_ support HTTPS, and generally isn't as powerful as Apache or nginx.
 * Might not be able to send email, since it relies on whatever mail transfer program is (or isn't) on your system.
 * Uses PHP 8.4—the minimum recommended for Drupal 11—for maximum compatibility and performance.
-* Does not manage, update, or modify the Drupal codebase after initial setup. Updating the launcher does not update Drupal core, modules, or themes; Drupal updates must be handled separately using standard Drupal update workflows.
 
 If these limitations don’t meet your needs, consider the following alternatives:
 
