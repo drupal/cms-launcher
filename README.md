@@ -37,9 +37,7 @@ This launcher is designed to help you **test out and build a site with Drupal CM
 
 It is **not intended for contributing to or developing Drupal CMS itself**. If your goal is to contribute code to Drupal CMS upstream, visit the [Drupal CMS project on Drupal.org](https://www.drupal.org/project/drupal_cms).
 
-This launcher does not manage or update the Drupal CMS codebase after initial setup. Updating the launcher will not update Drupal core, modules, or themes.
-
-Drupal CMS itself includes the [Automatic Updates](https://www.drupal.org/project/automatic_updates) module, which provides a built-in way to keep Drupal core, modules, and themes up to date.
+This launcher does not manage or update the Drupal CMS codebase after initial setup. Updating the launcher will not update Drupal core, modules, or themes. Drupal CMS includes the [Automatic Updates](https://www.drupal.org/project/automatic_updates) module, which provides a built-in way to keep Drupal core, modules, and themes up to date.
 
 ## How it works
 
