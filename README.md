@@ -5,6 +5,9 @@ A simple, standalone app to run Drupal CMS locally with zero setup.
 [![License](https://img.shields.io/github/license/drupal/cms-launcher)](LICENSE)
 [![Latest Release](https://img.shields.io/github/v/tag/drupal/cms-launcher
 )](https://github.com/drupal/cms-launcher/releases)
+![Windows build status](https://github.com/drupal/cms-launcher/actions/workflows/build-windows.yml/badge.svg)
+![macOS build status](https://github.com/drupal/cms-launcher/actions/workflows/build-macos.yml/badge.svg)
+![Linux build status](https://github.com/drupal/cms-launcher/actions/workflows/build-linux.yml/badge.svg)
 
 This installs [Drupal CMS](https://new.drupal.org/drupal-cms) on your machine and opens it in your default browser. The idea is a basic Drupal environment that just works: no fiddly setup process, no Docker, no external dependencies. Simply double-click the app to get started.
 
@@ -33,11 +36,11 @@ This app is actively developed, so if you encounter buggy behavior, [please repo
 
 ## What this app is for
 
-This launcher is designed to help you **test out and build a site with Drupal CMS**. It's ideal for site builders, themers, and evaluators who want to explore Drupal CMS quickly. 
+This launcher is designed to help you **test out and build a site with Drupal CMS**. It's ideal for site builders, themers, and evaluators who want to explore Drupal CMS quickly.
+
+It does not manage the Drupal CMS codebase after initial setup; updating the launcher will not update Drupal core, modules, or themes. Drupal CMS includes the [Automatic Updates](https://www.drupal.org/project/automatic_updates) module, which provides a built-in way to keep Drupal core, modules, and themes up to date.
 
 It is **not intended for contributing to or developing Drupal CMS itself**. If your goal is to contribute code to Drupal CMS upstream, visit the [Drupal CMS project on Drupal.org](https://www.drupal.org/project/drupal_cms).
-
-This launcher does not manage or update the Drupal CMS codebase after initial setup. Updating the launcher will not update Drupal core, modules, or themes. Drupal CMS includes the [Automatic Updates](https://www.drupal.org/project/automatic_updates) module, which provides a built-in way to keep Drupal core, modules, and themes up to date.
 
 ## How it works
 
