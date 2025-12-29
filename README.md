@@ -112,6 +112,7 @@ This launcher is meant to get Drupal CMS up and running with no fuss, but it can
 * Uses [the web server built into the PHP interpreter](https://www.php.net/manual/en/features.commandline.webserver.php), which is meant for testing, does _not_ support HTTPS, and generally isn't as powerful as Apache or nginx.
 * Might not be able to send email, since it relies on whatever mail transfer program is (or isn't) on your system.
 * Uses PHP 8.4—the minimum recommended for Drupal 11—for maximum compatibility and performance.
+* Does not manage, update, or modify the Drupal codebase after initial setup. Updating the launcher does not update Drupal core, modules, or themes; Drupal updates must be handled separately using standard Drupal update workflows.
 
 If these limitations don’t meet your needs, consider the following alternatives:
 
