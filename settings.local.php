@@ -13,9 +13,6 @@ $settings['testing_package_manager'] = TRUE;
 // report.
 $settings['trusted_host_patterns'][] = '^localhost$';
 
-// Allow caches to be cleared without a token.
-$settings['rebuild_access'] = TRUE;
-
 // Suppress the warning raised by `skip_permissions_hardening`.
 // @see drupal_cms_installer_install_tasks()
 putenv('IS_DDEV_PROJECT=1');

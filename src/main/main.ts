@@ -123,10 +123,17 @@ ipcMain.handle('drupal:start', async ({ sender: win }): Promise<string | null> =
 });
 
 ipcMain.handle('drupal:clear-cache', async (): Promise<void> => {
+    const cwd = join(drupal.webRoot(), 'core');
+
     try {
-        await new PhpCommand(
-            join(drupal.webRoot(), 'core', 'rebuild.php'),
-        ).run();
+        // First, generate the token we need to invoke `rebuild.php` with.
+        const { stdout: token } = await new PhpCommand(
+            join(cwd, 'scripts', 'rebuild_token_calculator.sh'),
+        ).run({ cwd });
+
+        // Now invoke `rebuild.php`, first injecting the token into the $_GET superglobal.
+        await new PhpCommand('-r', `parse_str("${token}", $_GET); require "rebuild.php";`)
+            .run({ cwd });
     }
     catch (e: any) {
         // Log all relevant information and send the exception to Sentry to help debug it.
