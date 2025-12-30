@@ -58,8 +58,7 @@
     {
         const data = event.data;
 
-        // `true` indicates the install is done, and we're about to start the server.
-        if (data.done === true) {
+        if (data.server) {
             title = $i18n.t('title.starting');
             status = detail = '';
             progress = null;
