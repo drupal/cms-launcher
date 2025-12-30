@@ -124,5 +124,5 @@ If these limitations don’t meet your needs, consider the following alternative
 * [DDEV](https://ddev.com) is Drupal's Docker-based local development platform of choice and gives you everything you need. It even has [a quick-start for Drupal CMS](https://ddev.readthedocs.io/en/stable/users/quickstart/#drupal-drupal-cms).
 * [Lando](https://lando.dev/) and [Docksal](https://docksal.io/) are also widely used, Docker-based options.
 * If you'd rather avoid Docker, [Laravel Herd](https://herd.laravel.com/) is a fine choice.
-* [MAMP](http://mamp.info/) is a long-standing favorite among web developers and is worth exploring.
+* [MAMP](http://mamp.info/) and [XAMPP](https://www.apachefriends.org) are long-standing favorites among web developers and worth exploring.
 * For Mac users, [Laravel Valet](https://laravel.com/docs/11.x/valet) is great if you're comfortable at the command line.
