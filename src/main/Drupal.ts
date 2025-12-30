@@ -106,15 +106,11 @@ export class Drupal
         await shell.openPath(this.root);
     }
 
-    public async destroy (port?: MessagePortMain): Promise<void>
+    public async destroy (): Promise<void>
     {
-        port?.postMessage({ state: 'destroy' });
-
         this.server?.kill();
-        this.server = null;
+        this.url = this.server = null;
         await rm(this.root, { force: true, recursive: true, maxRetries: 3 });
-
-        port?.postMessage({ state: 'clean' });
     }
 
     private webRoot (): string
