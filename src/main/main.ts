@@ -130,7 +130,7 @@ ipcMain.handle('drupal:clear-cache', async (): Promise<void> => {
     }
     catch (e: any) {
         // Log all relevant information and send the exception to Sentry to help debug it.
-        logger.debug(
+        logger.error(
             `Cache clear failed: ${e.toString()}`,
             e.stdout.toString(),
             e.stderr.toString(),
