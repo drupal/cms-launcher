@@ -94,6 +94,9 @@ ipcMain.handle('drupal:start', async ({ sender: win }): Promise<string | null> =
         throw new Error(e.stdout || e.toString());
     }
     finally {
+        // We're not sending any more progress information.
+        toRenderer.close();
+
         // If we're in CI, we're not checking for updates; there's nothing else to do.
         if ('CI' in process.env) {
             app.quit();
@@ -107,8 +110,6 @@ ipcMain.handle('drupal:start', async ({ sender: win }): Promise<string | null> =
         else {
             await autoUpdater.checkForUpdatesAndNotify();
         }
-        // We're not sending any more progress information.
-        toRenderer.close();
     }
 });
 
