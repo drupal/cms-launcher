@@ -97,7 +97,7 @@ export class Drupal
         await rm(this.root, { force: true, recursive: true, maxRetries: 3 });
     }
 
-    private webRoot (): string
+    public webRoot (): string
     {
         // @todo Determine this dynamically.
         return join(this.root, 'web');
@@ -233,7 +233,7 @@ export class Drupal
         return new Promise(async (resolve, reject): Promise<void> => {
             const timeoutId = setTimeout((): void => {
                reject(
-                   i18next.t('serverTimeout', { timeout }),
+                   i18next.t('serverTimeoutError', { timeout }),
                );
             }, timeout * 1000);
 

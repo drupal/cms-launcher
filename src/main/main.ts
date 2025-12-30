@@ -122,6 +122,26 @@ ipcMain.handle('drupal:start', async ({ sender: win }): Promise<string | null> =
     }
 });
 
+ipcMain.handle('drupal:clear-cache', async (): Promise<void> => {
+    try {
+        await new PhpCommand(
+            join(drupal.webRoot(), 'core', 'rebuild.php'),
+        ).run();
+    }
+    catch (e: any) {
+        // Log all relevant information and send the exception to Sentry to help debug it.
+        logger.error(
+            `Cache clear failed: ${e.toString()}`,
+            e.stdout.toString(),
+            e.stderr.toString(),
+        );
+        Sentry.captureException(e);
+
+        // Re-throw so that the UI can handle the error.
+        throw e;
+    }
+});
+
 ipcMain.handle('drupal:open', async (): Promise<void> => {
     await shell.openPath(drupal.root);
 });
@@ -191,6 +211,7 @@ app.whenReady().then(async (): Promise<void> => {
         resources: {
             en: {
                 translation: {
+                    // Command-line option descriptions.
                     options: {
                         root: "The absolute path to the Drupal project root.",
                         log: "Path of the log file.",
@@ -201,11 +222,12 @@ app.whenReady().then(async (): Promise<void> => {
                         archive: "The path of a .tar.gz archive that contains the pre-built Drupal code base.",
                         fixture: "The name of a test fixture from which to create the Drupal project."
                     },
+                    // Menu items.
                     menu: {
                         about: "About",
                         quit: "Quit",
                     },
-                    serverTimeout: "The web server did not start after {{timeout}} seconds.",
+                    serverTimeoutError: "The web server did not start after {{timeout}} seconds.",
                 },
             },
         },

@@ -154,10 +154,14 @@ test('install from a pre-built archive', async ({}, testInfo) => {
 test('reset site', async ({}, testInfo) => {
   const [app, root] = await launchApp(testInfo, '--fixture=basic');
 
-  // If the site started up successfully, we should have a button to delete it, and
-  // a button to open it in the file explorer.
+  // If the site started up successfully, we should see:
+  // - A button to visit the site
+  // - A button to clear the cache
+  // - A button to open the Drupal directory in the file explorer
+  // - A button to delete the site
   const window = await app.firstWindow();
   await expect(window.getByText('Visit Site')).toBeVisible();
+  await expect(window.getByTitle('Clear cache')).toBeVisible();
   await expect(window.getByTitle('Open Drupal directory')).toBeVisible();
   const deleteButton = window.getByTitle('Delete site');
   await expect(deleteButton).toBeVisible();
@@ -184,4 +188,23 @@ test('reset site', async ({}, testInfo) => {
   await expect(window.getByText('Visit Site')).toBeVisible();
 
   await app.close();
+});
+
+test('error during cache clear', async ({}, testInfo) => {
+  const [app, root] = await launchApp(testInfo, '--fixture=basic');
+
+  const window = await app.firstWindow();
+  const clearCacheButton = window.getByTitle('Clear cache');
+  // The fixture has a `rebuild.php` which always fails, so clearing the cache should bring up
+  // an alert box.
+  window.on('dialog', async (dialog) => {
+    expect(dialog.type()).toBe('alert');
+    expect(dialog.message()).toBe('An error occurred while clearing the cache. It has been reported to the developers.');
+    await dialog.accept();
+  });
+  await clearCacheButton.click();
+  // The button should be disabled while we're waiting for the cache clear.
+  await expect(clearCacheButton).toBeDisabled();
+  // The button should be re-enabled when the operation is done, even if it failed.
+  await expect(clearCacheButton).not.toBeDisabled();
 });

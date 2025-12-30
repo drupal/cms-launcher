@@ -4,6 +4,7 @@
     import TrashIcon from '@phosphor-icons/core/regular/trash.svg?component';
     import ReinstallIcon from '@phosphor-icons/core/regular/arrow-clockwise.svg?component';
     import FolderIcon from '@phosphor-icons/core/regular/folder-open.svg?component';
+    import CacheClearIcon from '@phosphor-icons/core/regular/arrows-clockwise.svg?component';
     import i18next from "i18next";
     import { createI18nStore } from "svelte-i18next";
 
@@ -11,6 +12,7 @@
         resources: {
             en: {
                 translation: {
+                    // Title text for various situations.
                     title: {
                         error: 'Uh-oh',
                         starting: 'Starting web server...',
@@ -19,22 +21,30 @@
                         installing: 'Installing...',
                         installed: 'Installation complete!',
                     },
+                    // Status messages, shown below the title.
                     status: {
                         error: 'An error occurred while starting Drupal CMS. It has been automatically reported to the developers.',
                         installing: 'This might take a minute.',
                         running: 'Your site is running at<br /><code>{{url}}</code>',
                     },
+                    // Progress messages, shown during initial set-up.
                     progress: {
                         init: 'Initializing...',
                         extracting: 'Extracting archive ({{percent}}% done)',
                     },
+                    // Text (or titles) of buttons.
                     button: {
+                        clearCache: 'Clear cache',
                         open: 'Open Drupal directory',
                         delete: 'Delete site',
                         start: 'Start site',
                         visit: 'Visit site',
                     },
-                    confirmDelete: "Your site and content will be permanently deleted. You can't undo this. Are you sure?",
+                    // Text used in dialog boxes (alerts, confirmations, etc).
+                    dialog: {
+                        cacheClearError: 'An error occurred while clearing the cache. It has been reported to the developers.',
+                        confirmDelete: "Your site and content will be permanently deleted. You can't undo this. Are you sure?",
+                    },
                 },
             },
         },
@@ -130,7 +140,7 @@
 
     async function deleteSite (): Promise<void>
     {
-        if (confirm($i18n.t('confirmDelete'))) {
+        if (confirm($i18n.t('dialog.confirmDelete'))) {
             url = null;
             title = $i18n.t('title.deleting');
             status = detail = '';
@@ -149,6 +159,22 @@
             catch (e: any) {
                 handleError(e);
             }
+        }
+    }
+
+    async function clearCache (event: any): Promise<void>
+    {
+        const button = event.currentTarget;
+
+        button.disabled = true;
+        try {
+            await drupal('clear-cache');
+        }
+        catch {
+            alert($i18n.t('dialog.cacheClearError'));
+        }
+        finally {
+            button.disabled = false;
         }
     }
 
@@ -226,6 +252,9 @@
       {/if}
       <footer>
         {#if url}
+          <button title={$i18n.t('button.clearCache')} class="spin-on-await" onclick={clearCache}>
+            <CacheClearIcon width="32" />
+          </button>
           <button title={$i18n.t('button.open')} onclick={() => drupal('open')}>
             <FolderIcon width="32" />
           </button>
@@ -266,6 +295,19 @@
         border-inline-start-width: 35px;
       }
     }
+
+    @keyframes spin {
+      0% {
+        transform: rotate(0deg);
+      }
+      100% {
+        transform: rotate(360deg);
+      }
+    }
+  }
+
+  .spin-on-await:disabled {
+    animation: spin 600ms linear infinite;
   }
 
   .cms-installer {
