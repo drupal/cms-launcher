@@ -82,6 +82,9 @@ ipcMain.handle('drupal:start', async ({ sender: win }): Promise<string | null> =
 
     try {
         await drupal.install(argv.archive, progress);
+        // Let the renderer know that Drupal is installed.
+        progress.postMessage({ done: true });
+
         return argv.server ? await drupal.serve(argv.url, argv.timeout) : null;
     }
     catch (e: any) {

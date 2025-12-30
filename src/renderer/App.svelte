@@ -13,16 +13,16 @@
                 translation: {
                     title: {
                         error: 'Uh-oh',
-                        start: 'Starting web server...',
-                        off: 'Installation complete!',
-                        destroy: 'Deleting site...',
-                        clean: 'Reinstall Drupal CMS',
-                        install: 'Installing...',
+                        starting: 'Starting web server...',
+                        deleting: 'Deleting site...',
+                        deleted: 'Reinstall Drupal CMS',
+                        installing: 'Installing...',
+                        installed: 'Installation complete!',
                     },
                     status: {
                         error: 'An error occurred while starting Drupal CMS. It has been automatically reported to the developers.',
-                        install: 'This might take a minute.',
-                        on: 'Your site is running at<br /><code>{{detail}}</code>',
+                        installing: 'This might take a minute.',
+                        running: 'Your site is running at<br /><code>{{url}}</code>',
                     },
                     button: {
                         open: 'Open Drupal directory',
@@ -30,7 +30,8 @@
                         start: 'Start site',
                         visit: 'Visit site',
                     },
-                    'confirm-destroy': "Your site and content will be permanently deleted. You can't undo this. Are you sure?",
+                    extracting: 'Extracting archive ({{percent}}% done)',
+                    confirmDelete: "Your site and content will be permanently deleted. You can't undo this. Are you sure?",
                 },
             },
         },
@@ -39,37 +40,98 @@
     });
     const i18n = createI18nStore(i18next);
 
-    let state: string = '';
+    let url: string | null = null;
+    let title: string = '';
+    let status: string = '';
     let detail: string = '';
     let progress: [number, number] | null = null;
 
-    const isWorking = ['install', 'start', 'destroy'];
+    // Whether we're waiting for the main process to do a long operation.
+    let isWorking: boolean = false;
+    // Whether the user deleted the site (i.e., we should show the reinstall button).
+    let wasDeleted: boolean = false;
+    // There was an error.
+    let isError: boolean = false;
 
+    // Event handler when we receive progress information from the main process.
+    function onProgress (event: any): void
+    {
+        const data = event.data;
+
+        // `true` indicates the install is done, and we're about to start the server.
+        if (data.done === true) {
+            title = $i18n.t('title.starting');
+            status = detail = '';
+            progress = null;
+        }
+        else {
+            const { done, total } = data;
+            progress = [done, total];
+
+            // If the detail is the name of an archive, compute the percentage.
+            if (data.detail?.endsWith('.tar.gz')) {
+                detail = $i18n.t('extracting', { percent: Math.round((done / total) * 100) });
+            }
+            else {
+                detail = data.detail;
+            }
+        }
+    }
     window.addEventListener('message', (event): void => {
         if (event.source === window && event.data === 'port') {
-            event.ports[0].onmessage = (event): void => {
-                state = event.data.state;
-                progress = event.data.progress;
-                detail = progress
-                    ? event.data.detail.replace('%', Math.round((progress[0] / progress[1]) * 100).toString().concat('%'))
-                    : event.data.detail;
-            };
+            event.ports[0].onmessage = onProgress;
         }
     });
+
+    function onError (e: Error): void
+    {
+        url = null;
+        title = $i18n.t('title.error');
+        status = $i18n.t('status.error');
+        detail = e.message;
+        progress = null;
+        isError = true;
+        isWorking = false;
+    }
+
+    async function startDrupal (): Promise<void>
+    {
+        isWorking = true;
+        title = $i18n.t('title.installing');
+        status = $i18n.t('status.installing');
+        detail = '';
+        wasDeleted = false;
+
+        url = await drupal('start');
+        if (url) {
+            title = '';
+            status = $i18n.t('status.running', { url });
+        }
+        else {
+            title = $i18n.t('title.installed');
+            status = '';
+        }
+        detail = '';
+        isWorking = false;
+    }
 
     async function deleteSite (): Promise<void>
     {
-        if (confirm($i18n.t('confirm-destroy'))) {
-            detail = '';
-            state = 'destroy';
+        if (confirm($i18n.t('confirmDelete'))) {
+            isWorking = true;
+            url = null;
+            title = $i18n.t('title.deleting');
+            status = detail = '';
+
             await drupal('destroy');
-            state = 'clean';
+
+            title = $i18n.t('title.deleted');
+            wasDeleted = true;
+            isWorking = false;
         }
     }
 
-    onMount((): void => {
-        drupal('start');
-    });
+    onMount(startDrupal);
 
 </script>
 
@@ -89,10 +151,8 @@
 
   <main>
     <div class="cms-installer__main">
-      <h2>
-        {$i18n.t(`title.${state}`, { defaultValue: '' })}
-      </h2>
-      {#if isWorking.includes(state)}
+      <h2>{title}</h2>
+      {#if isWorking}
         <div id="loader">
           <svg xmlns="http://www.w3.org/2000/svg" display="block" preserveAspectRatio="xMidYMid" width="48" height="48" style="shape-rendering: auto; display: block;" viewBox="0 0 100 100">
             <g fill="rgb(0, 156, 222)">
@@ -124,11 +184,9 @@
           </svg>
         </div>
       {/if}
-      <p id="status">
-        {@html $i18n.t(`status.${state}`, { defaultValue: '', detail })}
-      </p>
+      <p id="status">{@html status}</p>
 
-      {#if state === 'on'}
+      {#if url}
         <div>
           <button class="button" type="button" onclick={() => drupal('visit')}>
             {$i18n.t('button.visit')}&nbsp;
@@ -137,9 +195,8 @@
             </svg>
           </button>
         </div>
-      {:else}
-        <div id="cli-output" class:error={state === 'error'}>{detail}</div>
       {/if}
+      <div id="cli-output" class:error={isError}>{detail}</div>
 
       {#if progress}
         <div>
@@ -147,15 +204,15 @@
         </div>
       {/if}
       <footer>
-        {#if state === 'on'}
+        {#if url}
           <button title={$i18n.t('button.open')} onclick={() => drupal('open')}>
             <FolderIcon width="32" />
           </button>
           <button title={$i18n.t('button.delete')} onclick={deleteSite}>
             <TrashIcon width="32" />
           </button>
-        {:else if state === 'clean'}
-          <button title={$i18n.t('button.start')} onclick={() => drupal('start')}>
+        {:else if wasDeleted}
+          <button title={$i18n.t('button.start')} onclick={startDrupal}>
             <ReinstallIcon width="48" />
           </button>
         {/if}
