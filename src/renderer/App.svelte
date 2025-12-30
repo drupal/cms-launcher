@@ -24,13 +24,16 @@
                         installing: 'This might take a minute.',
                         running: 'Your site is running at<br /><code>{{url}}</code>',
                     },
+                    progress: {
+                        init: 'Initializing...',
+                        extracting: 'Extracting archive ({{percent}}% done)',
+                    },
                     button: {
                         open: 'Open Drupal directory',
                         delete: 'Delete site',
                         start: 'Start site',
                         visit: 'Visit site',
                     },
-                    extracting: 'Extracting archive ({{percent}}% done)',
                     confirmDelete: "Your site and content will be permanently deleted. You can't undo this. Are you sure?",
                 },
             },
@@ -58,6 +61,7 @@
     {
         const data = event.data;
 
+        // Drupal is installed and we're going to start the web server.
         if (data.server) {
             title = $i18n.t('title.starting');
             status = detail = '';
@@ -70,10 +74,10 @@
             // If the detail is the name of an archive, show a percentage of how much we've extracted.
             // Otherwise, the detail is a line of CLI output to display as-is.
             if (data.detail?.endsWith('.tar.gz')) {
-                detail = $i18n.t('extracting', { percent: Math.round((done / total) * 100) });
+                detail = $i18n.t('progress.extracting', { percent: Math.round((done / total) * 100) });
             }
             else {
-                detail = data.detail;
+                detail = data.detail || $i18n.t('progress.init');
             }
         }
     }
