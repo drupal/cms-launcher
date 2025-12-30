@@ -65,7 +65,7 @@ interface CommandLineOptions
 // of this app.
 PhpCommand.binary = join(resourceDir, 'bin', process.platform === 'win32' ? 'php.exe' : 'php');
 
-ipcMain.on('drupal:start', async ({ sender: win }): Promise<void> => {
+ipcMain.handle('drupal:start', async ({ sender: win }): Promise<string | null> => {
     // Set up logging to help with debugging auto-update problems, and ensure any
     // errors are sent to Sentry.
     autoUpdater.logger = logger;
@@ -82,26 +82,16 @@ ipcMain.on('drupal:start', async ({ sender: win }): Promise<void> => {
 
     try {
         await drupal.install(argv.archive, toRenderer);
-
-        if (argv.server) {
-            toRenderer.postMessage({ state: 'start' });
-            const url = await drupal.serve(argv.url, argv.timeout);
-            toRenderer.postMessage({ state: 'on', detail: url });
-        }
-        else {
-            toRenderer.postMessage({ state: 'off' });
-        }
+        return argv.server ? await drupal.serve(argv.url, argv.timeout) : null;
     }
     catch (e: any) {
-        toRenderer.postMessage({
-            state: 'error',
-            // If the error was caused by a failed Composer command, it will have an additional
-            // `stdout` property with Composer's output.
-            detail: e.stdout || e.toString(),
-        });
         // Send the exception to Sentry so we can analyze it later, without requiring
         // users to file a GitHub issue.
         Sentry.captureException(e);
+
+        // If the error was caused by a failed Composer command, it will have an additional
+        // `stdout` property with Composer's output.
+        throw new Error(e.stdout || e.toString());
     }
     finally {
         // If we're in CI, we're not checking for updates; there's nothing else to do.

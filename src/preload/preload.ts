@@ -11,11 +11,6 @@ ipcRenderer.on('port', async (event): Promise<void> => {
     window.postMessage('port', '*', event.ports);
 });
 
-contextBridge.exposeInMainWorld('drupal', async (command: string): Promise<void> => {
-    if (command === 'start') {
-        ipcRenderer.send(`drupal:${command}`);
-    }
-    else {
-        await ipcRenderer.invoke(`drupal:${command}`);
-    }
+contextBridge.exposeInMainWorld('drupal', async (command: string): Promise<any> => {
+    return ipcRenderer.invoke(`drupal:${command}`);
 });
