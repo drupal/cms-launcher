@@ -171,7 +171,7 @@
             await drupal('clear-cache');
         }
         catch {
-            alert($i18n.t('dialog.clearCacheError'));
+            alert($i18n.t('dialog.cacheClearError'));
         }
         finally {
             button.disabled = false;
