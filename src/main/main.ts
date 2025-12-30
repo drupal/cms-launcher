@@ -236,7 +236,7 @@ app.whenReady().then(async (): Promise<void> => {
         timeout: {
             type: 'number',
             description: i18next.t('options.timeout'),
-            default: 30,
+            default: 5,
         },
         server: {
             type: 'boolean',
