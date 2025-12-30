@@ -93,13 +93,14 @@ Found a bug or want to suggest a feature? [Open an issue](https://github.com/dru
 
 ### Prerequisites
 
-* Node.js 22 or later
+* Node.js and [Node Version Manager (NVM)](https://github.com/nvm-sh/nvm)
 * PHP 8.4 or later, globally installed
 * Composer, globally installed
 
 Clone this repository, then `cd` into it and run:
 
 ```shell
+nvm use
 composer run assets --working-dir=build
 npm install
 npm start
