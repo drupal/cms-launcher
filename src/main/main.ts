@@ -4,8 +4,6 @@ import {
     ipcMain,
     Menu,
     MessageChannelMain,
-    type MessagePortMain,
-    type WebContents,
 } from 'electron';
 import logger from 'electron-log';
 import { autoUpdater } from 'electron-updater';
@@ -65,8 +63,13 @@ interface CommandLineOptions
 // of this app.
 PhpCommand.binary = join(resourceDir, 'bin', process.platform === 'win32' ? 'php.exe' : 'php');
 
-function openPort (win: WebContents): MessagePortMain
-{
+ipcMain.on('drupal:start', async ({ sender: win }): Promise<void> => {
+    // Set up logging to help with debugging auto-update problems, and ensure any
+    // errors are sent to Sentry.
+    autoUpdater.logger = logger;
+    autoUpdater.on('error', e => Sentry.captureException(e));
+
+    // Open a channel to the renderer so we can send progress information in real time.
     const {
         port1: toRenderer,
         port2: fromHere,
@@ -75,16 +78,6 @@ function openPort (win: WebContents): MessagePortMain
     toRenderer.start();
     win.postMessage('port', null, [fromHere]);
 
-    return toRenderer;
-}
-
-ipcMain.on('drupal:start', async ({ sender: win }): Promise<void> => {
-    // Set up logging to help with debugging auto-update problems, and ensure any
-    // errors are sent to Sentry.
-    autoUpdater.logger = logger;
-    autoUpdater.on('error', e => Sentry.captureException(e));
-
-    const toRenderer = openPort(win);
     try {
         await drupal.install(argv.archive, toRenderer);
 
@@ -127,17 +120,16 @@ ipcMain.on('drupal:start', async ({ sender: win }): Promise<void> => {
     }
 });
 
-ipcMain.on('drupal:open', async (): Promise<void> => {
+ipcMain.handle('drupal:open', async (): Promise<void> => {
     await drupal.open();
 });
 
-ipcMain.on('drupal:visit', async (): Promise<void> => {
+ipcMain.handle('drupal:visit', async (): Promise<void> => {
     await drupal.visit();
 });
 
-ipcMain.on('drupal:destroy', async ({ sender: win }): Promise<void> => {
-    const toRenderer = openPort(win);
-    await drupal.destroy(toRenderer);
+ipcMain.handle('drupal:destroy', async (): Promise<void> => {
+    await drupal.destroy();
 });
 
 // Quit the app when all windows are closed. Normally you'd keep keep the app

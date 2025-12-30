@@ -57,10 +57,13 @@
         }
     });
 
-    function confirmDestroy (): void
+    async function deleteSite (): Promise<void>
     {
         if (confirm($i18n.t('confirm-destroy'))) {
-            drupal('destroy');
+            detail = '';
+            state = 'destroy';
+            await drupal('destroy');
+            state = 'clean';
         }
     }
 
@@ -148,7 +151,7 @@
           <button title={$i18n.t('button.open')} onclick={() => drupal('open')}>
             <FolderIcon width="32" />
           </button>
-          <button title={$i18n.t('button.delete')} onclick={confirmDestroy}>
+          <button title={$i18n.t('button.delete')} onclick={deleteSite}>
             <TrashIcon width="32" />
           </button>
         {:else if state === 'clean'}
