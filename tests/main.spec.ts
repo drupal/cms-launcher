@@ -1,5 +1,6 @@
 import { test, expect, _electron as electron, type ElectronApplication, type Page, type TestInfo } from '@playwright/test';
 import { accessSync } from 'node:fs';
+import { writeFile } from 'node:fs/promises';
 import { join } from 'node:path';
 import { PhpCommand } from '@/main/PhpCommand';
 import { ComposerCommand } from '@/main/ComposerCommand';
@@ -192,6 +193,12 @@ test('reset site', async ({}, testInfo) => {
 
 test('error during cache clear', async ({}, testInfo) => {
   const [app] = await launchApp(testInfo, '--fixture=basic');
+
+  // The clear cache button short-circuits if settings.php doesn't exist.
+  await writeFile(
+      join(testInfo.outputPath('drupal'), 'web', 'sites', 'default', 'settings.php'),
+      '',
+  );
 
   const window = await app.firstWindow();
   const clearCacheButton = window.getByTitle('Clear cache');
