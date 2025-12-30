@@ -171,15 +171,18 @@ export class Drupal
 
         // Extract the archive and, regardless of success or failure, stop sending progress
         // information when done.
-        return tar.extract({
-            cwd: this.root,
-            file,
-            onReadEntry: (): void => {
-                done++;
-            },
-        }).finally((): void => {
+        try {
+            await tar.extract({
+                cwd: this.root,
+                file,
+                onReadEntry: (): void => {
+                    done++;
+                },
+            });
+        }
+        finally {
             clearInterval(interval);
-        });
+        }
     }
 
     private async prepareSettings (): Promise<void>
