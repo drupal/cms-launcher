@@ -199,15 +199,7 @@ app.whenReady().then(async (): Promise<void> => {
                         about: "About",
                         quit: "Quit",
                     },
-                    drupal: {
-                        install: {
-                            init: "Initializing...",
-                            extract: "Extracting archive (% done)",
-                        },
-                        error: {
-                            timeout: "The web server did not start after {{timeout}} seconds.",
-                        },
-                    },
+                    serverTimeout: "The web server did not start after {{timeout}} seconds.",
                 },
             },
         },

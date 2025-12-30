@@ -233,7 +233,7 @@ export class Drupal
         return new Promise(async (resolve, reject): Promise<void> => {
             const timeoutId = setTimeout((): void => {
                reject(
-                   i18next.t('drupal.error.timeout', { timeout }),
+                   i18next.t('serverTimeout', { timeout }),
                );
             }, timeout * 1000);
 
