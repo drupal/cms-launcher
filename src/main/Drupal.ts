@@ -103,18 +103,15 @@ export class Drupal
         return join(this.root, 'web');
     }
 
-    private async doInstall (archive?: string, port?: MessagePortMain): Promise<void>
+    private async doInstall (archive?: string, progress?: MessagePortMain): Promise<void>
     {
-        port?.postMessage({
-            state: 'install',
-            detail: i18next.t('drupal.install.init'),
-        });
+        progress?.postMessage({ done: 0, total: 0 });
 
         if (archive) {
             logger.debug(`Using pre-built archive: ${archive}`);
             try {
                 await access(archive);
-                return this.extractArchive(archive, port);
+                return this.extractArchive(archive, progress);
             }
             catch {
                 logger.info('Falling back to Composer because pre-built archive does not exist.');
@@ -122,7 +119,8 @@ export class Drupal
         }
 
         // We'll try to parse Composer's output to provide progress information.
-        let progress: [number, number] | null = null;
+        let done: number = 0;
+        let total: number = 0;
 
         for (const command of this.commands.install) {
             await new ComposerCommand(...command)
@@ -136,23 +134,22 @@ export class Drupal
                     // initialize the progress information.
                     const matches = line.match(/^Package operations: ([0-9]+) installs?,\s*/);
                     if (matches) {
-                        const total = parseInt(matches[1]);
-                        progress = [0, total];
+                        total = parseInt(matches[1]);
                     }
-                    else if (progress && line.includes('- Installing ')) {
-                        progress[0]++;
+                    else if (total && line.includes('- Installing ')) {
+                        done++;
                     }
                     // Send the output line and progress information to the renderer.
-                    port?.postMessage({ state: 'install', detail: line, progress });
+                    progress?.postMessage({ done, total, detail: line });
                 });
         }
         await this.prepareSettings();
     }
 
-    private async extractArchive (file: string, port?: MessagePortMain): Promise<void>
+    private async extractArchive (file: string, progress?: MessagePortMain): Promise<void>
     {
-        let total: number = 0;
         let done: number = 0;
+        let total: number = 0;
 
         // Find our how many files are in the archive, so we can provide accurate
         // progress information.
@@ -169,11 +166,7 @@ export class Drupal
         // Send progress information every 500 milliseconds while extracting the
         // archive.
         const interval = setInterval((): void => {
-            port?.postMessage({
-                state: 'install',
-                detail: i18next.t('drupal.install.extract'),
-                progress: [done, total],
-            });
+            progress?.postMessage({ done, total, detail: file });
         }, 500);
 
         // Extract the archive and, regardless of success or failure, stop sending progress
@@ -240,7 +233,7 @@ export class Drupal
         return new Promise(async (resolve, reject): Promise<void> => {
             const timeoutId = setTimeout((): void => {
                reject(
-                   i18next.t('drupal.error.timeout', { timeout }),
+                   i18next.t('serverTimeout', { timeout }),
                );
             }, timeout * 1000);
 
