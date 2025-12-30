@@ -91,17 +91,21 @@
         status = $i18n.t('status.error');
         detail = e.message;
         progress = null;
-        isError = true;
         isWorking = false;
+        wasDeleted = false;
+        isError = true;
     }
 
     async function startDrupal (): Promise<void>
     {
-        isWorking = true;
+        url = null;
         title = $i18n.t('title.installing');
         status = $i18n.t('status.installing');
         detail = '';
+        progress = null;
+        isWorking = true;
         wasDeleted = false;
+        isError = false;
 
         try {
             url = await drupal('start');
@@ -124,10 +128,13 @@
     async function deleteSite (): Promise<void>
     {
         if (confirm($i18n.t('confirmDelete'))) {
-            isWorking = true;
             url = null;
             title = $i18n.t('title.deleting');
             status = detail = '';
+            progress = null;
+            isWorking = true;
+            wasDeleted = false;
+            isError = false;
 
             try {
                 await drupal('destroy');
