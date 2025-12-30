@@ -244,10 +244,10 @@ export class Drupal
         }
     }
 
-    public async serve (url?: string, timeout: number = 2): Promise<string>
+    public async serve (url: string | null = null, timeout: number = 2): Promise<string>
     {
         // If no URL was provided, find an open port on localhost.
-        if (typeof url === 'undefined') {
+        if (url === null) {
             const port: number = await getPort({
                 port: portNumbers(8888, 9999),
             });
