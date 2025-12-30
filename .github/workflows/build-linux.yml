@@ -82,9 +82,9 @@ jobs:
         working-directory: build
 
       - name: Set up Node
-        uses: actions/setup-node@v4
+        uses: actions/setup-node@v6
         with:
-          node-version: latest
+          node-version-file: .nvmrc
 
       - name: Cache dependencies
         id: cache
