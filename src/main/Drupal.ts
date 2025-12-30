@@ -7,14 +7,13 @@ import { join } from 'node:path';
 import { access, copyFile, glob, mkdir, readFile, rm, writeFile } from 'node:fs/promises';
 import * as tar from 'tar';
 import logger from 'electron-log';
-import { Drupal as DrupalInterface } from '../preload/Drupal';
 import * as YAML from 'yaml';
 import i18next from "i18next";
 
 /**
  * Provides methods for installing and serving a Drupal code base.
  */
-export class Drupal implements DrupalInterface
+export class Drupal
 {
     private readonly root: string;
 

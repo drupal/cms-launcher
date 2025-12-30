@@ -60,12 +60,12 @@
     function confirmDestroy (): void
     {
         if (confirm($i18n.t('confirm-destroy'))) {
-            drupal.destroy();
+            drupal('destroy');
         }
     }
 
     onMount((): void => {
-        drupal.start();
+        drupal('start');
     });
 
 </script>
@@ -127,7 +127,7 @@
 
       {#if state === 'on'}
         <div>
-          <button class="button" type="button" onclick={drupal.visit}>
+          <button class="button" type="button" onclick={() => drupal('visit')}>
             {$i18n.t('button.visit')}&nbsp;
             <svg xmlns="http://www.w3.org/2000/svg" width="14" height="12" fill="none">
               <path fill="#fff" d="m13.03 6.53-4.5 4.5a.751.751 0 1 1-1.062-1.062l3.22-3.218H1.5a.75.75 0 0 1 0-1.5h9.188L7.469 2.03A.751.751 0 0 1 8.532.967l4.5 4.5a.75.75 0 0 1-.001 1.063Z"/>
@@ -145,14 +145,14 @@
       {/if}
       <footer>
         {#if state === 'on'}
-          <button title={$i18n.t('button.open')} onclick={drupal.open}>
+          <button title={$i18n.t('button.open')} onclick={() => drupal('open')}>
             <FolderIcon width="32" />
           </button>
           <button title={$i18n.t('button.delete')} onclick={confirmDestroy}>
             <TrashIcon width="32" />
           </button>
         {:else if state === 'clean'}
-          <button title={$i18n.t('button.start')} onclick={drupal.start}>
+          <button title={$i18n.t('button.start')} onclick={() => drupal('start')}>
             <ReinstallIcon width="48" />
           </button>
         {/if}

@@ -1,4 +1,3 @@
-import { Drupal } from './Drupal';
 import { contextBridge, ipcRenderer } from 'electron';
 
 const windowLoaded = new Promise((resolve): void => {
@@ -12,26 +11,6 @@ ipcRenderer.on('port', async (event): Promise<void> => {
     window.postMessage('port', '*', event.ports);
 });
 
-contextBridge.exposeInMainWorld('drupal', {
-
-    start (): void
-    {
-        ipcRenderer.send('drupal:start');
-    },
-
-    open (): void
-    {
-        ipcRenderer.send('drupal:open');
-    },
-
-    visit (): void
-    {
-        ipcRenderer.send('drupal:visit');
-    },
-
-    destroy (): void
-    {
-        ipcRenderer.send('drupal:destroy');
-    }
-
-} as Drupal);
+contextBridge.exposeInMainWorld('drupal', (command: string): void => {
+    ipcRenderer.send(`drupal:${command}`);
+});
