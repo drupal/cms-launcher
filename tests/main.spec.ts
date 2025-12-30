@@ -191,12 +191,12 @@ test('reset site', async ({}, testInfo) => {
 });
 
 test('error during cache clear', async ({}, testInfo) => {
-  const [app, root] = await launchApp(testInfo, '--fixture=basic');
+  const [app] = await launchApp(testInfo, '--fixture=basic');
 
   const window = await app.firstWindow();
   const clearCacheButton = window.getByTitle('Clear cache');
-  // The fixture has a `rebuild.php` which always fails, so clearing the cache should bring up
-  // an alert box.
+  // The fixture has a mocked version of `rebuild_token_calculator.sh` which always fails,
+  // so we can test how the UI handles an error during cache clear.
   window.on('dialog', async (dialog) => {
     expect(dialog.type()).toBe('alert');
     expect(dialog.message()).toBe('An error occurred while clearing the cache. It has been reported to the developers.');
