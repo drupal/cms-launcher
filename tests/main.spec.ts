@@ -195,6 +195,7 @@ test('error during cache clear', async ({}, testInfo) => {
 
   const window = await app.firstWindow();
   const clearCacheButton = window.getByTitle('Clear cache');
+
   // The fixture has a mocked version of `rebuild_token_calculator.sh` which always fails,
   // so we can test how the UI handles an error during cache clear.
   window.on('dialog', async (dialog) => {
