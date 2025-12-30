@@ -73,15 +73,15 @@ ipcMain.handle('drupal:start', async ({ sender: win }): Promise<string | null> =
 
     // Open a channel to the renderer so we can send progress information in real time.
     const {
-        port1: toRenderer,
+        port1: progress,
         port2: fromHere,
     } = new MessageChannelMain();
 
-    toRenderer.start();
+    progress.start();
     win.postMessage('port', null, [fromHere]);
 
     try {
-        await drupal.install(argv.archive, toRenderer);
+        await drupal.install(argv.archive, progress);
         return argv.server ? await drupal.serve(argv.url, argv.timeout) : null;
     }
     catch (e: any) {
@@ -95,7 +95,7 @@ ipcMain.handle('drupal:start', async ({ sender: win }): Promise<string | null> =
     }
     finally {
         // We're not sending any more progress information.
-        toRenderer.close();
+        progress.close();
 
         // If we're in CI, we're not checking for updates; there's nothing else to do.
         if ('CI' in process.env) {
