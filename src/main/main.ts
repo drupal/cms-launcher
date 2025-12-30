@@ -86,7 +86,16 @@ ipcMain.on('drupal:start', async ({ sender: win }): Promise<void> => {
 
     const toRenderer = openPort(win);
     try {
-        await drupal.start(argv.archive, argv.server ? argv.url : false, argv.timeout, toRenderer);
+        await drupal.install(argv.archive, toRenderer);
+
+        if (argv.server) {
+            toRenderer.postMessage({ state: 'start' });
+            const url = await drupal.serve(argv.url, argv.timeout);
+            toRenderer.postMessage({ state: 'on', detail: url });
+        }
+        else {
+            toRenderer.postMessage({ state: 'off' });
+        }
     }
     catch (e: any) {
         toRenderer.postMessage({
@@ -113,6 +122,8 @@ ipcMain.on('drupal:start', async ({ sender: win }): Promise<void> => {
         else {
             await autoUpdater.checkForUpdatesAndNotify();
         }
+        // We're not sending any more progress information.
+        toRenderer.close();
     }
 });
 

@@ -72,7 +72,7 @@ export class Drupal
         }
     }
 
-    public async start (archive?: string, url?: string | false, timeout: number = 2, port?: MessagePortMain): Promise<void>
+    public async install (archive?: string, port?: MessagePortMain): Promise<void>
     {
         try {
             await access(this.root);
@@ -80,30 +80,13 @@ export class Drupal
         catch {
             // The root directory doesn't exist, so we need to install Drupal.
             try {
-                await this.install(archive, port);
+                await this.doInstall(archive, port);
             }
             catch (e) {
                 // Courteously try to clean up the broken site before re-throwing.
                 await this.destroy();
                 throw e;
             }
-        }
-
-        // If no URL was provided, find an open port on localhost.
-        if (typeof url === 'undefined') {
-            const port: number = await getPort({
-                port: portNumbers(8888, 9999),
-            });
-            url = `http://localhost:${port}`;
-        }
-
-        if (url) {
-            port?.postMessage({ state: 'start' });
-            [this.url, this.server] = await this.serve(url, timeout);
-            port?.postMessage({ state: 'on', detail: this.url });
-        }
-        else {
-            port?.postMessage({ state: 'off' });
         }
     }
 
@@ -140,7 +123,7 @@ export class Drupal
         return join(this.root, 'web');
     }
 
-    private async install (archive?: string, port?: MessagePortMain): Promise<void>
+    private async doInstall (archive?: string, port?: MessagePortMain): Promise<void>
     {
         port?.postMessage({
             state: 'install',
@@ -261,8 +244,17 @@ export class Drupal
         }
     }
 
-    private async serve (url: string, timeout: number): Promise<[string, ChildProcess]>
+    public async serve (url?: string, timeout: number = 2): Promise<string>
     {
+        // If no URL was provided, find an open port on localhost.
+        if (typeof url === 'undefined') {
+            const port: number = await getPort({
+                port: portNumbers(8888, 9999),
+            });
+            url = `http://localhost:${port}`;
+        }
+        this.url = url;
+
         // This needs to be returned as a promise so that, if we reach the timeout,
         // the exception will be caught by the calling code.
         return new Promise(async (resolve, reject): Promise<void> => {
@@ -275,9 +267,12 @@ export class Drupal
             const checkForServerStart = (line: string, _: any, server: ChildProcess): void => {
                 if (line.includes(`(${url}) started`)) {
                     clearTimeout(timeoutId);
+
                     // Automatically kill the server on quit.
                     app.on('will-quit', () => server.kill());
-                    resolve([url, server]);
+                    this.server = server;
+
+                    resolve(url);
                 }
             };
 
