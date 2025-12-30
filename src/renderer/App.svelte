@@ -4,6 +4,7 @@
     import TrashIcon from '@phosphor-icons/core/regular/trash.svg?component';
     import ReinstallIcon from '@phosphor-icons/core/regular/arrow-clockwise.svg?component';
     import FolderIcon from '@phosphor-icons/core/regular/folder-open.svg?component';
+    import CacheClearIcon from '@phosphor-icons/core/regular/arrows-clockwise.svg?component';
     import i18next from "i18next";
     import { createI18nStore } from "svelte-i18next";
 
@@ -29,6 +30,7 @@
                         extracting: 'Extracting archive ({{percent}}% done)',
                     },
                     button: {
+                        clearCache: 'Clear cache',
                         open: 'Open Drupal directory',
                         delete: 'Delete site',
                         start: 'Start site',
@@ -152,6 +154,15 @@
         }
     }
 
+    function clearCache (event: any): void
+    {
+        const button = event.currentTarget;
+
+        button.disabled = true;
+        // @todo Replace with an actual cache clear.
+        setTimeout(() => button.disabled = false, 3000);
+    }
+
     onMount(startDrupal);
 
 </script>
@@ -226,6 +237,9 @@
       {/if}
       <footer>
         {#if url}
+          <button title={$i18n.t('button.clearCache')} class="spin-on-await" onclick={clearCache}>
+            <CacheClearIcon width="32" />
+          </button>
           <button title={$i18n.t('button.open')} onclick={() => drupal('open')}>
             <FolderIcon width="32" />
           </button>
@@ -266,6 +280,19 @@
         border-inline-start-width: 35px;
       }
     }
+
+    @keyframes spin {
+      0% {
+        transform: rotate(0deg);
+      }
+      100% {
+        transform: rotate(360deg);
+      }
+    }
+  }
+
+  .spin-on-await:disabled {
+    animation: spin 600ms linear infinite;
   }
 
   .cms-installer {
