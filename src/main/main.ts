@@ -286,10 +286,4 @@ app.whenReady().then(async (): Promise<void> => {
     );
 
     createWindow();
-
-    app.on('activate', () => {
-        if (BrowserWindow.getAllWindows().length === 0) {
-            createWindow();
-        }
-    });
 });
