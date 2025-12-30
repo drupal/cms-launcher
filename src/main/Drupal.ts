@@ -1,7 +1,7 @@
 import type { ChildProcess } from 'node:child_process';
 import getPort, { portNumbers } from 'get-port';
 import { OutputType, PhpCommand } from './PhpCommand';
-import { app, type MessagePortMain, shell } from 'electron';
+import { app, type MessagePortMain } from 'electron';
 import { ComposerCommand } from './ComposerCommand';
 import { join } from 'node:path';
 import { access, copyFile, glob, mkdir, readFile, rm, writeFile } from 'node:fs/promises';
@@ -15,9 +15,9 @@ import i18next from "i18next";
  */
 export class Drupal
 {
-    private readonly root: string;
+    public readonly root: string;
 
-    private url: string | null = null;
+    public url: string | null = null;
 
     private server: ChildProcess | null = null;
 
@@ -88,22 +88,6 @@ export class Drupal
                 throw e;
             }
         }
-    }
-
-    public async visit (): Promise<void>
-    {
-        if (this.url) {
-            await shell.openExternal(this.url);
-        }
-        else {
-            throw Error('The Drupal site is not running.');
-        }
-    }
-
-    public async open (): Promise<void>
-    {
-        await access(this.root);
-        await shell.openPath(this.root);
     }
 
     public async destroy (): Promise<void>

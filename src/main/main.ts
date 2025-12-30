@@ -4,6 +4,7 @@ import {
     ipcMain,
     Menu,
     MessageChannelMain,
+    shell,
 } from 'electron';
 import logger from 'electron-log';
 import { autoUpdater } from 'electron-updater';
@@ -15,6 +16,7 @@ import { hideBin } from 'yargs/helpers';
 import { PhpCommand } from './PhpCommand';
 import { ComposerCommand } from './ComposerCommand';
 import i18next from "i18next";
+import {access} from "node:fs/promises";
 
 // If the app is packaged, send any uncaught exceptions to Sentry.
 if (app.isPackaged) {
@@ -121,11 +123,16 @@ ipcMain.on('drupal:start', async ({ sender: win }): Promise<void> => {
 });
 
 ipcMain.handle('drupal:open', async (): Promise<void> => {
-    await drupal.open();
+    await shell.openPath(drupal.root);
 });
 
 ipcMain.handle('drupal:visit', async (): Promise<void> => {
-    await drupal.visit();
+    if (drupal.url) {
+        await shell.openExternal(drupal.url);
+    }
+    else {
+        throw Error('The Drupal site is not running.');
+    }
 });
 
 ipcMain.handle('drupal:destroy', async (): Promise<void> => {
