@@ -161,7 +161,7 @@ test('reset site', async ({}, testInfo) => {
   // - A button to delete the site
   const window = await app.firstWindow();
   await expect(window.getByText('Visit Site')).toBeVisible();
-  await expect(window.getByText('Clear cache')).toBeVisible();
+  await expect(window.getByTitle('Clear cache')).toBeVisible();
   await expect(window.getByTitle('Open Drupal directory')).toBeVisible();
   const deleteButton = window.getByTitle('Delete site');
   await expect(deleteButton).toBeVisible();
