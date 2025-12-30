@@ -4,9 +4,11 @@ import {
     ipcMain,
     Menu,
     MessageChannelMain,
+    shell,
 } from 'electron';
 import logger from 'electron-log';
 import { autoUpdater } from 'electron-updater';
+import assert from 'node:assert';
 import { basename, join } from 'node:path';
 import * as Sentry from "@sentry/electron/main";
 import { Drupal } from './Drupal';
@@ -121,11 +123,15 @@ ipcMain.on('drupal:start', async ({ sender: win }): Promise<void> => {
 });
 
 ipcMain.handle('drupal:open', async (): Promise<void> => {
-    await drupal.open();
+    await shell.openPath(drupal.root);
 });
 
 ipcMain.handle('drupal:visit', async (): Promise<void> => {
-    await drupal.visit();
+    // If the UI is working correctly, it should never be possible to reach this point if
+    // we don't have a URL.
+    assert(typeof drupal.url === 'string');
+
+    await shell.openExternal(drupal.url);
 });
 
 ipcMain.handle('drupal:destroy', async (): Promise<void> => {
