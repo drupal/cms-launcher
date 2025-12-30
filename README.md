@@ -93,7 +93,7 @@ Found a bug or want to suggest a feature? [Open an issue](https://github.com/dru
 
 ### Prerequisites
 
-* Node.js and [Node Version Manager (NVM)](https://github.com/nvm-sh/nvm)
+* [Node Version Manager (NVM)](https://github.com/nvm-sh/nvm)
 * PHP 8.4 or later, globally installed
 * Composer, globally installed
 
