@@ -134,7 +134,7 @@ ipcMain.handle('drupal:clear-cache', async (): Promise<void> => {
         // Now invoke `rebuild.php`, first injecting the token into the $_GET superglobal.
         // The PHP code doesn't need to be quoted, because we're not executing it through
         // a shell.
-        const {stdout} = await new PhpCommand('-r', `parse_str("${token.trim()}", $_GET); require "rebuild.php";`)
+        await new PhpCommand('-r', `parse_str("${token.trim()}", $_GET); require "rebuild.php";`)
             .run({ cwd });
     }
     catch (e: any) {
