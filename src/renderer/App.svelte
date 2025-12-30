@@ -12,6 +12,7 @@
         resources: {
             en: {
                 translation: {
+                    // Title text for various situations.
                     title: {
                         error: 'Uh-oh',
                         starting: 'Starting web server...',
@@ -20,15 +21,18 @@
                         installing: 'Installing...',
                         installed: 'Installation complete!',
                     },
+                    // Status messages, shown below the title.
                     status: {
                         error: 'An error occurred while starting Drupal CMS. It has been automatically reported to the developers.',
                         installing: 'This might take a minute.',
                         running: 'Your site is running at<br /><code>{{url}}</code>',
                     },
+                    // Progress messages, shown during initial set-up.
                     progress: {
                         init: 'Initializing...',
                         extracting: 'Extracting archive ({{percent}}% done)',
                     },
+                    // Text (or titles) of buttons.
                     button: {
                         clearCache: 'Clear cache',
                         open: 'Open Drupal directory',
@@ -36,7 +40,11 @@
                         start: 'Start site',
                         visit: 'Visit site',
                     },
-                    confirmDelete: "Your site and content will be permanently deleted. You can't undo this. Are you sure?",
+                    // Text used in dialog boxes (alerts, confirmations, etc).
+                    dialog: {
+                        cacheClearError: 'An error occurred while clearing the cache. It has been reported to the developers.',
+                        confirmDelete: "Your site and content will be permanently deleted. You can't undo this. Are you sure?",
+                    },
                 },
             },
         },
@@ -132,7 +140,7 @@
 
     async function deleteSite (): Promise<void>
     {
-        if (confirm($i18n.t('confirmDelete'))) {
+        if (confirm($i18n.t('dialog.confirmDelete'))) {
             url = null;
             title = $i18n.t('title.deleting');
             status = detail = '';
@@ -154,13 +162,20 @@
         }
     }
 
-    function clearCache (event: any): void
+    async function clearCache (event: any): Promise<void>
     {
         const button = event.currentTarget;
 
         button.disabled = true;
-        // @todo Replace with an actual cache clear.
-        setTimeout(() => button.disabled = false, 3000);
+        try {
+            await drupal('clear-cache');
+        }
+        catch {
+            alert($i18n.t('dialog.clearCacheError'));
+        }
+        finally {
+            button.disabled = false;
+        }
     }
 
     onMount(startDrupal);
