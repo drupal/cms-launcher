@@ -16,7 +16,6 @@ import { hideBin } from 'yargs/helpers';
 import { PhpCommand } from './PhpCommand';
 import { ComposerCommand } from './ComposerCommand';
 import i18next from "i18next";
-import {access} from "node:fs/promises";
 
 // If the app is packaged, send any uncaught exceptions to Sentry.
 if (app.isPackaged) {
