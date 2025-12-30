@@ -68,7 +68,8 @@
             const { done, total } = data;
             progress = [done, total];
 
-            // If the detail is the name of an archive, compute the percentage.
+            // If the detail is the name of an archive, show a percentage of how much we've extracted.
+            // Otherwise, the detail is a line of CLI output to display as-is.
             if (data.detail?.endsWith('.tar.gz')) {
                 detail = $i18n.t('extracting', { percent: Math.round((done / total) * 100) });
             }
@@ -83,7 +84,7 @@
         }
     });
 
-    function onError (e: Error): void
+    function handleError (e: Error): void
     {
         url = null;
         title = $i18n.t('title.error');
@@ -102,17 +103,22 @@
         detail = '';
         wasDeleted = false;
 
-        url = await drupal('start');
-        if (url) {
-            title = '';
-            status = $i18n.t('status.running', { url });
+        try {
+            url = await drupal('start');
+            if (url) {
+                title = '';
+                status = $i18n.t('status.running', { url });
+            }
+            else {
+                title = $i18n.t('title.installed');
+                status = '';
+            }
+            detail = '';
+            isWorking = false;
         }
-        else {
-            title = $i18n.t('title.installed');
-            status = '';
+        catch (e: any) {
+            handleError(e);
         }
-        detail = '';
-        isWorking = false;
     }
 
     async function deleteSite (): Promise<void>
@@ -123,11 +129,16 @@
             title = $i18n.t('title.deleting');
             status = detail = '';
 
-            await drupal('destroy');
+            try {
+                await drupal('destroy');
 
-            title = $i18n.t('title.deleted');
-            wasDeleted = true;
-            isWorking = false;
+                title = $i18n.t('title.deleted');
+                wasDeleted = true;
+                isWorking = false;
+            }
+            catch (e: any) {
+                handleError(e);
+            }
         }
     }
 
