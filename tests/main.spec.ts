@@ -195,8 +195,8 @@ test('error during cache clear', async ({}, testInfo) => {
 
   const window = await app.firstWindow();
   const clearCacheButton = window.getByTitle('Clear cache');
-  // Cache clearing won't work because the fixture doesn't have `rebuild_token_calculator.sh`
-  // or `rebuild.php`.
+  // The fixture has a mocked version of `rebuild_token_calculator.sh` which always fails,
+  // so we can test how the UI handles an error during cache clear.
   window.on('dialog', async (dialog) => {
     expect(dialog.type()).toBe('alert');
     expect(dialog.message()).toBe('An error occurred while clearing the cache. It has been reported to the developers.');
