@@ -19,7 +19,8 @@ import { PhpCommand } from './PhpCommand';
 import { ComposerCommand } from './ComposerCommand';
 import i18next from "i18next";
 
-// If the app is packaged, send any uncaught exceptions to Sentry.
+// If the app is packaged, send any uncaught exceptions to Sentry. This has to be done as early
+// as possible, which is why it's all the way up here.
 if (app.isPackaged) {
     Sentry.init({
         beforeSend: (event, hint) => {
@@ -41,8 +42,6 @@ if (app.isPackaged) {
     });
 }
 
-logger.initialize();
-
 const resourceDir = app.isPackaged ? process.resourcesPath : app.getAppPath();
 
 // These are initialized by the app.whenReady() callback.
@@ -61,10 +60,6 @@ interface CommandLineOptions
     server: boolean;
     archive: string;
 }
-
-// The path to PHP. This cannot be overridden because PHP is an absolute hard requirement
-// of this app.
-PhpCommand.binary = join(resourceDir, 'bin', process.platform === 'win32' ? 'php.exe' : 'php');
 
 ipcMain.handle('drupal:start', async ({ sender: win }): Promise<string | null> => {
     // Open a channel to the renderer so we can send progress information in real time.
@@ -214,6 +209,8 @@ app.whenReady().then(async (): Promise<void> => {
         fallbackLng: 'en',
     });
 
+    // Define and parse command-line options. These are generally only needed for testing,
+    // but there might be power users out there.
     const commandLine = yargs().options({
         root: {
             type: 'string',
@@ -261,14 +258,19 @@ app.whenReady().then(async (): Promise<void> => {
         hideBin(process.argv),
     );
 
+    logger.initialize();
+    // Set the path of the log file. It's a little awkward that this needs to be done by setting
+    // a function, but that's just how electron-log works.
+    logger.transports.file.resolvePathFn = (): string => argv.log;
+
+    // Set the path of the PHP interpreter. This can't be overridden because the PHP interpreter is
+    // an absolute hard requirement of this app.
+    PhpCommand.binary = join(resourceDir, 'bin', process.platform === 'win32' ? 'php.exe' : 'php');
+
     // Set the path to the Composer executable. We need to use an unpacked version of Composer
     // because the phar file has a shebang line that breaks us due to environment variables not
     // being inherited when this app is launched from the UI.
     ComposerCommand.binary = argv.composer;
-
-    // Set the path to the log file. It's a little awkward that this needs to be done by setting
-    // a function, but that's just how electron-log works.
-    logger.transports.file.resolvePathFn = (): string => argv.log;
 
     // Ensure any auto-update errors are logged and send to Sentry.
     autoUpdater.logger = logger;
