@@ -67,11 +67,6 @@ interface CommandLineOptions
 PhpCommand.binary = join(resourceDir, 'bin', process.platform === 'win32' ? 'php.exe' : 'php');
 
 ipcMain.handle('drupal:start', async ({ sender: win }): Promise<string | null> => {
-    // Set up logging to help with debugging auto-update problems, and ensure any
-    // errors are sent to Sentry.
-    autoUpdater.logger = logger;
-    autoUpdater.on('error', e => Sentry.captureException(e));
-
     // Open a channel to the renderer so we can send progress information in real time.
     const {
         port1: progress,
@@ -111,9 +106,10 @@ ipcMain.handle('drupal:start', async ({ sender: win }): Promise<string | null> =
         if ('CI' in process.env) {
             app.quit();
         }
-        // On newer versions of macOS, the app cannot be auto-updated if it's not in
-        // the Applications folder, and will cause an error. In that situation, don't
-        // even bother to check for updates.
+        // We wait until Drupal is up and running before checking for updates because we
+        // don't want to interrupt Drupal's spin-up process. On newer versions of macOS,
+        // the app cannot be auto-updated if it's not in the Applications folder, and will
+        // cause an error. In that situation, skip the update check.
         else if (process.platform === 'darwin' && ! app.isInApplicationsFolder()) {
             logger.debug('macOS: Skipping update check because app is not in the Applications folder.');
         }
@@ -188,50 +184,8 @@ ipcMain.handle('drupal:destroy', async (): Promise<void> => {
 // But for a pure launcher like this one, it makes more sense to just quit.
 app.on('window-all-closed', app.quit);
 
-function createWindow (): void
-{
-    const win = new BrowserWindow({
-        width: 800,
-        height: 500,
-        webPreferences: {
-            preload: join(__dirname, '..', 'preload', 'preload.js'),
-        },
-    });
-
-    // If running in development, leave the menu as-is so we can access dev tools.
-    if (app.isPackaged) {
-        // On macOS, totally redefine the menu.
-        if (process.platform === 'darwin') {
-            const menu: Menu = Menu.buildFromTemplate([
-                {
-                    label: app.getName(),
-                    submenu: [
-                        {
-                            label: i18next.t('menu.about'),
-                            role: 'about',
-                        },
-                        {
-                            label: i18next.t('menu.quit'),
-                            accelerator: 'Command+Q',
-                            click () {
-                                app.quit();
-                            },
-                        },
-                    ],
-                }
-            ]);
-            Menu.setApplicationMenu(menu);
-        }
-        else {
-            // Disable the default menu on Windows and Linux, since it doesn't make sense
-            // for this app.
-            Menu.setApplicationMenu(null);
-        }
-    }
-    win.loadFile(join(__dirname, '..', 'renderer', 'index.html'));
-}
-
 app.whenReady().then(async (): Promise<void> => {
+    // Set up internationalization.
     await i18next.init({
         resources: {
             en: {
@@ -316,11 +270,52 @@ app.whenReady().then(async (): Promise<void> => {
     // a function, but that's just how electron-log works.
     logger.transports.file.resolvePathFn = (): string => argv.log;
 
+    // Ensure any auto-update errors are logged and send to Sentry.
+    autoUpdater.logger = logger;
+    autoUpdater.on('error', e => Sentry.captureException(e));
+
+    // If running in development, leave the menu as-is so we can access dev tools.
+    if (app.isPackaged) {
+        // The default menu doesn't make sense for this app.
+        Menu.setApplicationMenu(null);
+
+        // On macOS, create a minimalistic menu.
+        if (process.platform === 'darwin') {
+            const menu: Menu = Menu.buildFromTemplate([
+                {
+                    label: app.getName(),
+                    submenu: [
+                        {
+                            label: i18next.t('menu.about'),
+                            role: 'about',
+                        },
+                        {
+                            label: i18next.t('menu.quit'),
+                            accelerator: 'Command+Q',
+                            click () {
+                                app.quit();
+                            },
+                        },
+                    ],
+                }
+            ]);
+            Menu.setApplicationMenu(menu);
+        }
+    }
+
     // Initialize the object that manages the Drupal site.
     drupal = new Drupal(
         argv.root,
         argv.fixture ? join(__dirname, '..', '..', 'tests', 'fixtures', argv.fixture) : null,
     );
 
-    createWindow();
+    // We're all set; load the UI.
+    const win = new BrowserWindow({
+        width: 800,
+        height: 500,
+        webPreferences: {
+            preload: join(__dirname, '..', 'preload', 'preload.js'),
+        },
+    });
+    win.loadFile(join(__dirname, '..', 'renderer', 'index.html'));
 });
