@@ -151,20 +151,16 @@ export class Drupal
         let done: number = 0;
         let total: number = 0;
 
-        // Find our how many files are in the archive, so we can provide accurate
-        // progress information.
+        // Count the files in the archive, so we can provide accurate progress info.
         await tar.list({
             file,
-            onReadEntry: (): void => {
-                total++;
-            },
+            onReadEntry: (): number => total++,
         });
 
         // We need to create the directory where we'll extract the files.
         await mkdir(this.root, { recursive: true });
 
-        // Send progress information every 500 milliseconds while extracting the
-        // archive.
+        // Send progress information twice per second while extracting the archive.
         const interval = setInterval((): void => {
             progress?.postMessage({ done, total, detail: file });
         }, 500);
@@ -175,9 +171,7 @@ export class Drupal
             await tar.extract({
                 cwd: this.root,
                 file,
-                onReadEntry: (): void => {
-                    done++;
-                },
+                onReadEntry: (): number => done++,
             });
         }
         finally {
