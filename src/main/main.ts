@@ -9,7 +9,6 @@ import {
 import logger from 'electron-log';
 import { autoUpdater } from 'electron-updater';
 import assert from 'node:assert';
-import { access } from 'node:fs/promises';
 import { basename, join } from 'node:path';
 import * as Sentry from "@sentry/electron/main";
 import { Drupal } from './Drupal';
@@ -115,23 +114,7 @@ ipcMain.handle('drupal:start', async ({ sender: win }): Promise<string | null> =
 });
 
 ipcMain.handle('drupal:clear-cache', async (): Promise<void> => {
-    // If settings.php doesn't exist, return early because clearing the cache on a site
-    // that isn't installed will raise an error. This check isn't foolproof; settings.php
-    // is created in the early installer, before the database is set up, and if the
-    // cache is cleared *during* the installation, weird things could happen. This
-    // doesn't prevent that possibility, but we're assuming that users will be more
-    // interested in interacting with Drupal than clicking buttons in the launcher.
-    const webRoot = drupal.webRoot();
-    try {
-        await access(
-            join(webRoot, 'sites', 'default', 'settings.php'),
-        );
-    }
-    catch {
-        return;
-    }
-
-    const cwd = join(webRoot, 'core');
+    const cwd = join(drupal.webRoot(), 'core');
     try {
         // First, generate the token we need to invoke `rebuild.php` with.
         const { stdout: token } = await new PhpCommand(

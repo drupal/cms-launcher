@@ -8,7 +8,7 @@ declare(strict_types=1);
 assert(PHP_SAPI === 'cli');
 $app_root = __DIR__ . '/web';
 $site_path = 'sites/default';
-require $app_root . '/' . $site_path . '/default.settings.php';
+require $app_root . '/' . $site_path . '/settings.php';
 
 assert(isset($settings));
 assert($settings['skip_permissions_hardening'] === true);

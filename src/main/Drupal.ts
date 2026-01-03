@@ -3,7 +3,7 @@ import getPort, { portNumbers } from 'get-port';
 import { OutputType, PhpCommand } from './PhpCommand';
 import { app, type MessagePortMain } from 'electron';
 import { ComposerCommand } from './ComposerCommand';
-import { join } from 'node:path';
+import { dirname, join } from 'node:path';
 import { access, copyFile, glob, mkdir, readFile, rm, writeFile } from 'node:fs/promises';
 import * as tar from 'tar';
 import logger from 'electron-log';
@@ -189,11 +189,15 @@ export class Drupal
             join(siteDir, 'settings.local.php'),
         );
 
-        // Uncomment the last few lines of default.settings.php so that the local
-        // settings get loaded. It's a little clunky to do this as an array operation,
-        // but as this is a one-time change to a not-too-large file, it's an acceptable
-        // trade-off.
-        const settingsPath: string = join(siteDir, 'default.settings.php');
+        // Create settings.php.
+        const settingsPath: string = join(siteDir, 'settings.php');
+        await copyFile(
+            join(dirname(settingsPath), 'default.settings.php'),
+            settingsPath,
+        );
+        // Uncomment the last few lines of settings.php to load the local settings. It's
+        // a little clunky to do this as an array operation, but as a one-time change to
+        // a not-too-large file, it's an acceptable trade-off.
         const lines: string[] = (await readFile(settingsPath)).toString().split('\n');
         const replacements: string[] = lines.slice(-4).map((line: string): string => {
             return line.startsWith('# ') ? line.substring(2) : line;
