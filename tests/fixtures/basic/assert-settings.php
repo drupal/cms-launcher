@@ -16,3 +16,4 @@ assert($settings['package_manager_allow_direct_write'] === true);
 assert($settings['testing_package_manager'] === true);
 assert(in_array('^localhost$', $settings['trusted_host_patterns'], true));
 assert(getenv('IS_DDEV_PROJECT') === '1');
+assert($settings['config_sync_directory'] === '../config');

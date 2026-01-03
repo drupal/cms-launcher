@@ -199,6 +199,8 @@ export class Drupal
             return line.startsWith('# ') ? line.substring(2) : line;
         });
         lines.splice(-4, 3, ...replacements);
+        // Export configuration outside the web root.
+        lines.push(`$settings['config_sync_directory'] = '../config';`);
         await writeFile(settingsPath, lines.join('\n'));
 
         // Add the drupal_association_extras module to every install profile. We don't want to
