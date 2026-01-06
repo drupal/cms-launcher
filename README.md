@@ -13,6 +13,80 @@ This installs [Drupal CMS](https://new.drupal.org/drupal-cms) on your machine an
 
 This product includes PHP software, freely available from <http://www.php.net/software/>.
 
+## Scope & Intended Use
+
+### What this tool **is**
+
+**Drupal CMS Launcher** is a **desktop application** designed to help users **quickly install and run Drupal CMS** on their local machine.
+
+It is intended for:
+
+- Trying out Drupal CMS for the first time
+- Quick demos and evaluations
+- Learning and onboarding
+- Non-technical or semi-technical users who want a simple, guided setup
+- Getting a working Drupal CMS site with minimal configuration
+
+The launcher focuses on a **“click → install → run”** experience and aims to reduce the initial barrier to exploring Drupal CMS.
+
+---
+
+### What this tool **is NOT**
+
+Drupal CMS Launcher is **not** intended to be a full local development environment.
+
+It is **not**:
+
+- A replacement for tools like **DDEV, Lando, or custom Docker setups**
+- Designed for advanced Drupal development workflows
+- Meant for managing multiple complex projects
+- Optimized for production-like or highly customized environments
+- Intended for long-term professional development use
+
+If you are doing **serious or ongoing Drupal development**, you should use a dedicated local development tool such as **DDEV**.
+
+---
+
+### CMS Launcher vs DDEV (Quick comparison)
+
+| Feature | Drupal CMS Launcher | DDEV |
+|------|---------------------|------|
+| Primary audience | Beginners / evaluators | Drupal developers |
+| Setup experience | One-click, guided | Manual configuration |
+| Custom environments | Limited | Highly customizable |
+| Multi-project support | No | Yes |
+| Production-like setup | No | Yes |
+
+**In short:**
+
+- **Drupal CMS Launcher** → *Try Drupal CMS quickly*
+- **DDEV** → *Build Drupal projects seriously*
+
+---
+
+### When should I use this?
+
+Use **Drupal CMS Launcher** if you want to:
+
+- Explore Drupal CMS
+- See how Drupal works
+- Run a quick local demo
+
+Use **DDEV or similar tools** if you want to:
+
+- Develop custom modules or themes long-term
+- Work on production-grade Drupal projects
+- Manage multiple Drupal sites locally
+
+---
+
+### Why this section exists
+
+This clarification exists to set **clear expectations** and avoid confusion about the scope of the project.
+
+Drupal CMS Launcher intentionally keeps its scope **small and focused**.
+
+
 ## Table of contents
 
 - [How to try it](#how-to-try-it)
