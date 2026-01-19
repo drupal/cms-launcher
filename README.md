@@ -89,7 +89,7 @@ This launcher is maintained by the [Drupal Association](https://www.drupal.org/a
 
 ## Contributing
 
-Found a bug or want to suggest a feature? [Open an issue](https://github.com/drupal/cms-launcher/issues) or submit a pull request. All contributions welcome!
+Found a bug or want to suggest a feature? [Open an issue](https://github.com/drupal/cms-launcher/issues) or submit a pull request. All contributions welcome! (Please note that AI use will not disqualify pull requests from being reviewed or merged, but such use must be disclosed when creating your pull request.)
 
 ### Prerequisites
 
