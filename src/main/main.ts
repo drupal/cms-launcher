@@ -157,9 +157,9 @@ ipcMain.handle('drupal:destroy', async (): Promise<void> => {
     await drupal.destroy();
 });
 
-// Quit the app when all windows are closed. Normally you'd keep keep the app
-// running on macOS, even with no windows open, since that's the common pattern.
-// But for a pure launcher like this one, it makes more sense to just quit.
+// Quit the app when all windows are closed. Normally we'd keep the app running
+// on macOS, even with no windows open, since that's the common pattern. But for
+// a glorified shell script like this app, it makes more sense to just quit.
 app.on('window-all-closed', app.quit);
 
 app.whenReady().then(async (): Promise<void> => {
