@@ -17,7 +17,7 @@
     "@types/yargs": "^17.0.33",
     "electron": "^40.1.0",
     "electron-builder": "^26.7.0",
-    "electron-vite": "^4.0.1",
+    "electron-vite": "^5.0.0",
     "typescript": "^5.8.3",
     "vite": "^7.3.1"
   },
