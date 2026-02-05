@@ -165,6 +165,7 @@ test('install from a pre-built archive', async ({}, testInfo) => {
   });
   await deleteButton.click();
 
+  await window.screenshot();
   await expect(window.getByText('Reinstall Drupal CMS')).toBeVisible();
   const startButton = window.getByTitle('Start site');
   await expect(startButton).toBeVisible();
