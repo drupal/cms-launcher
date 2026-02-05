@@ -25,7 +25,6 @@
     "@phosphor-icons/core": "^2.1.1",
     "@sentry/electron": "^7.7.1",
     "electron-log": "^5.4.1",
-    "electron-store": "^11.0.2",
     "electron-updater": "^6.7.3",
     "get-port": "^7.1.0",
     "i18next": "^25.8.0",
