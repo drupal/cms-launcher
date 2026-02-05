@@ -47,6 +47,7 @@ const resourceDir = app.isPackaged ? process.resourcesPath : app.getAppPath();
 // These are initialized by the app.whenReady() callback.
 let argv: CommandLineOptions;
 let drupal: Drupal;
+let settings: Store;
 
 // The shape of our command-line options, to help the type checker deal with yargs.
 interface CommandLineOptions
@@ -73,7 +74,13 @@ ipcMain.handle('drupal:start', async ({ sender: win }): Promise<string | null> =
     win.postMessage('port', null, [fromHere]);
 
     try {
-        await drupal.install(argv.archive, progress);
+        await drupal.install(
+            settings.get('useArchive', true) ? argv.archive : false,
+            progress,
+        );
+        // Regardless of how the installation was actually done, never use a pre-built
+        // archive again since it will probably contain outdated dependencies.
+        settings.set('useArchive', false);
 
         if (argv.server) {
             // Let the renderer know that we're going to start the server.
@@ -296,10 +303,11 @@ app.whenReady().then(async (): Promise<void> => {
         }
     }
 
+    settings = new Store({ cwd: argv.settings });
+
     // Initialize the object that manages the Drupal site.
     drupal = new Drupal(
         argv.root,
-        new Store({ cwd: argv.settings }),
         argv.fixture ? join(__dirname, '..', '..', 'tests', 'fixtures', argv.fixture) : null,
     );
 

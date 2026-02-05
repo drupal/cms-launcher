@@ -9,7 +9,6 @@ import * as tar from 'tar';
 import logger from 'electron-log';
 import * as YAML from 'yaml';
 import i18next from "i18next";
-import type Store from 'electron-store';
 
 /**
  * Provides methods for installing and serving a Drupal code base.
@@ -17,8 +16,6 @@ import type Store from 'electron-store';
 export class Drupal
 {
     public readonly root: string;
-
-    private readonly settings: Store;
 
     public url: string | null = null;
 
@@ -53,10 +50,9 @@ export class Drupal
 
     }
 
-    constructor (root: string, settings: Store, fixture?: string | null)
+    constructor (root: string, fixture?: string | null)
     {
         this.root = root;
-        this.settings = settings;
 
         // Record a version number in composer.json so we can update the built project
         // later if needed. This must be done before the lock file is created (i.e.,
@@ -76,7 +72,7 @@ export class Drupal
         }
     }
 
-    public async install (archive?: string, port?: MessagePortMain): Promise<void>
+    public async install (archive?: string | false, port?: MessagePortMain): Promise<void>
     {
         try {
             await access(this.root);
@@ -85,10 +81,6 @@ export class Drupal
             // The root directory doesn't exist, so we need to install Drupal.
             try {
                 await this.doInstall(archive, port);
-
-                // Regardless of how the installation was done, never use a pre-built
-                // archive again since it will probably contain outdated dependencies.
-                this.settings.set('useArchive', false);
             }
             catch (e) {
                 // Courteously try to clean up the broken site before re-throwing.
@@ -111,11 +103,11 @@ export class Drupal
         return join(this.root, 'web');
     }
 
-    private async doInstall (archive?: string, progress?: MessagePortMain): Promise<void>
+    private async doInstall (archive?: string | false, progress?: MessagePortMain): Promise<void>
     {
         progress?.postMessage({ done: 0, total: 0 });
 
-        if (archive && this.settings.get('useArchive', true)) {
+        if (archive) {
             logger.debug(`Using pre-built archive: ${archive}`);
             try {
                 await access(archive);
