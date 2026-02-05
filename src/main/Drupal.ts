@@ -21,8 +21,6 @@ export class Drupal
 
     private server: ChildProcess | null = null;
 
-    private fixture: string | false = false;
-
     private readonly commands = {
 
         install: [
@@ -71,8 +69,6 @@ export class Drupal
             // The option does not need to be escaped or quoted, because Composer is not being
             // executed through a shell.
             this.commands.install[0].push(`--repository=${repository}`);
-            // If we're using a fixture, we want to skip certain clean-up operations.
-            this.fixture = fixture;
         }
     }
 
@@ -177,11 +173,6 @@ export class Drupal
                 file,
                 onReadEntry: (): number => done++,
             });
-            // Once we've successfully extracted the archive, delete it so that subsequent
-            // reinstallations get fresh dependencies.
-            if (this.fixture === false) {
-                await rm(file);
-            }
         }
         finally {
             clearInterval(interval);
