@@ -32,6 +32,11 @@ export class PhpCommand
     {
         const phpBin = await realpath(PhpCommand.binary);
 
+        // Give PHP a higher memory limit than the default (128M), because Drupal
+        // can be pretty heavy!
+        // @see https://www.php.net/manual/en/ini.core.php#ini.sect.resource-limits
+        this.arguments.unshift('-d', 'memory_limit=1G');
+
         // Always provide the cURL CA bundle so that HTTPS requests from Composer
         // and Drupal have a better chance of succeeding (especially on Windows).
         const caFile = join(dirname(phpBin), 'cacert.pem');
