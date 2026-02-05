@@ -9,7 +9,7 @@ import * as tar from 'tar';
 import logger from 'electron-log';
 import * as YAML from 'yaml';
 import i18next from "i18next";
-import Store from 'electron-store';
+import type Store from 'electron-store';
 
 /**
  * Provides methods for installing and serving a Drupal code base.
@@ -17,6 +17,8 @@ import Store from 'electron-store';
 export class Drupal
 {
     public readonly root: string;
+
+    private readonly settings: Store;
 
     public url: string | null = null;
 
@@ -51,9 +53,10 @@ export class Drupal
 
     }
 
-    constructor (root: string, fixture?: string | null)
+    constructor (root: string, settings: Store, fixture?: string | null)
     {
         this.root = root;
+        this.settings = settings;
 
         // Record a version number in composer.json so we can update the built project
         // later if needed. This must be done before the lock file is created (i.e.,
@@ -108,8 +111,7 @@ export class Drupal
     {
         progress?.postMessage({ done: 0, total: 0 });
 
-        const settings = new Store();
-        if (archive && settings.get('useArchive', true)) {
+        if (archive && this.settings.get('useArchive', true)) {
             logger.debug(`Using pre-built archive: ${archive}`);
             try {
                 await access(archive);
@@ -121,7 +123,7 @@ export class Drupal
         }
         // Never use the pre-built archive again, since it will probably contain
         // outdated dependencies.
-        settings.set('useArchive', false);
+        this.settings.set('useArchive', false);
 
         // We'll try to parse Composer's output to provide progress information.
         let done: number = 0;

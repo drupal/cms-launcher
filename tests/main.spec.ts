@@ -12,6 +12,7 @@ async function launchApp(testInfo: TestInfo, ...options: string[]): Promise<[Ele
         '.',
         `--root=${root}`,
         `--log=${testInfo.outputPath('app.log')}`,
+        `--settings=${testInfo.outputPath()}`,
         `--timeout=2`,
         ...options,
     ],

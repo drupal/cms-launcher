@@ -17,6 +17,7 @@ import { hideBin } from 'yargs/helpers';
 import { PhpCommand } from './PhpCommand';
 import { ComposerCommand } from './ComposerCommand';
 import i18next from "i18next";
+import Store from 'electron-store';
 
 // If the app is packaged, send any uncaught exceptions to Sentry. This has to be done as early
 // as possible, which is why it's all the way up here.
@@ -54,6 +55,7 @@ interface CommandLineOptions
     log: string;
     composer: string;
     fixture?: string;
+    settings?: string;
     url?: string;
     timeout: number;
     server: boolean;
@@ -177,7 +179,8 @@ app.whenReady().then(async (): Promise<void> => {
                         timeout: "How long to wait for the web server to start before timing out, in seconds.",
                         server: "Whether to automatically start the web server once Drupal is installed.",
                         archive: "The path of a .tar.gz archive that contains the pre-built Drupal code base.",
-                        fixture: "The name of a test fixture from which to create the Drupal project."
+                        fixture: "The name of a test fixture from which to create the Drupal project.",
+                        settings: "Path of a directory where the settings should be stored.",
                     },
                     // Menu items.
                     menu: {
@@ -230,11 +233,16 @@ app.whenReady().then(async (): Promise<void> => {
             default: join(resourceDir, 'prebuilt.tar.gz'),
         },
     });
-    // If in development, allow the Drupal code base to be spun up from a test fixture.
+    // If in development, allow the Drupal code base to be spun up from a test fixture,
+    // and the settings to be stored in a custom location.
     if (! app.isPackaged) {
         commandLine.option('fixture', {
             type: 'string',
             description: i18next.t('options.fixture'),
+        });
+        commandLine.option('settings', {
+            type: 'string',
+            description: i18next.t('options.settings'),
         });
     }
     argv = await commandLine.parse(
@@ -291,6 +299,7 @@ app.whenReady().then(async (): Promise<void> => {
     // Initialize the object that manages the Drupal site.
     drupal = new Drupal(
         argv.root,
+        new Store({ cwd: argv.settings }),
         argv.fixture ? join(__dirname, '..', '..', 'tests', 'fixtures', argv.fixture) : null,
     );
 
