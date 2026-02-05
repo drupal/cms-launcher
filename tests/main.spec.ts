@@ -12,6 +12,7 @@ async function launchApp(testInfo: TestInfo, ...options: string[]): Promise<[Ele
         '.',
         `--root=${root}`,
         `--log=${testInfo.outputPath('app.log')}`,
+        `--settings=${testInfo.outputPath()}`,
         `--timeout=2`,
         ...options,
     ],
@@ -149,6 +150,33 @@ test('install from a pre-built archive', async ({}, testInfo) => {
   const page = await visitSite(app);
   await expect(page.locator('body')).toContainText('A prebuilt archive worked! Running PHP via cli-server.');
   await app.close();
+});
+
+test('pre-built archive can only be used once', async ({}, testInfo) => {
+  const fixturesDir = join(__dirname, 'fixtures');
+
+  const [app] = await launchApp(
+      testInfo,
+      `--archive=${join(fixturesDir, 'prebuilt.tar.gz')}`,
+      `--composer=${join(fixturesDir, 'composer-always-error.php')}`,
+  );
+  const window = await app.firstWindow();
+  await expect(window.getByText('Visit Site')).toBeVisible();
+
+  const deleteButton = window.getByTitle('Delete site');
+  await expect(deleteButton).toBeVisible();
+  window.on('dialog', async (dialog) => {
+    await dialog.accept();
+  });
+  await deleteButton.click();
+
+  await expect(window.getByText('Reinstall Drupal CMS')).toBeVisible();
+  const startButton = window.getByTitle('Start site');
+  await expect(startButton).toBeVisible();
+  await startButton.click();
+  const errorElement = window.locator('.error');
+  await expect(errorElement).toBeVisible();
+  await expect(errorElement).toContainText('You should not have come here.');
 });
 
 test('reset site', async ({}, testInfo) => {
