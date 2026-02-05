@@ -9,6 +9,7 @@ import * as tar from 'tar';
 import logger from 'electron-log';
 import * as YAML from 'yaml';
 import i18next from "i18next";
+import Store from 'electron-store';
 
 /**
  * Provides methods for installing and serving a Drupal code base.
@@ -107,7 +108,8 @@ export class Drupal
     {
         progress?.postMessage({ done: 0, total: 0 });
 
-        if (archive) {
+        const settings = new Store();
+        if (archive && settings.get('useArchive', true)) {
             logger.debug(`Using pre-built archive: ${archive}`);
             try {
                 await access(archive);
@@ -117,6 +119,9 @@ export class Drupal
                 logger.info('Falling back to Composer because pre-built archive does not exist.');
             }
         }
+        // Never use the pre-built archive again, since it will probably contain
+        // outdated dependencies.
+        settings.set('useArchive', false);
 
         // We'll try to parse Composer's output to provide progress information.
         let done: number = 0;
