@@ -141,7 +141,7 @@ test('server can be disabled', async ({}, testInfo) => {
   }
 });
 
-test.only('install from a pre-built archive', async ({}, testInfo) => {
+test('install from a pre-built archive', async ({}, testInfo) => {
   const fixturesDir = join(__dirname, 'fixtures');
 
   const [app] = await launchApp(
