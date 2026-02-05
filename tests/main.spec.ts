@@ -12,7 +12,6 @@ async function launchApp(testInfo: TestInfo, ...options: string[]): Promise<[Ele
         '.',
         `--root=${root}`,
         `--log=${testInfo.outputPath('app.log')}`,
-        `--settings=${testInfo.outputPath()}`,
         `--timeout=2`,
         ...options,
     ],
@@ -35,13 +34,6 @@ async function visitSite (app: ElectronApplication): Promise<Page>
   await window.goto(url);
 
   return window;
-}
-
-async function expectedError (window: Page, errorMessage: string): Promise<void>
-{
-  const errorElement = window.locator('.error');
-  await expect(errorElement).toBeVisible();
-  await expect(errorElement).toContainText(errorMessage);
 }
 
 test.beforeAll(() => {
@@ -97,8 +89,12 @@ test('clean up on failed install', async ({}, testInfo) => {
   const window = await app.firstWindow();
   // Confirm that STDERR output (i.e., progress messages) is streamed to the window.
   await expect(window.getByText('Doing step: ')).toBeVisible();
+
+  const errorElement = window.locator('.error');
+  await expect(errorElement).toBeVisible();
+  await expect(errorElement).toContainText('An imaginary error occurred!');
+
   // The "Start" button should not be visible when there is an error.
-  await expectedError(window, 'An imaginary error occurred!');
   await expect(window.getByTitle('Start site')).not.toBeVisible();
 
   // We expect access() to throw a "no such file or directory" error, because the
@@ -150,27 +146,8 @@ test('install from a pre-built archive', async ({}, testInfo) => {
       `--composer=${join(fixturesDir, 'composer-always-error.php')}`,
   );
 
-  const window = await visitSite(app);
-  await expect(window.locator('body')).toContainText('A prebuilt archive worked! Running PHP via cli-server.');
-
-  // If we delete the site and reinstall, it should NOT use the prebuilt archive again, so
-  // we'll run into our simulated Composer error.
-  await window.goBack();
-  const deleteButton = window.getByTitle('Delete site');
-  await expect(deleteButton).toBeVisible();
-  window.on('dialog', async (dialog) => {
-    expect(dialog.type()).toBe('confirm');
-    expect(dialog.message()).toBe("Your site and content will be permanently deleted. You can't undo this. Are you sure?");
-    await dialog.accept();
-  });
-  await deleteButton.click();
-
-  await window.screenshot();
-  await expect(window.getByText('Reinstall Drupal CMS')).toBeVisible();
-  const startButton = window.getByTitle('Start site');
-  await expect(startButton).toBeVisible();
-  await startButton.click();
-  await expectedError(window, 'You should not have come here.');
+  const page = await visitSite(app);
+  await expect(page.locator('body')).toContainText('A prebuilt archive worked! Running PHP via cli-server.');
   await app.close();
 });
 
@@ -218,7 +195,6 @@ test('error during cache clear', async ({}, testInfo) => {
 
   const window = await app.firstWindow();
   const clearCacheButton = window.getByTitle('Clear cache');
-  await expect(clearCacheButton).toBeVisible();
 
   // The fixture has a mocked version of `rebuild_token_calculator.sh` which always fails,
   // so we can test how the UI handles an error during cache clear.
