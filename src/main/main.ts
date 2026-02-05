@@ -240,41 +240,10 @@ app.whenReady().then(async (): Promise<void> => {
             default: join(resourceDir, 'prebuilt.tar.gz'),
         },
     });
-    // If in development, allow the Drupal code base to be spun up from a test fixture,
-    // and the settings to be stored in a custom location.
-    if (! app.isPackaged) {
-        commandLine.option('fixture', {
-            type: 'string',
-            description: i18next.t('options.fixture'),
-        });
-        commandLine.option('settings', {
-            type: 'string',
-            description: i18next.t('options.settings'),
-        });
-    }
-    argv = await commandLine.parse(
-        hideBin(process.argv),
-    );
-
-    logger.initialize();
-    // Set the path of the log file. It's a little awkward that this needs to be done by setting
-    // a function, but that's just how electron-log works.
-    logger.transports.file.resolvePathFn = (): string => argv.log;
-
-    // Set the path of the PHP interpreter. This can't be overridden because the PHP interpreter is
-    // an absolute hard requirement of this app.
-    PhpCommand.binary = join(resourceDir, 'bin', process.platform === 'win32' ? 'php.exe' : 'php');
-
-    // Set the path to the Composer executable. We need to use an unpacked version of Composer
-    // because the phar file has a shebang line that breaks us due to environment variables not
-    // being inherited when this app is launched from the UI.
-    ComposerCommand.binary = argv.composer;
-
-    // Ensure any auto-update errors are logged and send to Sentry.
-    autoUpdater.logger = logger;
-    autoUpdater.on('error', e => Sentry.captureException(e));
-
-    // If running in development, leave the menu as-is so we can access dev tools.
+    // If the app is packaged, replace the menu with a minimalistic one since most default
+    // menu options don't make sense for this app. Otherwise, we're in development and we
+    // want to allow the Drupal code base to be spun up from a test fixture and the settings
+    // to be stored in a custom location.
     if (app.isPackaged) {
         // The default menu doesn't make sense for this app.
         Menu.setApplicationMenu(null);
@@ -292,9 +261,7 @@ app.whenReady().then(async (): Promise<void> => {
                         {
                             label: i18next.t('menu.quit'),
                             accelerator: 'Command+Q',
-                            click () {
-                                app.quit();
-                            },
+                            click: app.quit,
                         },
                     ],
                 }
@@ -302,15 +269,44 @@ app.whenReady().then(async (): Promise<void> => {
             Menu.setApplicationMenu(menu);
         }
     }
+    else {
+        commandLine.option('fixture', {
+            type: 'string',
+            description: i18next.t('options.fixture'),
+        });
+        commandLine.option('settings', {
+            type: 'string',
+            description: i18next.t('options.settings'),
+        });
+    }
 
-    settings = new Store({ cwd: argv.settings });
-
+    // Parse command-line options and configure the app accordingly.
+    argv = await commandLine.parse(
+        hideBin(process.argv),
+    );
+    logger.initialize();
+    // Set the path of the log file. It's a little awkward that this needs to be done by setting
+    // a function, but that's just how electron-log works.
+    logger.transports.file.resolvePathFn = (): string => argv.log;
+    // Set the path of the PHP interpreter. This can't be overridden because the PHP interpreter is
+    // an absolute hard requirement of this app.
+    PhpCommand.binary = join(resourceDir, 'bin', process.platform === 'win32' ? 'php.exe' : 'php');
+    // Set the path to the Composer executable. We need to use an unpacked version of Composer
+    // because the phar file has a shebang line that breaks us due to environment variables not
+    // being inherited when this app is launched from the UI.
+    ComposerCommand.binary = argv.composer;
+    // Ensure any auto-update errors are logged and send to Sentry.
+    autoUpdater.logger = logger;
+    autoUpdater.on('error', e => Sentry.captureException(e));
+    // Initialize settings (i.e., persistent app state).
+    settings = new Store({
+        cwd: argv.settings,
+    });
     // Initialize the object that manages the Drupal site.
     drupal = new Drupal(
         argv.root,
         argv.fixture ? join(__dirname, '..', '..', 'tests', 'fixtures', argv.fixture) : null,
     );
-
     // We're all set; load the UI.
     const win = new BrowserWindow({
         width: 800,
