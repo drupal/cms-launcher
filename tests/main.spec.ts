@@ -156,15 +156,16 @@ test('install from a pre-built archive', async ({}, testInfo) => {
   // If we delete the site and reinstall, it should NOT use the prebuilt archive again, so
   // we'll run into our simulated Composer error.
   await window.goBack();
+  const deleteButton = window.getByTitle('Delete site');
+  await expect(deleteButton).toBeVisible();
   window.on('dialog', async (dialog) => {
     expect(dialog.type()).toBe('confirm');
     expect(dialog.message()).toBe("Your site and content will be permanently deleted. You can't undo this. Are you sure?");
     await dialog.accept();
   });
-  const deleteButton = window.getByTitle('Delete site');
-  await expect(deleteButton).toBeVisible();
   await deleteButton.click();
 
+  await expect(window.getByText('Reinstall Drupal CMS')).toBeVisible();
   const startButton = window.getByTitle('Start site');
   await expect(startButton).toBeVisible();
   await startButton.click();
