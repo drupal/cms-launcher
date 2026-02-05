@@ -12,6 +12,7 @@ async function launchApp(testInfo: TestInfo, ...options: string[]): Promise<[Ele
         '.',
         `--root=${root}`,
         `--log=${testInfo.outputPath('app.log')}`,
+        `--settings=${testInfo.outputPath()}`,
         `--timeout=2`,
         ...options,
     ],
@@ -34,6 +35,32 @@ async function visitSite (app: ElectronApplication): Promise<Page>
   await window.goto(url);
 
   return window;
+}
+
+async function expectedError (window: Page, message: string): Promise<void>
+{
+  const errorElement = window.locator('.error');
+  await expect(errorElement).toBeVisible();
+  await expect(errorElement).toContainText(message);
+}
+
+async function resetSite (window: Page): Promise<void>
+{
+  const deleteButton = window.getByTitle('Delete site');
+  await expect(deleteButton).toBeVisible();
+
+  // Clicking the Delete button should put up a confirmation dialog.
+  window.on('dialog', async (dialog) => {
+    expect(dialog.type()).toBe('confirm');
+    expect(dialog.message()).toBe("Your site and content will be permanently deleted. You can't undo this. Are you sure?");
+    await dialog.accept();
+  });
+  await deleteButton.click();
+
+  // Once the delete is done, the Drupal directory should be gone and we should have
+  // a button to start (i.e., reinstall) the site again.
+  await expect(window.getByText('Reinstall Drupal CMS')).toBeVisible();
+  await expect(window.getByTitle('Start site')).toBeVisible();
 }
 
 test.beforeAll(() => {
@@ -89,10 +116,7 @@ test('clean up on failed install', async ({}, testInfo) => {
   const window = await app.firstWindow();
   // Confirm that STDERR output (i.e., progress messages) is streamed to the window.
   await expect(window.getByText('Doing step: ')).toBeVisible();
-
-  const errorElement = window.locator('.error');
-  await expect(errorElement).toBeVisible();
-  await expect(errorElement).toContainText('An imaginary error occurred!');
+  await expectedError(window, 'An imaginary error occurred!');
 
   // The "Start" button should not be visible when there is an error.
   await expect(window.getByTitle('Start site')).not.toBeVisible();
@@ -151,6 +175,23 @@ test('install from a pre-built archive', async ({}, testInfo) => {
   await app.close();
 });
 
+test('pre-built archive can only be used once', async ({}, testInfo) => {
+  const fixturesDir = join(__dirname, 'fixtures');
+
+  const [app] = await launchApp(
+      testInfo,
+      `--archive=${join(fixturesDir, 'prebuilt.tar.gz')}`,
+      `--composer=${join(fixturesDir, 'composer-always-error.php')}`,
+  );
+  const window = await app.firstWindow();
+  await expect(window.getByText('Visit Site')).toBeVisible();
+  await resetSite(window);
+
+  await window.getByTitle('Start site').click();
+  // The pre-built archive isn't used again, so we should hit our simulated Composer error.
+  await expectedError(window, 'You should not have come here.');
+});
+
 test('reset site', async ({}, testInfo) => {
   const [app, root] = await launchApp(testInfo, '--fixture=basic');
 
@@ -163,27 +204,12 @@ test('reset site', async ({}, testInfo) => {
   await expect(window.getByText('Visit Site')).toBeVisible();
   await expect(window.getByTitle('Clear cache')).toBeVisible();
   await expect(window.getByTitle('Open Drupal directory')).toBeVisible();
-  const deleteButton = window.getByTitle('Delete site');
-  await expect(deleteButton).toBeVisible();
-
-  // Clicking the Delete button should put up a confirmation dialog.
-  window.on('dialog', async (dialog) => {
-    expect(dialog.type()).toBe('confirm');
-    expect(dialog.message()).toBe("Your site and content will be permanently deleted. You can't undo this. Are you sure?");
-    await dialog.accept();
-  });
-  await deleteButton.click();
-
-  // Once the delete is done, the Drupal directory should be gone and we should have
-  // a button to start (i.e., reinstall) the site again.
-  await expect(window.getByText('Reinstall Drupal CMS')).toBeVisible();
-  const startButton = window.getByTitle('Start site');
-  await expect(startButton).toBeVisible();
-  await expect(window.getByText('Reinstall Drupal CMS')).toBeVisible();
+  await resetSite(window);
+  // Confirm the site was, in fact, deleted.
   expect(() => accessSync(root)).toThrow();
 
   // Clicking that button should get us back up and running.
-  await startButton.click();
+  await window.getByTitle('Start site').click();
   await expect(window.getByText('Installing...')).toBeVisible();
   await expect(window.getByText('Visit Site')).toBeVisible();
 

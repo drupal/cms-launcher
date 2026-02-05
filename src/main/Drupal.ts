@@ -72,7 +72,7 @@ export class Drupal
         }
     }
 
-    public async install (archive?: string, port?: MessagePortMain): Promise<void>
+    public async install (archive?: string | false, port?: MessagePortMain): Promise<void>
     {
         try {
             await access(this.root);
@@ -103,7 +103,7 @@ export class Drupal
         return join(this.root, 'web');
     }
 
-    private async doInstall (archive?: string, progress?: MessagePortMain): Promise<void>
+    private async doInstall (archive?: string | false, progress?: MessagePortMain): Promise<void>
     {
         progress?.postMessage({ done: 0, total: 0 });
 
