@@ -157,6 +157,8 @@ test('install from a pre-built archive', async ({}, testInfo) => {
   // we'll run into our simulated Composer error.
   await window.goBack();
   window.on('dialog', async (dialog) => {
+    expect(dialog.type()).toBe('confirm');
+    expect(dialog.message()).toBe("Your site and content will be permanently deleted. You can't undo this. Are you sure?");
     await dialog.accept();
   });
   const deleteButton = window.getByTitle('Delete site');
