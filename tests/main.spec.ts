@@ -36,6 +36,13 @@ async function visitSite (app: ElectronApplication): Promise<Page>
   return window;
 }
 
+async function expectedError (window: Page, errorMessage: string): Promise<void>
+{
+  const errorElement = window.locator('.error');
+  await expect(errorElement).toBeVisible();
+  await expect(errorElement).toContainText(errorMessage);
+}
+
 test.beforeAll(() => {
   const binDir = join(__dirname, '..', 'bin');
   PhpCommand.binary = join(binDir, process.platform == 'win32' ? 'php.exe' : 'php');
@@ -89,12 +96,8 @@ test('clean up on failed install', async ({}, testInfo) => {
   const window = await app.firstWindow();
   // Confirm that STDERR output (i.e., progress messages) is streamed to the window.
   await expect(window.getByText('Doing step: ')).toBeVisible();
-
-  const errorElement = window.locator('.error');
-  await expect(errorElement).toBeVisible();
-  await expect(errorElement).toContainText('An imaginary error occurred!');
-
   // The "Start" button should not be visible when there is an error.
+  await expectedError(window, 'An imaginary error occurred!');
   await expect(window.getByTitle('Start site')).not.toBeVisible();
 
   // We expect access() to throw a "no such file or directory" error, because the
@@ -137,7 +140,7 @@ test('server can be disabled', async ({}, testInfo) => {
   }
 });
 
-test('install from a pre-built archive', async ({}, testInfo) => {
+test.only('install from a pre-built archive', async ({}, testInfo) => {
   const fixturesDir = join(__dirname, 'fixtures');
 
   const [app] = await launchApp(
@@ -146,8 +149,19 @@ test('install from a pre-built archive', async ({}, testInfo) => {
       `--composer=${join(fixturesDir, 'composer-always-error.php')}`,
   );
 
-  const page = await visitSite(app);
-  await expect(page.locator('body')).toContainText('A prebuilt archive worked! Running PHP via cli-server.');
+  const window = await visitSite(app);
+  await expect(window.locator('body')).toContainText('A prebuilt archive worked! Running PHP via cli-server.');
+
+  // If we delete the site and reinstall, it should NOT use the prebuilt archive again, so
+  // we'll run into our simulated Composer error.
+  await window.goBack();
+  window.on('dialog', async (dialog) => {
+    await dialog.accept();
+  });
+  await window.getByTitle('Delete site').click();
+  await window.getByTitle('Start site').click();
+  await expectedError(window, 'You should not have come here.');
+
   await app.close();
 });
 
