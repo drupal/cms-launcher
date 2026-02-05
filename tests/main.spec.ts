@@ -159,10 +159,14 @@ test('install from a pre-built archive', async ({}, testInfo) => {
   window.on('dialog', async (dialog) => {
     await dialog.accept();
   });
-  await window.getByTitle('Delete site').click();
-  await window.getByTitle('Start site').click();
-  await expectedError(window, 'You should not have come here.');
+  const deleteButton = window.getByTitle('Delete site');
+  await expect(deleteButton).toBeVisible();
+  await deleteButton.click();
 
+  const startButton = window.getByTitle('Start site');
+  await expect(startButton).toBeVisible();
+  await startButton.click();
+  await expectedError(window, 'You should not have come here.');
   await app.close();
 });
 
@@ -210,6 +214,7 @@ test('error during cache clear', async ({}, testInfo) => {
 
   const window = await app.firstWindow();
   const clearCacheButton = window.getByTitle('Clear cache');
+  await expect(clearCacheButton).toBeVisible();
 
   // The fixture has a mocked version of `rebuild_token_calculator.sh` which always fails,
   // so we can test how the UI handles an error during cache clear.
