@@ -85,6 +85,10 @@ export class Drupal
             // The root directory doesn't exist, so we need to install Drupal.
             try {
                 await this.doInstall(archive, port);
+
+                // Regardless of how the installation was done, never use a pre-built
+                // archive again since it will probably contain outdated dependencies.
+                this.settings.set('useArchive', false);
             }
             catch (e) {
                 // Courteously try to clean up the broken site before re-throwing.
@@ -121,9 +125,6 @@ export class Drupal
                 logger.info('Falling back to Composer because pre-built archive does not exist.');
             }
         }
-        // Never use the pre-built archive again, since it will probably contain
-        // outdated dependencies.
-        this.settings.set('useArchive', false);
 
         // We'll try to parse Composer's output to provide progress information.
         let done: number = 0;
