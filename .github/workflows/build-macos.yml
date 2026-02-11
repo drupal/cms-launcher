@@ -169,6 +169,9 @@ jobs:
           lipo -create ./build/php-X64 ./build/php-ARM64 -output ./bin/php
           chmod +x ./bin/php
           npx electron-vite build
+        env:
+          # Upload the source map to Sentry so we can get stack traces from minified code.
+          SENTRY_AUTH_TOKEN: ${{ secrets.SENTRY_AUTH_TOKEN }}
 
       - name: Prepare to publish
         # If we're on a PR branch, we don't want Electron Builder to publish the app.
@@ -191,8 +194,6 @@ jobs:
 
       - name: Make application
         run: npx electron-builder --universal --publish=${{ env.PUBLISH }}
-        env:
-          SENTRY_AUTH_TOKEN: ${{ secrets.SENTRY_AUTH_TOKEN }}
 
       # For manual testing, upload the final artifact if we're not in a release branch.
       - name: Upload distributable
