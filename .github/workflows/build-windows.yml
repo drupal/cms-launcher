@@ -96,6 +96,9 @@ jobs:
           Remove-Item -Recurse -Force ./bin/php.exe
           Copy-Item -Force ./build/buildroot/bin/php.exe ./bin
           npx electron-vite build
+        env:
+          # Upload the source map to Sentry so we can get stack traces from minified code.
+          SENTRY_AUTH_TOKEN: ${{ secrets.SENTRY_AUTH_TOKEN }}
 
       # If we're on a PR branch, we don't want Electron Builder to publish the app.
       # On Windows, adding environment variables in PowerShell has a special syntax: see https://github.com/orgs/community/discussions/25713

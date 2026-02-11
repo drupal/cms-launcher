@@ -114,6 +114,9 @@ jobs:
           chmod +x ./bin/php
           npx electron-vite build
           npx electron-builder --publish=${{ env.PUBLISH }}
+        env:
+          # Upload the source map to Sentry so we can get stack traces from minified code.
+          SENTRY_AUTH_TOKEN: ${{ secrets.SENTRY_AUTH_TOKEN }}
 
       # For manual testing, upload the final artifact if we're not in a release branch.
       - name: Upload distributable
