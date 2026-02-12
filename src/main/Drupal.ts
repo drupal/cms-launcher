@@ -67,7 +67,7 @@ export class Drupal
         this.commands.install.splice(
             this.commands.install.findIndex(command => command[0] === 'install'),
             0,
-            ['config', '--merge', '--json', 'extra.drupal-launcher', `{"version": ${this.commands.update.length + 1}}`]
+            ['config', 'extra.drupal-launcher.version', String(this.commands.update.length + 1), '--json'],
         );
 
         if (fixture) {
@@ -75,6 +75,21 @@ export class Drupal
             // The option does not need to be escaped or quoted, because Composer is not being
             // executed through a shell.
             this.commands.install[0].push(`--repository=${repository}`);
+        }
+    }
+
+    private async version (): Promise<number>
+    {
+        try {
+            const { stdout } = await new ComposerCommand('config', 'extra.drupal-launcher.version')
+                .inDirectory(this.root)
+                .run();
+
+            // If the version returned by Composer parses to NaN, default to 1.
+            return parseInt(stdout.toString().trim()) || 1;
+        }
+        catch {
+            return 1;
         }
     }
 
