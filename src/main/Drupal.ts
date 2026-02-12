@@ -78,6 +78,31 @@ export class Drupal
         }
     }
 
+    public async update (progress?: MessagePortMain): Promise<void>
+    {
+        const version: number = await this.version();
+
+        const updates: string[][][] = this.commands.update.slice(version - 1);
+        updates.push([
+            ['config', 'extra.drupal-launcher.version', String(version + 1), '--json'],
+        ]);
+        if (updates.length === 1) {
+            return;
+        }
+
+        let done: number = 0;
+        const total: number = updates.reduce((sum: number, update: string[][]): number => sum + update.length, 0);
+        progress?.postMessage({ done, total });
+
+        for (const update of updates) {
+            for (const command of update) {
+                await new ComposerCommand(...command).inDirectory(this.root).run();
+                done++;
+                progress?.postMessage({ done, total });
+            }
+        }
+    }
+
     private async version (): Promise<number>
     {
         try {
@@ -281,7 +306,7 @@ export class Drupal
             const checkForServerStart = (line: string, _: any, server: ChildProcess): void => {
                 if (line.includes(`(${url}) started`)) {
                     clearTimeout(timeoutId);
-                    logger.debug(`Server started!`);
+                    logger.debug(`Server started.`);
 
                     app.on('will-quit', () => this.stop());
                     this.server = server;
