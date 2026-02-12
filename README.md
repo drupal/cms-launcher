@@ -87,10 +87,16 @@ On Windows, the built-in firewall may block the launcher because it needs to sta
 
 This launcher is maintained by the [Drupal Association](https://www.drupal.org/association) and community contributors, but it depends on the amazing `static-php-cli` project, which is used to build the PHP interpreter bundled with the launcher. We heartily encourage you to [sponsor that project's maintainer](https://github.com/sponsors/crazywhalecc) and/or become a Drupal Association member.
 
+
 ## Contributing
 
-Found a bug or want to suggest a feature? [Open an issue](https://github.com/drupal/cms-launcher/issues) or submit a pull request. All contributions welcome! (Please note that AI use will not disqualify pull requests from being reviewed or merged, but such use must be disclosed when creating your pull request.)
+We welcome contributions! To get started with development:
 
+1. **Fork the repository** on GitHub.
+2. **Clone your fork** locally:
+   ```bash
+   git clone [https://github.com/YOUR_USERNAME/cms-launcher.git](https://github.com/YOUR_USERNAME/cms-launcher.git)
+   cd cms-launcher
 ### Prerequisites
 
 * [Node Version Manager (NVM)](https://github.com/nvm-sh/nvm)
@@ -126,3 +132,4 @@ If these limitations don’t meet your needs, consider the following alternative
 * If you'd rather avoid Docker, [Laravel Herd](https://herd.laravel.com/) is a fine choice.
 * [MAMP](http://mamp.info/) and [XAMPP](https://www.apachefriends.org) are long-standing favorites among web developers and worth exploring.
 * For Mac users, [Laravel Valet](https://laravel.com/docs/11.x/valet) is great if you're comfortable at the command line.
+
