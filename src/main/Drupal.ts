@@ -100,9 +100,9 @@ export class Drupal
 
     private stop (): void
     {
-        if (this.server) {
-            logger.debug(`Stopping server: ${this.server.kill().toString()}`);
-        }
+        logger.debug(
+            this.server?.kill() ? 'Server stopped.' : 'Server was not running, or could not be stopped.',
+        );
         this.url = this.server = null;
     }
 
