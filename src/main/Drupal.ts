@@ -46,7 +46,13 @@ export class Drupal
 
         ],
 
-        update: [],
+        update: [
+            // The packaged PHP interpreter was updated from 8.3 to 8.4, so the autoloader needs to
+            // be regenerated accordingly.
+            [
+                ['dump-autoload', '--ignore-platform-req=php'],
+            ],
+        ],
 
     }
 
