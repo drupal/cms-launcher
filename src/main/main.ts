@@ -81,6 +81,7 @@ ipcMain.handle('drupal:start', async ({ sender: win }): Promise<string | null> =
         // Regardless of how the installation was actually done, never use a pre-built
         // archive again since it will probably contain outdated dependencies.
         settings.set('useArchive', false);
+        logger.debug('Permanently disabled pre-built archive.');
 
         if (argv.server) {
             // Let the renderer know that we're going to start the server.
@@ -117,6 +118,7 @@ ipcMain.handle('drupal:start', async ({ sender: win }): Promise<string | null> =
             logger.debug('macOS: Skipping update check because app is not in the Applications folder.');
         }
         else {
+            logger.debug('Checking for updates...');
             await autoUpdater.checkForUpdatesAndNotify();
         }
     }

@@ -92,9 +92,18 @@ export class Drupal
 
     public async destroy (): Promise<void>
     {
-        this.server?.kill();
-        this.url = this.server = null;
+        logger.info('Deleting project...');
+        this.stop();
         await rm(this.root, { force: true, recursive: true, maxRetries: 3 });
+        logger.info('Project was deleted.');
+    }
+
+    private stop (): void
+    {
+        logger.debug(
+            this.server?.kill() ? 'Server stopped.' : 'Server was not running, or could not be stopped.',
+        );
+        this.url = this.server = null;
     }
 
     public webRoot (): string
@@ -156,6 +165,7 @@ export class Drupal
             file,
             onReadEntry: (): number => total++,
         });
+        logger.debug(`Extracting ${total} files.`);
 
         // We need to create the directory where we'll extract the files.
         await mkdir(this.root, { recursive: true });
@@ -173,6 +183,7 @@ export class Drupal
                 file,
                 onReadEntry: (): number => done++,
             });
+            logger.info('Extracted pre-built archive.');
         }
         finally {
             clearInterval(interval);
@@ -188,6 +199,7 @@ export class Drupal
             join(app.isPackaged ? process.resourcesPath : app.getAppPath(), 'settings.local.php'),
             join(siteDir, 'settings.local.php'),
         );
+        logger.debug('Created settings.local.php.');
 
         // Create settings.php.
         const settingsPath: string = join(siteDir, 'settings.php');
@@ -195,6 +207,8 @@ export class Drupal
             join(dirname(settingsPath), 'default.settings.php'),
             settingsPath,
         );
+        logger.debug('Created settings.php.');
+
         // Uncomment the last few lines of settings.php to load the local settings. It's
         // a little clunky to do this as an array operation, but as a one-time change to
         // a not-too-large file, it's an acceptable trade-off.
@@ -206,6 +220,7 @@ export class Drupal
         // Export configuration outside the web root.
         lines.push(`$settings['config_sync_directory'] = '../config';\n`);
         await writeFile(settingsPath, lines.join('\n'));
+        logger.debug('Modified settings.php.');
 
         // Add the drupal_association_extras module to every install profile. We don't want to
         // hard-code the name or path of the info file, in case Drupal CMS changes it.
@@ -217,6 +232,7 @@ export class Drupal
             info.install ??= [];
             info.install.push('drupal_association_extras');
             await writeFile(infoPath, YAML.stringify(info));
+            logger.debug(`Modified install profile: ${infoPath}`);
         }
     }
 
@@ -231,6 +247,7 @@ export class Drupal
         }
         this.url = url;
 
+        logger.debug(`Giving the server ${timeout} seconds to start.`);
         // This needs to be returned as a promise so that, if we reach the timeout,
         // the exception will be caught by the calling code.
         return new Promise(async (resolve, reject): Promise<void> => {
@@ -243,9 +260,9 @@ export class Drupal
             const checkForServerStart = (line: string, _: any, server: ChildProcess): void => {
                 if (line.includes(`(${url}) started`)) {
                     clearTimeout(timeoutId);
+                    logger.debug(`Server started!`);
 
-                    // Automatically kill the server on quit.
-                    app.on('will-quit', () => server.kill());
+                    app.on('will-quit', () => this.stop());
                     this.server = server;
 
                     resolve(url);
