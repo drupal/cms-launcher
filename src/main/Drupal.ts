@@ -47,10 +47,9 @@ export class Drupal
         ],
 
         update: [
-            // The packaged PHP interpreter was updated from 8.3 to 8.4, so the autoloader needs to
-            // be regenerated accordingly.
+            // Enable the site template helper plugin, which was added in Drupal CMS 2.0.1.
             [
-                ['dump-autoload', '--ignore-platform-req=php'],
+                ['config', 'allow-plugins.drupal/site_template_helper', 'true'],
             ],
         ],
 
