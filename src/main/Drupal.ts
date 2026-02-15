@@ -81,20 +81,23 @@ export class Drupal
     {
         const version: number = await this.version();
 
+        // Find the subset of updates that need to be done, and always add a final "update"
+        // to increment to stored version number.
         const updates: string[][][] = this.commands.update.slice(version - 1);
         updates.push([
             ['config', 'extra.drupal-launcher.version', String(version + 1), '--json'],
         ]);
+        // If all we're doing is incrementing the stored version, there are no updates.
         if (updates.length === 1) {
             return;
         }
 
         let done: number = 0;
-        const total: number = updates.reduce((sum: number, update: string[][]): number => sum + update.length, 0);
+        const total: number = updates.reduce((sum: number, commands: string[][]): number => sum + commands.length, 0);
         progress?.postMessage({ done, total });
 
-        for (const update of updates) {
-            for (const command of update) {
+        for (const commands of updates) {
+            for (const command of commands) {
                 await new ComposerCommand(...command).inDirectory(this.root).run();
                 done++;
                 progress?.postMessage({ done, total });
