@@ -81,16 +81,15 @@ export class Drupal
     {
         const version: number = await this.version();
 
-        // Find the subset of updates that need to be done, and always add a final "update"
-        // to increment to stored version number.
+        // Find the subset of updates that need to be done (if any).
         const updates: string[][][] = this.commands.update.slice(version - 1);
+        if (updates.length === 0) {
+            return;
+        }
+        // Always add a final "update" to increment to stored version number.
         updates.push([
             ['config', 'extra.drupal-launcher.version', String(version + 1), '--json'],
         ]);
-        // If all we're doing is incrementing the stored version, there are no updates.
-        if (updates.length === 1) {
-            return;
-        }
 
         let done: number = 0;
         const total: number = updates.reduce((sum: number, commands: string[][]): number => sum + commands.length, 0);
