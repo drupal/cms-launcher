@@ -196,7 +196,7 @@ export class Drupal
         const siteDir: string = join(this.webRoot(), 'sites', 'default');
 
         // Copy our settings.local.php, which contains helpful overrides.
-        const localSettings = join(siteDir, 'settings.local.php');
+        const localSettings: string = join(siteDir, 'settings.local.php');
         await copyFile(
             join(app.isPackaged ? process.resourcesPath : app.getAppPath(), 'settings.local.php'),
             localSettings,
