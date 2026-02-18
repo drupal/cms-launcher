@@ -196,10 +196,10 @@ export class Drupal
         const siteDir: string = join(this.webRoot(), 'sites', 'default');
 
         // Copy our settings.local.php, which contains helpful overrides.
-        const localSettingsFile = join(siteDir, 'settings.local.php');
+        const localSettings = join(siteDir, 'settings.local.php');
         await copyFile(
             join(app.isPackaged ? process.resourcesPath : app.getAppPath(), 'settings.local.php'),
-            localSettingsFile,
+            localSettings,
         );
         // Generate the hash salt (55 bytes).
         // @see \Drupal\Core\Installer\Form\SiteSettingsForm::submitForm()
@@ -209,16 +209,19 @@ export class Drupal
             .replaceAll('+', '-')
             .replaceAll('/', '_')
             .replaceAll('=', '');
-        await appendFile(localSettingsFile, `\n$settings['hash_salt'] = '${hashSalt}';\n`);
+        await appendFile(localSettings, `\n$settings['hash_salt'] = '${hashSalt}';\n`);
         logger.debug('Created settings.local.php.');
 
-        const settingsFile: string = join(siteDir, 'settings.php');
+        const settings: string = join(siteDir, 'settings.php');
         await copyFile(
             join(siteDir, 'default.settings.php'),
-            settingsFile,
+            settings,
         );
-        await appendFile(settingsFile, "@include __DIR__ . '/settings.local.php';\n");
+        await appendFile(settings, "@include __DIR__ . '/settings.local.php';\n");
         logger.debug('Created settings.php.');
+
+        // The files directory needs to exist or the installer cannot boot.
+        await mkdir(join(siteDir, 'files'));
 
         // Add the drupal_association_extras module to every install profile. We don't want to
         // hard-code the name or path of the info file, in case Drupal CMS changes it.
