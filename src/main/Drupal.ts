@@ -3,8 +3,9 @@ import getPort, { portNumbers } from 'get-port';
 import { OutputType, PhpCommand } from './PhpCommand';
 import { app, type MessagePortMain } from 'electron';
 import { ComposerCommand } from './ComposerCommand';
-import { dirname, join } from 'node:path';
-import { access, copyFile, glob, mkdir, readFile, rm, writeFile } from 'node:fs/promises';
+import { join } from 'node:path';
+import { randomBytes } from "node:crypto";
+import { access, appendFile, copyFile, glob, mkdir, readFile, rm, writeFile } from 'node:fs/promises';
 import * as tar from 'tar';
 import logger from 'electron-log';
 import * as YAML from 'yaml';
@@ -195,32 +196,29 @@ export class Drupal
         const siteDir: string = join(this.webRoot(), 'sites', 'default');
 
         // Copy our settings.local.php, which contains helpful overrides.
+        const localSettingsFile = join(siteDir, 'settings.local.php');
         await copyFile(
             join(app.isPackaged ? process.resourcesPath : app.getAppPath(), 'settings.local.php'),
-            join(siteDir, 'settings.local.php'),
+            localSettingsFile,
         );
+        // Generate the hash salt (55 bytes).
+        // @see \Drupal\Core\Installer\Form\SiteSettingsForm::submitForm()
+        // @see \Drupal\Component\Utility\Crypt::randomBytesBase64()
+        const hashSalt: string = randomBytes(55)
+            .toString('base64')
+            .replaceAll('+', '-')
+            .replaceAll('/', '_')
+            .replaceAll('=', '');
+        await appendFile(localSettingsFile, `\n$settings['hash_salt'] = '${hashSalt}';\n`);
         logger.debug('Created settings.local.php.');
 
-        // Create settings.php.
-        const settingsPath: string = join(siteDir, 'settings.php');
+        const settingsFile: string = join(siteDir, 'settings.php');
         await copyFile(
-            join(dirname(settingsPath), 'default.settings.php'),
-            settingsPath,
+            join(siteDir, 'default.settings.php'),
+            settingsFile,
         );
+        await appendFile(settingsFile, "@include __DIR__ . '/settings.local.php';\n");
         logger.debug('Created settings.php.');
-
-        // Uncomment the last few lines of settings.php to load the local settings. It's
-        // a little clunky to do this as an array operation, but as a one-time change to
-        // a not-too-large file, it's an acceptable trade-off.
-        const lines: string[] = (await readFile(settingsPath)).toString().split('\n');
-        const replacements: string[] = lines.slice(-4).map((line: string): string => {
-            return line.startsWith('# ') ? line.substring(2) : line;
-        });
-        lines.splice(-4, 3, ...replacements);
-        // Export configuration outside the web root.
-        lines.push(`$settings['config_sync_directory'] = '../config';\n`);
-        await writeFile(settingsPath, lines.join('\n'));
-        logger.debug('Modified settings.php.');
 
         // Add the drupal_association_extras module to every install profile. We don't want to
         // hard-code the name or path of the info file, in case Drupal CMS changes it.
