@@ -13,6 +13,18 @@ $settings['testing_package_manager'] = TRUE;
 // report.
 $settings['trusted_host_patterns'][] = '^localhost$';
 
+// Export configuration outside the web root.
+$settings['config_sync_directory'] = '../config';
+
+// Set up the SQLite database.
+$databases['default']['default'] = [
+  'prefix' => '',
+  'database' => 'sites/default/files/.ht.sqlite',
+  'driver' => 'sqlite',
+  'namespace' => 'Drupal\\sqlite\\Driver\\Database\\sqlite',
+  'autoload' => 'core/modules/sqlite/src/Driver/Database/sqlite/',
+];
+
 // Suppress the warning raised by `skip_permissions_hardening`.
 // @see drupal_cms_installer_install_tasks()
 putenv('IS_DDEV_PROJECT=1');
