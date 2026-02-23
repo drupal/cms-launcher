@@ -5,6 +5,7 @@
     import ReinstallIcon from '@phosphor-icons/core/regular/arrow-clockwise.svg?component';
     import FolderIcon from '@phosphor-icons/core/regular/folder-open.svg?component';
     import CacheClearIcon from '@phosphor-icons/core/regular/arrows-clockwise.svg?component';
+    import EditIcon from '@phosphor-icons/core/regular/pencil-line.svg?component';
     import i18next from "i18next";
     import { createI18nStore } from "svelte-i18next";
 
@@ -37,6 +38,7 @@
                         clearCache: 'Clear cache',
                         open: 'Open Drupal directory',
                         delete: 'Delete site',
+                        edit: 'Edit site',
                         start: 'Start site',
                         visit: 'Visit site',
                     },
@@ -178,6 +180,19 @@
         }
     }
 
+    async function login (event: any): Promise<void>
+    {
+        const button = event.currentTarget;
+
+        button.disabled = true;
+        try {
+            await drupal('login');
+        }
+        finally {
+            button.disabled = false;
+        }
+    }
+
     onMount(startDrupal);
 
 </script>
@@ -257,6 +272,9 @@
           </button>
           <button title={$i18n.t('button.open')} onclick={() => drupal('open')}>
             <FolderIcon width="32" />
+          </button>
+          <button title={$i18n.t('button.edit')} onclick={login}>
+            <EditIcon width="32" />
           </button>
           <button title={$i18n.t('button.delete')} onclick={deleteSite}>
             <TrashIcon width="32" />
