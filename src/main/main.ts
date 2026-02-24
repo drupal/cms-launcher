@@ -156,6 +156,28 @@ ipcMain.handle('drupal:open', async (): Promise<void> => {
     await shell.openPath(drupal.root);
 });
 
+ipcMain.handle('drupal:login', async (): Promise<void> => {
+    // If the UI is working correctly, it should never be possible to reach this point if
+    // we don't have a URL.
+    assert(typeof drupal.url === 'string');
+
+    const command = [
+        'exec',
+        'drush',
+        '--',
+        'user:login',
+        '--name=admin',
+        `--uri=${drupal.url}`,
+        '--no-browser',
+    ];
+    const { stdout } = await new ComposerCommand(...command).run({
+        cwd: drupal.root,
+    })
+    logger.debug('Generated one-time login link.');
+
+    await shell.openExternal(stdout.toString().trim());
+});
+
 ipcMain.handle('drupal:visit', async (): Promise<void> => {
     // If the UI is working correctly, it should never be possible to reach this point if
     // we don't have a URL.
