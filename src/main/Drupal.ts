@@ -47,7 +47,12 @@ export class Drupal
 
         ],
 
-        update: [],
+        update: [
+            // Enable the site template helper plugin, which was added in Drupal CMS 2.0.1.
+            [
+                ['config', 'allow-plugins.drupal/site_template_helper', 'true'],
+            ],
+        ],
 
     }
 
@@ -62,7 +67,7 @@ export class Drupal
         this.commands.install.splice(
             this.commands.install.findIndex(command => command[0] === 'install'),
             0,
-            ['config', '--merge', '--json', 'extra.drupal-launcher', `{"version": ${this.commands.update.length + 1}}`]
+            ['config', 'extra.drupal-launcher.version', String(this.commands.update.length + 1), '--json'],
         );
 
         if (fixture) {
@@ -70,6 +75,48 @@ export class Drupal
             // The option does not need to be escaped or quoted, because Composer is not being
             // executed through a shell.
             this.commands.install[0].push(`--repository=${repository}`);
+        }
+    }
+
+    public async update (progress?: MessagePortMain): Promise<void>
+    {
+        const version: number = await this.version();
+
+        // Find the subset of updates that need to be done (if any).
+        const updates: string[][][] = this.commands.update.slice(version - 1);
+        if (updates.length === 0) {
+            return;
+        }
+        // Always add a final "update" to increment to stored version number.
+        updates.push([
+            ['config', 'extra.drupal-launcher.version', String(version + 1), '--json'],
+        ]);
+
+        let done: number = 0;
+        const total: number = updates.reduce((sum: number, commands: string[][]): number => sum + commands.length, 0);
+        progress?.postMessage({ done, total });
+
+        for (const commands of updates) {
+            for (const command of commands) {
+                await new ComposerCommand(...command).inDirectory(this.root).run();
+                done++;
+                progress?.postMessage({ done, total });
+            }
+        }
+    }
+
+    private async version (): Promise<number>
+    {
+        try {
+            const { stdout } = await new ComposerCommand('config', 'extra.drupal-launcher.version')
+                .inDirectory(this.root)
+                .run();
+
+            // If the version returned by Composer parses to NaN, default to 1.
+            return parseInt(stdout.toString().trim()) || 1;
+        }
+        catch {
+            return 1;
         }
     }
 
@@ -261,7 +308,7 @@ export class Drupal
             const checkForServerStart = (line: string, _: any, server: ChildProcess): void => {
                 if (line.includes(`(${url}) started`)) {
                     clearTimeout(timeoutId);
-                    logger.debug(`Server started!`);
+                    logger.debug(`Server started.`);
 
                     app.on('will-quit', () => this.stop());
                     this.server = server;
