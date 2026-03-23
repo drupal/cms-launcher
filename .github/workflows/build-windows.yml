@@ -113,7 +113,6 @@ jobs:
 
           # Pre-build the Drupal site.
           npx electron . --root=drupal --no-server
-          Get-ChildItem -Path drupal -Recurse -Directory -Name tests | ForEach-Object { Remove-Item "drupal\$_" -Recurse -Force }
           tar -c -z -f prebuilt.tar.gz --directory=drupal .
           Remove-Item -Path drupal -Recurse -Force
 
