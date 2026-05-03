@@ -83,6 +83,8 @@ ipcMain.handle('drupal:start', async ({ sender: win }): Promise<string | null> =
         settings.set('useArchive', false);
         logger.debug('Permanently disabled pre-built archive.');
 
+        await drupal.update(progress);
+
         if (argv.server) {
             // Let the renderer know that we're going to start the server.
             progress.postMessage({ server: true });
