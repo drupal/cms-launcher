@@ -13,7 +13,7 @@ async function launchApp(testInfo: TestInfo, ...options: string[]): Promise<[Ele
         `--root=${root}`,
         `--log=${testInfo.outputPath('app.log')}`,
         `--settings=${testInfo.outputPath()}`,
-        `--timeout=2`,
+        `--timeout=30`,
         ...options,
     ],
     env: {
@@ -84,7 +84,7 @@ test('happy path', async ({}, testInfo) => {
   const [app, root] = await launchApp(testInfo, '--fixture=basic');
 
   const page = await visitSite(app);
-  await expect(page.locator('body')).toContainText('It worked! Running PHP via cli-server.');
+  await expect(page.locator('body')).toContainText('It worked! Running PHP via frankenphp.');
   await app.close();
 
   // Confirm that launcher-specific Drupal settings are valid PHP.
@@ -131,7 +131,7 @@ test("no clean up if server doesn't start", async ({}, testInfo) => {
   const [app, root] = await launchApp(testInfo, '--fixture=basic', '--url=not-a-valid-host');
 
   const window = await app.firstWindow();
-  await expect(window.getByText('The web server did not start after 2 seconds.')).toBeVisible({
+  await expect(window.getByText('The web server stopped before it was ready')).toBeVisible({
     // Give an extra-long grace period in case this test is being run on a painfully
     // slow machine.
     timeout: 10_000,
@@ -171,7 +171,7 @@ test('install from a pre-built archive', async ({}, testInfo) => {
   );
 
   const page = await visitSite(app);
-  await expect(page.locator('body')).toContainText('A prebuilt archive worked! Running PHP via cli-server.');
+  await expect(page.locator('body')).toContainText('A prebuilt archive worked! Running PHP via frankenphp.');
   await app.close();
 });
 
