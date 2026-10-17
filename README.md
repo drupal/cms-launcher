@@ -44,7 +44,7 @@ It is **not intended for contributing to or developing Drupal CMS itself**. If y
 
 ## How it works
 
-We use [static-php-cli](https://static-php.dev/) to compile a copy of PHP that includes everything needed to run Drupal CMS. We bundle that with the [Composer](https://getcomposer.org/) dependency manager, and use those two tools to install and serve Drupal CMS. The app itself is a very simple wrapper around PHP and Composer, written in TypeScript using the [Electron](https://www.electronjs.org/) framework.
+[Drupack](https://www.drupal.org/project/drupack) provides a copy of PHP that includes everything needed to run Drupal CMS, and serves the site with [FrankenPHP](https://frankenphp.dev/), a production web server that handles many requests at once. We bundle it with the [Composer](https://getcomposer.org/) dependency manager, and use those two tools to install Drupal CMS. The app itself is a very simple wrapper around Drupack and Composer, written in TypeScript using the [Electron](https://www.electronjs.org/) framework.
 
 ## Where are the Drupal files and database?
 
@@ -85,7 +85,7 @@ On Windows, the built-in firewall may block the launcher because it needs to sta
 
 ## Sponsorship
 
-This launcher is maintained by the [Drupal Association](https://www.drupal.org/association) and community contributors, but it depends on the amazing `static-php-cli` project, which is used to build the PHP interpreter bundled with the launcher. We heartily encourage you to [sponsor that project's maintainer](https://github.com/sponsors/crazywhalecc) and/or become a Drupal Association member.
+This launcher is maintained by the [Drupal Association](https://www.drupal.org/association) and community contributors, but it depends on Drupack, which builds its PHP interpreter with the amazing `static-php-cli` project. We heartily encourage you to [sponsor that project's maintainer](https://github.com/sponsors/crazywhalecc) and/or become a Drupal Association member.
 
 ## Contributing
 
@@ -115,9 +115,9 @@ This launcher is meant to get Drupal CMS up and running with no fuss, but it can
 * Does not support deploying to hosting services (yet).
 * Only supports one Drupal CMS site at a time.
 * Only supports SQLite databases, since SQLite is compiled into the PHP interpreter and has no additional dependencies.
-* Uses [the web server built into the PHP interpreter](https://www.php.net/manual/en/features.commandline.webserver.php), which is meant for testing, does _not_ support HTTPS, and generally isn't as powerful as Apache or nginx.
+* Serves the site over plain HTTP on `localhost`, without HTTPS.
 * Might not be able to send email, since it relies on whatever mail transfer program is (or isn't) on your system.
-* Uses PHP 8.4—the minimum recommended for Drupal 11—for maximum compatibility and performance.
+* Uses the PHP version that Drupack ships, currently PHP 8.5.
 
 If these limitations don’t meet your needs, consider the following alternatives:
 

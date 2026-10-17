@@ -14,8 +14,8 @@ import * as Sentry from "@sentry/electron/main";
 import { Drupal } from './Drupal';
 import yargs from 'yargs';
 import { hideBin } from 'yargs/helpers';
-import { PhpCommand } from './PhpCommand';
 import { ComposerCommand } from './ComposerCommand';
+import { DrupackCommand } from './DrupackCommand';
 import i18next from "i18next";
 import Store from 'electron-store';
 
@@ -125,18 +125,8 @@ ipcMain.handle('drupal:start', async ({ sender: win }): Promise<string | null> =
 });
 
 ipcMain.handle('drupal:clear-cache', async (): Promise<void> => {
-    const cwd = join(drupal.webRoot(), 'core');
     try {
-        // First, generate the token we need to invoke `rebuild.php` with.
-        const { stdout: token } = await new PhpCommand(
-            join(cwd, 'scripts', 'rebuild_token_calculator.sh'),
-        ).run({ cwd });
-
-        // Now invoke `rebuild.php`, first injecting the token into the $_GET superglobal.
-        // The PHP code doesn't need to be quoted, because we're not executing it through
-        // a shell.
-        await new PhpCommand('-r', `parse_str("${token.trim()}", $_GET); require "rebuild.php";`)
-            .run({ cwd });
+        await new DrupackCommand('drush', 'cache:rebuild').run({ cwd: drupal.root });
     }
     catch (e: any) {
         // Log all relevant information and send the exception to Sentry to help debug it.
@@ -161,21 +151,16 @@ ipcMain.handle('drupal:login', async (): Promise<void> => {
     // we don't have a URL.
     assert(typeof drupal.url === 'string');
 
-    const command = [
-        'exec',
+    const link = await new DrupackCommand(
         'drush',
-        '--',
         'user:login',
         '--name=admin',
         `--uri=${drupal.url}`,
         '--no-browser',
-    ];
-    const { stdout } = await new ComposerCommand(...command).run({
-        cwd: drupal.root,
-    })
+    ).run({ cwd: drupal.root });
     logger.debug('Generated one-time login link.');
 
-    await shell.openExternal(stdout.toString().trim());
+    await shell.openExternal(link.trim());
 });
 
 ipcMain.handle('drupal:visit', async (): Promise<void> => {
@@ -219,6 +204,7 @@ app.whenReady().then(async (): Promise<void> => {
                         quit: "Quit",
                     },
                     serverTimeoutError: "The web server did not start after {{timeout}} seconds.",
+                    serverExitError: "The web server stopped before it was ready (exit code {{code}}). The log file has its output.",
                 },
             },
         },
@@ -251,7 +237,8 @@ app.whenReady().then(async (): Promise<void> => {
         timeout: {
             type: 'number',
             description: i18next.t('options.timeout'),
-            default: 5,
+            // Drupack's first start unpacks its runtime, which can take a while.
+            default: 30,
         },
         server: {
             type: 'boolean',
@@ -312,13 +299,22 @@ app.whenReady().then(async (): Promise<void> => {
     // Set the path of the log file. It's a little awkward that this needs to be done by setting
     // a function, but that's just how electron-log works.
     logger.transports.file.resolvePathFn = (): string => argv.log;
-    // Set the path of the PHP interpreter. This can't be overridden because the PHP interpreter is
-    // an absolute hard requirement of this app.
-    PhpCommand.binary = join(resourceDir, 'bin', process.platform === 'win32' ? 'php.exe' : 'php');
     // Set the path to the Composer executable. We need to use an unpacked version of Composer
     // because the phar file has a shebang line that breaks us due to environment variables not
     // being inherited when this app is launched from the UI.
     ComposerCommand.binary = argv.composer;
+    // Set the path of the Drupack engine, which provides PHP and serves the site. On
+    // macOS, both architectures ship in the universal app.
+    DrupackCommand.binary = join(
+        resourceDir,
+        'bin',
+        `drupack-${process.arch}${process.platform === 'win32' ? '.exe' : ''}`,
+    );
+    // Keep Drupack's unpacked runtime with the app's own data, so that uninstalling
+    // the app removes it too. The app updates itself, Drupack included, so Drupack
+    // doesn't need to check for its own releases.
+    process.env.DRUPACK_CACHE_DIR = join(app.getPath('userData'), 'drupack');
+    process.env.DRUPACK_NO_UPDATE_CHECK = '1';
     // Ensure any auto-update errors are logged and send to Sentry.
     autoUpdater.logger = logger;
     autoUpdater.on('error', e => Sentry.captureException(e));
