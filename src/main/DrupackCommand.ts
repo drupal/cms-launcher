@@ -1,6 +1,9 @@
 import logger from 'electron-log';
-import { type ChildProcess, execFileSync, spawn, type SpawnOptions } from 'node:child_process';
+import { type ChildProcess, execFile, type ExecFileOptions, execFileSync, spawn, type SpawnOptions } from 'node:child_process';
 import { createInterface as readFrom } from 'node:readline';
+import { promisify as toPromise } from 'node:util';
+
+const execFileAsPromise = toPromise(execFile);
 
 /**
  * Runs the Drupack engine, which serves Drupal with FrankenPHP.
@@ -32,6 +35,17 @@ export class DrupackCommand
             }
         }
         return process;
+    }
+
+    /**
+     * Runs the command to completion, and resolves with what it printed.
+     */
+    async run (options: ExecFileOptions = {}): Promise<string>
+    {
+        logger.debug(`${DrupackCommand.binary} ${this.arguments.join(' ')}`);
+
+        const { stdout } = await execFileAsPromise(DrupackCommand.binary, this.arguments, options);
+        return stdout.toString();
     }
 
     /**
