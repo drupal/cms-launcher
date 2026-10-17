@@ -1,6 +1,7 @@
 import { test, expect, _electron as electron, type ElectronApplication, type Page, type TestInfo } from '@playwright/test';
 import { accessSync } from 'node:fs';
 import { join } from 'node:path';
+import { DrupackCommand } from '@/main/DrupackCommand';
 import { PhpCommand } from '@/main/PhpCommand';
 import { ComposerCommand } from '@/main/ComposerCommand';
 
@@ -65,7 +66,7 @@ async function resetSite (window: Page): Promise<void>
 
 test.beforeAll(() => {
   const binDir = join(__dirname, '..', 'bin');
-  PhpCommand.binary = join(binDir, process.platform == 'win32' ? 'php.exe' : 'php');
+  DrupackCommand.binary = join(binDir, `drupack-${process.arch}${process.platform === 'win32' ? '.exe' : ''}`);
   ComposerCommand.binary = join(binDir, 'composer', 'bin', 'composer');
 });
 
@@ -88,7 +89,7 @@ test('happy path', async ({}, testInfo) => {
   await app.close();
 
   // Confirm that launcher-specific Drupal settings are valid PHP.
-  await new PhpCommand('-f', join(root, 'assert-settings.php'), '-d', 'zend.assertions=1')
+  await new PhpCommand(join(root, 'assert-settings.php'))
       .run({ cwd: root }, (line: string): void => {
         console.debug(line);
       });
@@ -222,8 +223,8 @@ test('error during cache clear', async ({}, testInfo) => {
   const window = await app.firstWindow();
   const clearCacheButton = window.getByTitle('Clear cache');
 
-  // The fixture has a mocked version of `rebuild_token_calculator.sh` which always fails,
-  // so we can test how the UI handles an error during cache clear.
+  // The fixture has no Drush, so clearing the cache always fails, and we can test how the
+  // UI handles an error during cache clear.
   window.on('dialog', async (dialog) => {
     expect(dialog.type()).toBe('alert');
     expect(dialog.message()).toBe('An error occurred while clearing the cache. It has been reported to the developers.');

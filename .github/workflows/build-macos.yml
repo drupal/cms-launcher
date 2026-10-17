@@ -14,78 +14,9 @@ on:
   workflow_dispatch:
 
 jobs:
-  # The PHP interpreter needs to have its own job so it can be built in parallel for all
-  # supported architectures, before being merged into a universal binary while building
-  # the app itself.
-  php:
-    name: PHP on ${{ matrix.os }}
-    strategy:
-      matrix:
-        os:
-          # x64, supported until 2027, at which point GitHub Actions will drop support for
-          # macOS on Intel.
-          # @see https://github.com/actions/runner-images/issues/13046
-          - macos-15-intel
-          - macos-latest # arm64
-    runs-on: ${{ matrix.os }}
-    env:
-      # The extensions and libraries needed to build PHP. These need to be variables so we can
-      # use them to generate a cache key.
-      # @see https://static-php.dev/en/guide/cli-generator.html
-      PHP_EXTENSIONS: bz2,ctype,curl,dom,filter,gd,iconv,mbstring,opcache,openssl,pcntl,pdo,pdo_sqlite,phar,posix,session,simplexml,sodium,sqlite3,tokenizer,xml,xmlwriter,yaml,zip,zlib
-      PHP_VERSION: 8.4
-    steps:
-      - uses: actions/checkout@v4
-
-      # Cache the built binary so we can skip the build steps if there is a cache hit.
-      - name: Generate cache key
-        run: |
-          CACHE_KEY=${{ runner.os }}-${{ runner.arch }}-$PHP_VERSION--$(echo $PHP_EXTENSIONS | tr ',' '-')
-          echo "CACHE_KEY=${CACHE_KEY}" >> $GITHUB_ENV
-
-      - id: cache
-        name: Cache PHP interpreter
-        uses: actions/cache@v4
-        with:
-          path: build/php-${{ runner.arch }}
-          key: php-${{ env.CACHE_KEY }}
-
-      - if: steps.cache.outputs.cache-hit != 'true'
-        name: "Set up PHP"
-        uses: shivammathur/setup-php@v2
-        with:
-          # Install PHP with the tools needed to build the interpreter, if necessary.
-          php-version: latest
-          tools: pecl, composer
-          extensions: curl, openssl, mbstring, tokenizer
-          ini-values: memory_limit=-1
-
-      - if: steps.cache.outputs.cache-hit != 'true'
-        name: Install dependencies and build PHP
-        run: |
-          brew install automake gzip
-          composer install
-          composer exec spc -- doctor
-          composer exec spc -- download --with-php=${{ env.PHP_VERSION }} --for-extensions=${{ env.PHP_EXTENSIONS }} --prefer-pre-built
-          composer exec spc -- build ${{ env.PHP_EXTENSIONS }} --build-cli --with-libs=freetype,libavif,libjpeg,libwebp --debug
-          mv ./buildroot/bin/php ./php-${{ runner.arch }}
-        env:
-          # Allows static-php-cli to download its many dependencies more smoothly.
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-        working-directory: build
-
-      - name: Upload PHP binary
-        uses: actions/upload-artifact@v4
-        with:
-          name: php-${{ runner.arch }}
-          path: build/php-${{ runner.arch }}
-          retention-days: 1
-
   app:
     name: App
     runs-on: macos-latest
-    needs:
-      - php
     env:
       # Don't publish by default. This is overridden for the release branch, below.
       PUBLISH: never
@@ -100,13 +31,6 @@ jobs:
           LATEST_TAG=$(git describe --tags --abbrev=0)
           git checkout $LATEST_TAG
           echo "LATEST_TAG=$LATEST_TAG" >> $GITHUB_ENV
-
-      - name: Download PHP binaries
-        uses: actions/download-artifact@v4
-        with:
-          path: build
-          pattern: php-*
-          merge-multiple: true
 
       - name: Set up PHP
         uses: shivammathur/setup-php@v2
@@ -165,9 +89,6 @@ jobs:
       - name: Build app
         run: |
           composer run assets --working-dir=build
-          # Generate a universal binary of the PHP interpreter.
-          lipo -create ./build/php-X64 ./build/php-ARM64 -output ./bin/php
-          chmod +x ./bin/php
           npx electron-vite build
         env:
           # Upload the source map to Sentry so we can get stack traces from minified code.
