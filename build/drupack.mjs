@@ -7,7 +7,7 @@ import { createHash } from 'node:crypto';
 import { chmod, mkdir, writeFile } from 'node:fs/promises';
 import { join } from 'node:path';
 
-const version = '1.0.0-beta5';
+const version = '1.0.0-beta6';
 const release = `https://github.com/tresbientech/drupack/releases/download/${version}`;
 const platform = { darwin: 'macos', linux: 'linux', win32: 'windows' }[process.platform];
 const architectures = { x64: 'amd64', arm64: 'arm64' };
