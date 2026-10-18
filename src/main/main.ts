@@ -16,6 +16,7 @@ import yargs from 'yargs';
 import { hideBin } from 'yargs/helpers';
 import { PhpCommand } from './PhpCommand';
 import { ComposerCommand } from './ComposerCommand';
+import { DrupackCommand } from './DrupackCommand';
 import i18next from "i18next";
 import Store from 'electron-store';
 
@@ -219,6 +220,7 @@ app.whenReady().then(async (): Promise<void> => {
                         quit: "Quit",
                     },
                     serverTimeoutError: "The web server did not start after {{timeout}} seconds.",
+                    serverExitError: "The web server stopped before it was ready (exit code {{code}}). The log file has its output.",
                 },
             },
         },
@@ -251,7 +253,8 @@ app.whenReady().then(async (): Promise<void> => {
         timeout: {
             type: 'number',
             description: i18next.t('options.timeout'),
-            default: 5,
+            // Drupack's first start unpacks its runtime, which can take a while.
+            default: 30,
         },
         server: {
             type: 'boolean',
@@ -319,6 +322,18 @@ app.whenReady().then(async (): Promise<void> => {
     // because the phar file has a shebang line that breaks us due to environment variables not
     // being inherited when this app is launched from the UI.
     ComposerCommand.binary = argv.composer;
+    // Set the path of the Drupack engine that serves the site. On macOS, both
+    // architectures ship in the universal app.
+    DrupackCommand.binary = join(
+        resourceDir,
+        'bin',
+        `drupack-${process.arch}${process.platform === 'win32' ? '.exe' : ''}`,
+    );
+    // Keep Drupack's unpacked runtime with the app's own data, so that uninstalling
+    // the app removes it too. The app updates itself, Drupack included, so Drupack
+    // doesn't need to check for its own releases.
+    process.env.DRUPACK_CACHE_DIR = join(app.getPath('userData'), 'drupack');
+    process.env.DRUPACK_NO_UPDATE_CHECK = '1';
     // Ensure any auto-update errors are logged and send to Sentry.
     autoUpdater.logger = logger;
     autoUpdater.on('error', e => Sentry.captureException(e));
