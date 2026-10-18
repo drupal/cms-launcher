@@ -1,8 +1,9 @@
 import type { ChildProcess } from 'node:child_process';
 import getPort, { portNumbers } from 'get-port';
-import { OutputType, PhpCommand } from './PhpCommand';
+import { OutputType } from './PhpCommand';
 import { app, type MessagePortMain } from 'electron';
 import { ComposerCommand } from './ComposerCommand';
+import { DrupackCommand } from './DrupackCommand';
 import { join } from 'node:path';
 import { randomBytes } from "node:crypto";
 import { access, appendFile, copyFile, glob, mkdir, readFile, rm, writeFile } from 'node:fs/promises';
@@ -101,10 +102,28 @@ export class Drupal
 
     private stop (): void
     {
+        if (this.server) {
+            this.stopDrupack();
+        }
         logger.debug(
             this.server?.kill() ? 'Server stopped.' : 'Server was not running, or could not be stopped.',
         );
         this.url = this.server = null;
+    }
+
+    /**
+     * Stops the server Drupack runs for this project. On Windows, FrankenPHP runs in a
+     * child process of its own, which killing the Drupack process would leave behind.
+     */
+    private stopDrupack (): void
+    {
+        try {
+            new DrupackCommand('stop', this.root).runSync();
+        }
+        catch (e: any) {
+            // Drupack refuses to stop a project it doesn't serve, which is fine.
+            logger.debug(`drupack stop: ${e.stderr?.toString() ?? e}`);
+        }
     }
 
     public webRoot (): string
@@ -237,7 +256,7 @@ export class Drupal
         }
     }
 
-    public async serve (url: string | null = null, timeout: number = 2): Promise<string>
+    public async serve (url: string | null = null, timeout: number = 30): Promise<string>
     {
         // If no URL was provided, find an open port on localhost.
         if (url === null) {
@@ -248,30 +267,44 @@ export class Drupal
         }
         this.url = url;
 
+        // Drupack listens on an IP address, which `localhost` resolves to.
+        const listen: string = url.substring(7).replace(/^localhost:/, '127.0.0.1:');
+
+        // A server left behind by a crashed run would make Drupack refuse to start.
+        this.stopDrupack();
+
         logger.debug(`Giving the server ${timeout} seconds to start.`);
         // This needs to be returned as a promise so that, if we reach the timeout,
         // the exception will be caught by the calling code.
-        return new Promise(async (resolve, reject): Promise<void> => {
+        return new Promise((resolve, reject): void => {
             const timeoutId = setTimeout((): void => {
                reject(
                    i18next.t('serverTimeoutError', { timeout }),
                );
             }, timeout * 1000);
 
-            const checkForServerStart = (line: string, _: any, server: ChildProcess): void => {
-                if (line.includes(`(${url}) started`)) {
-                    clearTimeout(timeoutId);
-                    logger.debug(`Server started!`);
+            const server: ChildProcess = new DrupackCommand('start', this.root, '--listen', listen, '--foreground')
+                .start({}, (line: string): void => {
+                    logger.debug(line);
 
-                    app.on('will-quit', () => this.stop());
-                    this.server = server;
+                    // Drupack prints this once Drupal answers requests.
+                    if (line.includes(' is ready. ')) {
+                        clearTimeout(timeoutId);
+                        logger.debug(`Server started!`);
 
-                    resolve(url);
-                }
-            };
+                        app.on('will-quit', () => this.stop());
+                        resolve(url);
+                    }
+                });
+            this.server = server;
 
-            await new PhpCommand('-d max_execution_time=300', '-S', url.substring(7), '.ht.router.php')
-                .start({ cwd: this.webRoot() }, checkForServerStart);
+            server.on('exit', (code: number | null): void => {
+                clearTimeout(timeoutId);
+                // Once the server is up, this changes nothing.
+                reject(
+                    i18next.t('serverExitError', { code }),
+                );
+            });
         });
     }
 }

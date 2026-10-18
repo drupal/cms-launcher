@@ -9,6 +9,8 @@ import { OutputHandler, PhpCommand } from './PhpCommand';
  */
 export class ComposerCommand extends PhpCommand
 {
+    public static binary: string;
+
     constructor (...options: string[])
     {
         super(
